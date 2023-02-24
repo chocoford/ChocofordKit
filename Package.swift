@@ -24,6 +24,8 @@ let package = Package(
         .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", .upToNextMajor(from: "1.0.0")),
         .package(url: "https://github.com/kirualex/SwiftyGif.git",
                  from: "5.4.4"),
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git",
+                 from: "0.2.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -33,7 +35,8 @@ let package = Package(
             dependencies: [
             "ShapeBuilder",
             .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
-            "SwiftyGif"
+            "SwiftyGif",
+            .product(name: "Introspect", package: "SwiftUI-Introspect"),
         ]),
         .testTarget(
             name: "ChocofordUITests",
