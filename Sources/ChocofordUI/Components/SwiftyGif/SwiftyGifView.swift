@@ -45,6 +45,17 @@ public struct SwiftyGifView: UIViewRepresentable {
     var resetWhenNotAnimating = false
     var quality: GifLevelOfIntegrity = .highestNoFrameSkipping
 
+    
+    public init(url: URL,
+                animating: Bool = true,
+                resetWhenNotAnimating: Bool = false,
+                quality: GifLevelOfIntegrity = .highestNoFrameSkipping) {
+        self.url = url
+        self.animating = animating
+        self.resetWhenNotAnimating = resetWhenNotAnimating
+        self.quality = quality
+    }
+    
     public func makeUIView(context: Context) -> SwiftyGifUIView {
         let view = SwiftyGifUIView(url: url, quality: quality)
         view.isAnimating = animating

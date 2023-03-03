@@ -15,11 +15,19 @@ public struct SingleAxisGeometryReader<Content: View>: View {
         }
     }
 
-    @State private var size: CGFloat = SizeKey.defaultValue
     var axis: Axis = .horizontal
     var alignment: Alignment = .center
     let content: (CGFloat) -> Content
 
+    public init(axis: Axis = .horizontal, alignment: Alignment = .center,
+                @ViewBuilder content: @escaping (CGFloat) -> Content) {
+        self.axis = axis
+        self.alignment = alignment
+        self.content = content
+    }
+    
+    @State private var size: CGFloat = SizeKey.defaultValue
+    
     public var body: some View {
         content(size)
             .frame(maxWidth:  axis == .horizontal ? .infinity : nil,
