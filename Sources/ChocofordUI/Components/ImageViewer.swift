@@ -8,18 +8,18 @@
 import SwiftUI
 import Shimmer
 
-struct ImageViewer<Content: View>: View {
+public struct ImageViewer<Content: View>: View {
     var url: URL
     var disabled: Bool = false
     var content: () -> Content
 
-    init(url: URL, disabled: Bool = false, @ViewBuilder content: @escaping () -> Content) {
+    public init(url: URL, disabled: Bool = false, @ViewBuilder content: @escaping () -> Content) {
         self.url = url
         self.disabled = disabled
         self.content = content
     }
     
-    var body: some View {
+    public var body: some View {
         content()
             .onTapGesture {
                 openViewer()
