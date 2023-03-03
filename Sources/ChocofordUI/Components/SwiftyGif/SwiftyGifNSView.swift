@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftyGif
 
 #if os(macOS)
-final class SwiftyGifNSView: NSView {
+public final class SwiftyGifNSView: NSView {
 	fileprivate var _animate = true
 
 	private let imageView: NSImageView
@@ -44,14 +44,14 @@ final class SwiftyGifNSView: NSView {
 		addSubview(imageView)
 	}
 
-	override func layout() {
+    public override func layout() {
 		super.layout()
 		imageView.frame = bounds
 	}
 }
 
 extension SwiftyGifNSView: SwiftyGifDelegate {
-	func gifDidStart(sender: NSImageView) {
+    public func gifDidStart(sender: NSImageView) {
 		// Ensure the real animating state never desyncs from the required state
 		if !_animate {
 			isAnimating = false
@@ -59,7 +59,7 @@ extension SwiftyGifNSView: SwiftyGifDelegate {
 			_animate = true // Update underlying var
 		}
 	}
-	func gifDidStop(sender: NSImageView) {
+    public func gifDidStop(sender: NSImageView) {
 		if _animate {
 			isAnimating = true
 		} else {

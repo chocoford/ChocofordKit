@@ -101,6 +101,7 @@ struct EdgeBorder: Shape {
 
 
 // MARK: - VisualEffect
+#if os(macOS)
 struct VisualEffectBackground: NSViewRepresentable {
     private let material: NSVisualEffectView.Material
     private let blendingMode: NSVisualEffectView.BlendingMode
@@ -146,7 +147,7 @@ extension View {
         )
     }
 }
-
+#endif
 
 #if os(macOS)
 extension View {

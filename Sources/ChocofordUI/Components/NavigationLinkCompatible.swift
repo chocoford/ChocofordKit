@@ -19,7 +19,7 @@ public struct NavigationLinkCompatible<P: Hashable, Title: View, Icon: View>: Vi
     }
     
     public var body: some View {
-        if #available(macOS 13.0, *) {
+        if #available(macOS 13.0, iOS 16.0, *) {
             NavigationLink(value: value, label: label)
         } else {
            label()

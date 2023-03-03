@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SingleAxisGeometryReader<Content: View>: View {
+public struct SingleAxisGeometryReader<Content: View>: View {
     private struct SizeKey: PreferenceKey {
         static var defaultValue: CGFloat { 10 }
         static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -20,7 +20,7 @@ struct SingleAxisGeometryReader<Content: View>: View {
     var alignment: Alignment = .center
     let content: (CGFloat) -> Content
 
-    var body: some View {
+    public var body: some View {
         content(size)
             .frame(maxWidth:  axis == .horizontal ? .infinity : nil,
                    maxHeight: axis == .vertical   ? .infinity : nil,

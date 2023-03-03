@@ -14,7 +14,7 @@ public enum NavigationSplitViewVisibilityCompatible {
     case doubleColumn
     case detailOnly
     
-    @available(macOS 13.0, *)
+    @available(macOS 13.0, iOS 16.0, *)
     var value: NavigationSplitViewVisibility {
         switch self {
             case .all:
@@ -28,7 +28,7 @@ public enum NavigationSplitViewVisibilityCompatible {
         }
     }
     
-    @available(macOS 13.0, *)
+    @available(macOS 13.0, iOS 16.0, *)
     init(_ from: NavigationSplitViewVisibility) {
         switch from {
             case .all:
@@ -63,7 +63,7 @@ public struct NavigationSplitViewCompatible<Sidebar: View, Detail: View>: View {
     }
     
     public var body: some View {
-        if #available(macOS 13.0, *) {
+        if #available(macOS 13.0, iOS 16.0, *) {
             if let columnVisibility = columnVisibility {
                 NavigationSplitView(columnVisibility: Binding(get: {
                     columnVisibility.wrappedValue.value
@@ -92,7 +92,11 @@ public struct NavigationSplitViewCompatible<Sidebar: View, Detail: View>: View {
                 // give time to set divider position
                 if showMask {
                     Rectangle()
+                    #if os(macOS)
                         .foregroundColor(.init(nsColor: .windowBackgroundColor))
+                    #elseif os(iOS)
+                        .foregroundColor(.init(uiColor: .systemBackground))
+                    #endif
                 }
             }
             .toolbar {
@@ -126,6 +130,7 @@ public struct NavigationSplitViewCompatible<Sidebar: View, Detail: View>: View {
 }
 
 extension NavigationSplitViewCompatible {
+    #if os(macOS)
     @ViewBuilder public func removeSidebarToggle() -> some View {
         introspectSplitView(customize: { splitView in
             let toolbar = splitView.window?.toolbar
@@ -138,6 +143,7 @@ extension NavigationSplitViewCompatible {
             }
         })
     }
+    #endif
 }
 
 #if os(macOS)
@@ -211,6 +217,21 @@ extension SplitView {
 //        func splitView(_ splitView: NSSplitView, shouldAdjustSizeOfSubview view: NSView) -> Bool {
 //            false
 //        }
+    }
+}
+
+#elseif os(iOS)
+struct SplitView<Sidebar: View, Detail: View>: UIViewRepresentable {
+    var columnVisibility: Binding<NavigationSplitViewVisibilityCompatible>?
+    var sidebar: () -> Sidebar
+    var detail: () -> Detail
+    
+    func makeUIView(context: Context) -> UIView {
+        return UIView()
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        
     }
 }
 
