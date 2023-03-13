@@ -21,7 +21,8 @@ extension Encodable {
     public func jsonStringified(percentEncoding: Bool = false, options: JSONSerialization.WritingOptions? = nil) throws -> String {
         var data = try JSONEncoder().encode(self)
         if let options = options {
-            data = try JSONSerialization.data(withJSONObject: data, options: options)
+            let obj = try JSONSerialization.jsonObject(with: data)
+            data = try JSONSerialization.data(withJSONObject: obj, options: options)
         }
         
         let stringified = String(data: data, encoding: String.Encoding.utf8) ?? ""
