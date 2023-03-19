@@ -10,7 +10,7 @@ import ShapeBuilder
 import SwiftyGif
 
 
-struct AvatarView<S: StringProtocol>: View {
+public struct AvatarView<S: StringProtocol>: View {
     var url: URL?
     var fallbackText: S
 
@@ -41,7 +41,7 @@ struct AvatarView<S: StringProtocol>: View {
         }
     }
     
-    var body: some View {
+    public var body: some View {
         
         ZStack {
             if let url = url,
