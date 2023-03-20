@@ -14,7 +14,7 @@ public struct AvatarView<S: StringProtocol>: View {
     var url: URL?
     var fallbackText: S
 
-    enum AvatarShape {
+    public enum AvatarShape {
         case circle
         case rounded
         case tile
