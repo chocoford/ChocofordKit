@@ -35,12 +35,12 @@ public struct AvatarView<S: StringProtocol>: View {
         self.animating = animating
     }
     
-    public init(urlString: String,
+    public init(urlString: String?,
                 fallbackText: S,
                 shape: AvatarShape = .circle,
                 size: CGFloat = 28,
                 animating: Bool = true) {
-        self.init(url: URL(string: urlString), fallbackText: fallbackText, shape: shape, size: size, animating: animating)
+        self.init(url: URL(string: urlString ?? ""), fallbackText: fallbackText, shape: shape, size: size, animating: animating)
     }
     
     var phText: String {
