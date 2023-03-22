@@ -23,7 +23,7 @@ public struct AvatarView<S: StringProtocol>: View {
     var size: CGFloat = 28
     var animating: Bool = true
     
-    public init(url: URL? = nil,
+    public init(url: URL?,
                 fallbackText: S,
                 shape: AvatarShape = .circle,
                 size: CGFloat = 28,
@@ -35,6 +35,13 @@ public struct AvatarView<S: StringProtocol>: View {
         self.animating = animating
     }
     
+    public init(urlString: String,
+                fallbackText: S,
+                shape: AvatarShape = .circle,
+                size: CGFloat = 28,
+                animating: Bool = true) {
+        self.init(url: URL(string: urlString), fallbackText: fallbackText, shape: shape, size: size, animating: animating)
+    }
     
     var phText: String {
         String(fallbackText).uppercased()
