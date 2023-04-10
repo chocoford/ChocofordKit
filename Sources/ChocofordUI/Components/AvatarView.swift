@@ -8,9 +8,11 @@
 import SwiftUI
 import ShapeBuilder
 import SwiftyGif
-
+import SDWebImageSwiftUI
 
 public struct AvatarView<S: StringProtocol>: View {
+//    @ObservedObject var imageManager = ImageManager()
+
     var url: URL?
     var fallbackText: S
 
@@ -62,30 +64,17 @@ public struct AvatarView<S: StringProtocol>: View {
     }
     
     public var body: some View {
-        
-        ZStack {
-            if let url = url,
-               url.pathExtension == "gif",
-               animating == true {
-                SwiftyGifView(
-                    url: url,
-                    animating: true,
-                    resetWhenNotAnimating: true
-                )
-            } else {
-                AsyncImage(url: url) { image in
-                    image.resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Rectangle()
-                        .foregroundColor(.gray)
-                        .overlay(alignment: .center) {
-                            Text(phText)
-                                .foregroundColor(.white)
-                        }
-                }
+        WebImage(url: url, options: [.lowPriority, .scaleDownLargeImages])
+            .resizable()
+            .placeholder {
+                Rectangle()
+                    .foregroundColor(.gray)
+                    .overlay(alignment: .center) {
+                        Text(phText)
+                            .font(.system(size: size / 2))
+                            .foregroundColor(.white)
+                    }
             }
-        }
         .frame(width: size, height: size, alignment: .center)
         .clipShape(clipShape)
     }
@@ -94,7 +83,12 @@ public struct AvatarView<S: StringProtocol>: View {
 #if DEBUG
 struct AvatarView_Previews: PreviewProvider {
     static var previews: some View {
-        AvatarView(url: nil, fallbackText: "ABC", size: 30)
+        VStack {
+            ForEach(Array(stride(from: 10, through: 100, by: 10)), id: \.self) { size in
+                AvatarView(url: nil, fallbackText: "A", size: CGFloat(size))
+            }
+        }
+        
     }
 }
 #endif

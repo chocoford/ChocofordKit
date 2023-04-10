@@ -71,6 +71,7 @@ public struct SwiftyGifView: UIViewRepresentable {
 #endif
 
 
+
 #if DEBUG
 struct MacEditorTextView_Previews: PreviewProvider {
 	static var previews: some View {

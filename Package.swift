@@ -26,6 +26,11 @@ let package = Package(
                  from: "5.4.4"),
         .package(url: "https://github.com/siteline/SwiftUI-Introspect.git",
                  from: "0.2.0"),
+        .package(url: "https://github.com/lorenzofiamingo/swiftui-cached-async-image.git",
+                 from: "2.0.0"),
+        .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.2.2"),
+        .package(url: "https://github.com/elai950/AlertToast.git", branch: "master")
+//        .package(url: "https://github.com/nerdsupremacist/FancyScrollView.git", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -37,6 +42,10 @@ let package = Package(
             .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
             "SwiftyGif",
             .product(name: "Introspect", package: "SwiftUI-Introspect"),
+            .product(name: "CachedAsyncImage", package: "swiftui-cached-async-image"),
+            "SDWebImageSwiftUI",
+            "AlertToast"
+//            "FancyScrollView"
         ]),
         .testTarget(
             name: "ChocofordUITests",
