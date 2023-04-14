@@ -133,7 +133,7 @@ public extension Color {
         Color(uiColor: .placeholderText)
     }
     static var textBackgroundColor: Color {
-        Color(uiColor: .systemBackground)
+        Color(uiColor: .systemGroupedBackground)
     }
     static var separatorColor: Color {
         Color(uiColor: .separator)

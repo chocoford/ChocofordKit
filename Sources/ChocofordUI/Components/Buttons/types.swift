@@ -20,25 +20,29 @@ public struct ButtonColor {
 }
 
 public enum ButtonSize: CaseIterable {
-    case small, normal, large
+    case xsmall, small, normal, large
 }
 
 
 internal extension View {
     @ViewBuilder
-    func buttonSized(_ size: ButtonSize) -> some View {
+    func buttonSized(_ size: ButtonSize, square: Bool) -> some View {
         switch size {
             case .large:
-                padding(.vertical, 10)
+                padding(.vertical, square ? 16 : 10)
                     .padding(.horizontal, 16)
                     
             case .normal:
-                padding(.vertical, 8)
+                padding(.vertical, square ? 12 : 8)
                     .padding(.horizontal, 12)
                 
             case .small:
-                padding(.vertical, 4)
+                padding(.vertical, square ? 10 : 4)
                     .padding(.horizontal, 10)
+                
+            case .xsmall:
+                padding(.vertical, square ? 6 : 2)
+                    .padding(.horizontal, 6)
               
         }
     }

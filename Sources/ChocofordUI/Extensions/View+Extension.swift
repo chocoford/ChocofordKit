@@ -57,6 +57,16 @@ extension View {
     public func border(_ edge: Edge, width: CGFloat = 1, color: Color) -> some View {
         border([edge], width: width, color: color)
     }
+    
+    @ViewBuilder
+    public func watchImmediately<V : Equatable>(of value: V, perform action: @escaping (V) -> Void) -> some View {
+        onAppear {
+            action(value)
+        }
+        .onChange(of: value) { newValue in
+            action(newValue)
+        }
+    }
 }
 
 struct EdgeBorder: Shape {
@@ -147,6 +157,17 @@ extension View {
         )
     }
 }
+//#elseif os(iOS)
+//extension View {
+//    @ViewBuilder
+//    public func visualEffect(
+//        material: Any,
+//        blendingMode: Any,
+//        emphasized: Any
+//    ) -> some View {
+//        self
+//    }
+//}
 #endif
 
 #if os(macOS)

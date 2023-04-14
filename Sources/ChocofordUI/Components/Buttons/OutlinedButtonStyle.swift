@@ -11,6 +11,7 @@ public struct OutlinedButtonStyle: ButtonStyle {
     var colors: ButtonColor
     var size: ButtonSize = .normal
     var block: Bool = false
+    var square: Bool = false
 
     public func makeBody(configuration: Self.Configuration) -> some View {
         OutlinedButtonStyleView(isPressed: configuration.isPressed, colors: colors, size: size, block: block) {
@@ -26,15 +27,18 @@ public struct OutlinedButtonStyleView<V: View>: View {
     var colors: ButtonColor
     var size: ButtonSize = .normal
     var block = false
+    var square = false
     
     let content: () -> V
     
-    public init(hovering: Bool = false, isPressed: Bool, colors: ButtonColor, size: ButtonSize, block: Bool = false, @ViewBuilder content: @escaping () -> V) {
+    public init(hovering: Bool = false, isPressed: Bool, colors: ButtonColor, size: ButtonSize, block: Bool = false, square: Bool = false,
+                @ViewBuilder content: @escaping () -> V) {
         self.hovering = hovering
         self.isPressed = isPressed
         self.colors = colors
         self.size = size
         self.block = block
+        self.square = square
         self.content = content
     }
     
@@ -48,19 +52,25 @@ public struct OutlinedButtonStyleView<V: View>: View {
                 Spacer(minLength: 0)
             }
         }
-        .buttonSized(size)
+        .buttonSized(size, square: square)
         .background(isPressed ? colors.pressed : hovering ? colors.hovered : .clear)
         .foregroundColor(colors.default)
         .overlay(
-            RoundedRectangle(cornerRadius: 8).stroke(colors.default)
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(colors.default)
         )
         .containerShape(RoundedRectangle(cornerRadius: 8))
+        .contentShape(Rectangle())
         .animation(.easeOut(duration: 0.2), value: hovering)
         .animation(.easeOut(duration: 0.2), value: isPressed)
         .onHover { over in
             self.hovering = over
         }
     }
+}
+
+extension ButtonStyle {
+//    public var outlined
 }
 
 #if DEBUG

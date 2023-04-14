@@ -37,7 +37,7 @@ public struct LoadableScrollList<Content: View,
     var emptyPlaceholder: () -> E
     var listContainer: C
     
-    var onEvents: (_ event: LoadableListView<Content, Header, Footer, A, P, E, C, Items, VID, ID>.Event) async -> Void
+    var onEvents: (_ event: LoadableListEvent) async -> Void
     
     @State private var isLoadingAbove: Bool = false
     @State private var isLoadingBelow: Bool = false
@@ -55,12 +55,12 @@ public struct LoadableScrollList<Content: View,
                 startFromBottom: Bool = false,
                 manuallyLoad: Bool = false,
                 listContainer: C = EmptyModifier(),
-                onEvents: @escaping (_ event: LoadableListView<Content, Header, Footer, A, P, E, C, Items, VID, ID>.Event) async -> Void,
+                onEvents: @escaping (_ event: LoadableListEvent) async -> Void,
                 @ViewBuilder content: @escaping (Items.Element) -> Content,
                 @ViewBuilder header: @escaping () -> Header = { EmptyView() },
                 @ViewBuilder footer: @escaping () -> Footer = { EmptyView() },
                 @ViewBuilder loadingActivator: @escaping (_ action: @escaping () -> Void) -> A = { _ in EmptyView() },
-                @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView(size: 20, strokeColor: Color.accentColor) },
+                @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView().size(20) },
                 @ViewBuilder emptyPlaceholder: @escaping () -> E) {
         self.viewID = viewID
         self.items = items

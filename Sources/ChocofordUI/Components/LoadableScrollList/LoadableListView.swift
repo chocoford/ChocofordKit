@@ -7,6 +7,14 @@
 
 import SwiftUI
 
+public enum LoadableListEvent {
+    case onLoadingAbove
+    case onLoadingBelow
+    case onScrollOffTop
+    case onScrollOnTop
+}
+
+/// Known issue: Use with SplitView(H/W) will cause task cancelled.
 public struct LoadableListView<Content: View,
                                Header: View,
                                Footer: View,
@@ -39,14 +47,7 @@ public struct LoadableListView<Content: View,
     var emptyPlaceholder: () -> E
     var listContainer: C
     
-    var onEvents: (_ event: Event) async -> Void
-    
-    public enum Event {
-        case onLoadingAbove
-        case onLoadingBelow
-        case onScrollOffTop
-        case onScrollOnTop
-    }
+    var onEvents: (_ event: LoadableListEvent) async -> Void
 
     public init(viewID: VID = "",
                 proxy: ScrollViewProxy,
@@ -58,12 +59,12 @@ public struct LoadableListView<Content: View,
                 startFromBottom: Bool = false,
                 manuallyLoad: Bool = false,
                 listContainer: C = EmptyModifier(),
-                onEvents: @escaping (_ event: Event) async -> Void,
+                onEvents: @escaping (_ event: LoadableListEvent) async -> Void,
                 @ViewBuilder content: @escaping (Items.Element) -> Content,
                 @ViewBuilder header: @escaping () -> Header = { EmptyView() },
                 @ViewBuilder footer: @escaping () -> Footer = { EmptyView() },
                 @ViewBuilder loadingActivator: @escaping (_ action: @escaping () -> Void) -> A = { _ in EmptyView() },
-                @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView(size: 20, strokeColor: Color.accentColor) },
+                @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView().size(20) },
                 @ViewBuilder emptyPlaceholder: @escaping () -> E = { EmptyView() }) {
         self.viewID = viewID
         self.proxy = proxy
@@ -99,8 +100,16 @@ public struct LoadableListView<Content: View,
             Color.clear.frame(height: 0.1).id("top")
             if hasAbove {
                 if readyToLoadAbove || !manuallyLoad {
-                    loadingPlaceholder()
-                        .task(onLoadingAbove)
+                    Group {
+                        loadingPlaceholder()
+                    }
+//                    .onAppear {
+//                        Task {
+//                            await onLoadingAbove()
+//                        }
+//                    }
+                    /// will be cancelled when use with SplitView
+                    .task(onLoadingAbove)
                 } else {
                     loadTrigger(makeReadyAbove)
                 }
@@ -136,9 +145,16 @@ public struct LoadableListView<Content: View,
             }
             
             if hasBelow {
-                if readyToLoadAbove || !manuallyLoad {
-                    loadingPlaceholder()
-                        .task(onLoadingBelow)
+                if readyToLoadBelow || !manuallyLoad {
+                    Group {
+                        loadingPlaceholder()
+                    }
+//                    .onAppear {
+//                        Task {
+//                            await onLoadingBelow()
+//                        }
+//                    }
+                    .task(onLoadingBelow)
                 } else {
                     loadTrigger(makeReadyBelow)
                 }
@@ -227,18 +243,18 @@ public struct LoadableListView<Content: View,
     @Sendable
     private func onLoadingAbove() async {
         guard !isLoadingAbove else { return }
-        readyToLoadAbove = false
         isLoadingAbove = true
         await onEvents(.onLoadingAbove)
+//        readyToLoadAbove = false
         isLoadingAbove = false
     }
     
     @Sendable
     private func onLoadingBelow() async {
         guard !isLoadingBelow else { return }
-        readyToLoadBelow = false
         isLoadingBelow = true
         await onEvents(.onLoadingBelow)
+//        readyToLoadBelow = false
         isLoadingBelow = false
     }
 }
