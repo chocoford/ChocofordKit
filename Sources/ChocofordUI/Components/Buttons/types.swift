@@ -2,7 +2,7 @@
 //  File.swift
 //  
 //
-//  Created by Dove Zachary on 2023/3/30.
+//  Created by Chocoford on 2023/3/30.
 //
 
 import SwiftUI
@@ -24,7 +24,7 @@ public enum ButtonSize: CaseIterable {
 }
 
 
-internal extension View {
+public extension View {
     @ViewBuilder
     func buttonSized(_ size: ButtonSize, square: Bool) -> some View {
         switch size {

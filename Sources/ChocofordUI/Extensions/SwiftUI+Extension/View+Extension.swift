@@ -2,7 +2,7 @@
 //  View+Extension.swift
 //  CSWang
 //
-//  Created by Dove Zachary on 2022/11/28.
+//  Created by Chocoford on 2022/11/28.
 //
 
 import SwiftUI
@@ -188,3 +188,16 @@ extension View {
     }
 }
 #endif
+
+
+// MARK: - Styles
+
+public extension View {
+    @ViewBuilder
+    func chipStyle() -> some View {
+        padding(.vertical, 2)
+            .padding(.horizontal, 8)
+            .foregroundColor(.accentColor)
+            .background(Capsule().fill(Color.accentColor.opacity(0.2)))
+    }
+}

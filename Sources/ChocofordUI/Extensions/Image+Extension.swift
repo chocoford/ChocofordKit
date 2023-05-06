@@ -2,7 +2,7 @@
 //  Image+Extension.swift
 //  TrickleAnyway
 //
-//  Created by Dove Zachary on 2023/2/20.
+//  Created by Chocoford on 2023/2/20.
 //
 
 import SwiftUI

@@ -30,8 +30,8 @@ let package = Package(
                  from: "2.0.0"),
         .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.2.2"),
         .package(url: "https://github.com/elai950/AlertToast.git", branch: "master"),
-        .package(url: "https://github.com/stevengharris/SplitView.git", from: "3.0.0")
-//        .package(url: "https://github.com/nerdsupremacist/FancyScrollView.git", .upToNextMajor(from: "1.0.0"))
+        .package(url: "https://github.com/stevengharris/SplitView.git", from: "3.0.0"),
+        .package(url: "https://github.com/JWAutumn/ACarousel", from: "0.2.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -46,8 +46,8 @@ let package = Package(
             .product(name: "CachedAsyncImage", package: "swiftui-cached-async-image"),
             "SDWebImageSwiftUI",
             "AlertToast",
-            "SplitView"
-//            "FancyScrollView"
+            "SplitView",
+            "ACarousel"
         ]),
         .testTarget(
             name: "ChocofordUITests",

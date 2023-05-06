@@ -2,7 +2,7 @@
 //  SecondaryButtonStyle.swift
 //  CSWang
 //
-//  Created by Dove Zachary on 2022/12/10.
+//  Created by Chocoford on 2022/12/10.
 //
 
 import SwiftUI
@@ -58,6 +58,7 @@ public struct OutlinedButtonStyleView<V: View>: View {
         .overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(colors.default)
+                .padding(.horizontal, 1)
         )
         .containerShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())
@@ -72,6 +73,20 @@ public struct OutlinedButtonStyleView<V: View>: View {
 extension ButtonStyle {
 //    public var outlined
 }
+
+public struct OutlinedMenuButtonStyle: MenuStyle {
+    var colors: ButtonColor
+    var size: ButtonSize = .normal
+    var block: Bool = false
+    var square: Bool = false
+    
+    public func makeBody(configuration: Configuration) -> some View {
+        OutlinedButtonStyleView(isPressed: false, colors: colors, size: size, block: block) {
+            
+        }
+    }
+}
+
 
 #if DEBUG
 struct OutlinedButtonStyle_Previews: PreviewProvider {

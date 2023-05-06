@@ -2,7 +2,7 @@
 //  Dictionary+Extension.swift
 //  CSWang
 //
-//  Created by Dove Zachary on 2022/12/8.
+//  Created by Chocoford on 2022/12/8.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  SwiftUIView.swift
 //  
 //
-//  Created by Dove Zachary on 2023/4/13.
+//  Created by Chocoford on 2023/4/13.
 //
 
 import SwiftUI
@@ -39,7 +39,11 @@ struct ProfileImage: Transferable {
     }
 }
 
-public enum PhotoUploaderPhase {
+public enum PhotoUploaderPhase: Equatable {
+    public static func == (lhs: PhotoUploaderPhase, rhs: PhotoUploaderPhase) -> Bool {
+        lhs.state == rhs.state
+    }
+    
     case empty
     case loading(Progress)
     case uploading(Image)
@@ -94,9 +98,22 @@ public enum PhotoUploaderError: Error {
 public struct PhotoUploader<V: View>: View {
     var content: (_ phase: PhotoUploaderPhase) -> V
     var config = Config()
+
+//    public init(_ phase: Binding<PhotoUploaderPhase>, @ViewBuilder content: @escaping () -> V)  {
+//        self.content = { _ in
+//            content()
+//        }
+//    }
     
-    public init(@ViewBuilder content: @escaping (_ phase: PhotoUploaderPhase) -> V) {
+    public init(_ initialImage: URL? = nil,
+                @ViewBuilder content: @escaping (_ phase: PhotoUploaderPhase) -> V) {
+        
         self.content = content
+
+        if let url = initialImage,
+           let image = try? Image(data: .init(contentsOf: url)) {
+            phase = .success(image)
+        }
     }
     
 //    public init<I: View, P: View>(@ViewBuilder content: @escaping (Image) -> I,
@@ -146,9 +163,31 @@ public struct PhotoUploader<V: View>: View {
                     Label("cancel", systemImage: "xmark")
                 }
             } else if phase.state == .success {
+                Button {
+                    showPhotosPicker.toggle()
+                } label: {
+                    Label("chose from library", systemImage: "photo.stack")
+                }
+                Button {
+                    showFileImporter.toggle()
+                } label: {
+                    Label("choose from disk", systemImage: "opticaldiscdrive")
+                }
                 Button(role: .destructive) {
+                    let backupItem = selectedItem
+                    let backupPhase = phase
                     selectedItem = nil
                     phase = .empty
+                    if let removeAction = config.removeAction {
+                        Task {
+                            do {
+                                try await removeAction()
+                            } catch {
+                                selectedItem = backupItem
+                                phase = backupPhase
+                            }
+                        }
+                    }
                 } label: {
                     Label("remove", systemImage: "trash")
                 }
@@ -211,16 +250,35 @@ public struct PhotoUploader<V: View>: View {
 public struct PhotoUploaderImageFile {
     public var data: Data
     public var filename: String?
+    public var fileExtension: String {
+        filename?.components(separatedBy: ".").last ?? ""
+    }
+    
+    init(data: Data, filename: String? = nil) {
+        self.data = data
+        self.filename = filename
+    }
+    
+    init(data: Data, preferredFilenameExtension: String) {
+        self.data = data
+        self.filename = ".\(preferredFilenameExtension)"
+    }
 }
 
 @available(macOS 13.0, iOS 16.0, *)
 extension PhotoUploader {
     class Config: ObservableObject {
         var uploadAction: ((PhotoUploaderImageFile) async throws -> Void)? = nil
+        var removeAction: (() async throws -> Void)? = nil
     }
     
     public func uploadProcess(callback: @escaping (PhotoUploaderImageFile) async throws -> Void) -> PhotoUploader {
         self.config.uploadAction = callback
+        return self
+    }
+    
+    public func onRemove(callback: @escaping () async throws -> Void) -> PhotoUploader {
+        self.config.removeAction = callback
         return self
     }
 }
@@ -240,7 +298,7 @@ private extension PhotoUploader {
                             self.phase = .uploading(image.image)
                             Task {
                                 do {
-                                    try await uploadAction(.init(data: image.data))
+                                    try await uploadAction(.init(data: image.data, preferredFilenameExtension: imageSelection.supportedContentTypes.first?.preferredFilenameExtension ?? ""))
                                     self.phase = .success(image.image)
                                 } catch {
                                     self.phase = .failure(PhotoUploaderError.uploadingFailed(error))
@@ -257,47 +315,6 @@ private extension PhotoUploader {
             }
         }
     }
-    
-//    func phaseImage(_ pahse: PhotoUploaderPhase) -> Image? {
-//        switch phase {
-//            case .empty:
-//               return nil
-//            case .loading(let progress):
-//                ZStack {
-//                    content(nil)
-//                    CircularProgressView()
-//                        .progress(progress)
-//                }
-//            case .uploading(let image):
-//                ZStack(alignment: .bottomTrailing) {
-//                    AvatarView {
-//                        image
-//                            .resizable()
-//                            .aspectRatio(contentMode: .fill)
-//                    }
-//                    .size(50)
-//
-//                    CircularProgressView()
-//                        .stroke(.accentColor)
-//                        .size(14)
-//                        .lineWidth(2)
-//                }
-//            case .success(let image):
-//                AvatarView {
-//                    image
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fill)
-//                }
-//                .size(50)
-//            case .failure(let error):
-//                ZStack {
-//                    AvatarView(fallbackText: "T")
-//                        .size(50)
-//                        .overlay(Circle().stroke(.red))
-//                    Text(String(describing: error))
-//                }
-//        }
-//    }
 }
 
 // MARK: - Wrapper

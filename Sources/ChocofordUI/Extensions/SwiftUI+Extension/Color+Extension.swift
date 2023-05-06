@@ -104,6 +104,9 @@ public extension Color {
     static var textBackgroundColor: Color {
         Color(nsColor: .textBackgroundColor)
     }
+    static var secondaryTextBackgroundColor: Color {
+        Color(nsColor: .textBackgroundColor)
+    }
     static var separatorColor: Color {
         Color(nsColor: .separatorColor)
     }
@@ -133,7 +136,10 @@ public extension Color {
         Color(uiColor: .placeholderText)
     }
     static var textBackgroundColor: Color {
-        Color(uiColor: .systemGroupedBackground)
+        Color(uiColor: .systemBackground)
+    }
+    static var secondaryTextBackgroundColor: Color {
+        Color(uiColor: .secondarySystemBackground)
     }
     static var separatorColor: Color {
         Color(uiColor: .separator)

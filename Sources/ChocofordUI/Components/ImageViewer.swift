@@ -2,7 +2,7 @@
 //  ImageViewer.swift
 //  TrickleAnyway
 //
-//  Created by Dove Zachary on 2023/2/8.
+//  Created by Chocoford on 2023/2/8.
 //
 
 import SwiftUI

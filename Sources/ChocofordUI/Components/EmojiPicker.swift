@@ -2,7 +2,7 @@
 //  EmojiPicker.swift
 //  SwiftyTrickle
 //
-//  Created by Dove Zachary on 2023/3/29.
+//  Created by Chocoford on 2023/3/29.
 //
 
 import SwiftUI

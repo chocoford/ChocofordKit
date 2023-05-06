@@ -2,7 +2,7 @@
 //  NavigationLinkCompatible.swift
 //  
 //
-//  Created by Dove Zachary on 2023/3/1.
+//  Created by Chocoford on 2023/3/1.
 //
 
 import SwiftUI

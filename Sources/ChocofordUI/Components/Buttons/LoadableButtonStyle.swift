@@ -1,7 +1,7 @@
 //
 //  LoadableButtonStyle.swift
 //
-//  Created by Dove Zachary on 2022/12/13.
+//  Created by Chocoford on 2022/12/13.
 //
 
 import SwiftUI
@@ -31,6 +31,23 @@ public struct LoadableButtonStyleView<V: View>: View {
         }
         .onHover { over in
             self.hovering = over
+        }
+    }
+}
+
+
+public struct LoadableButtonStyle: ButtonStyle {
+    var loading: Bool = false
+    var color: Color = .white
+    
+    public init(loading: Bool = false, color: Color = .white) {
+        self.loading = loading
+        self.color = color
+    }
+    
+    public func makeBody(configuration: Configuration) -> some View {
+        LoadableButtonStyleView(loading: loading, color: color) {
+            configuration.label
         }
     }
 }

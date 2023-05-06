@@ -2,7 +2,7 @@
 //  SingleAxisGeometryReader.swift
 //  TrickleAnyway
 //
-//  Created by Dove Zachary on 2023/2/22.
+//  Created by Chocoford on 2023/2/22.
 //
 
 import SwiftUI

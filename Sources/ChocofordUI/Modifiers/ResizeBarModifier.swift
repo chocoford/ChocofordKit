@@ -2,7 +2,7 @@
 //  ResizeBarModifier.swift
 //  TrickleAnyway
 //
-//  Created by Dove Zachary on 2023/2/8.
+//  Created by Chocoford on 2023/2/8.
 //
 
 import Foundation
@@ -51,10 +51,9 @@ struct ResizeBarModifier: ViewModifier {
     }
     
     func body(content: Content) -> some View {
-            content
-            .overlay(
-                Rectangle()
-                    .opacity(0)
+        content
+            .overlay(alignment: alignment) {
+                Color.clear
                     .onHover { inside in
                         if inside {
                             NSCursor.resizeLeftRight.push()
@@ -89,10 +88,9 @@ struct ResizeBarModifier: ViewModifier {
                             }
                         }
                     })
-                    .frame(width: actualWidth, height: actualHeight),
-                alignment: alignment
-            )
-        }
+                    .frame(width: actualWidth, height: actualHeight)
+            }
+    }
 }
 
 public struct ResizableView<Content: View>: View {
