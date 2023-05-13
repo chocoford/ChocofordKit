@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  RadioButton.swift
 //  
 //
 //  Created by Chocoford on 2023/4/16.
@@ -52,31 +52,30 @@ struct FakeRadioButton: View {
 
 
 #if os(macOS)
-public struct RadioButton: NSViewRepresentable {
+struct SystemRadioButton: NSViewRepresentable {
     @Binding var isOn: Bool
     
-    public init(isOn: Binding<Bool>) {
+    init(isOn: Binding<Bool>) {
         self._isOn = isOn
     }
     
-    public func makeNSView(context: Context) -> NSButton {
+    func makeNSView(context: Context) -> NSButton {
         NSButton(radioButtonWithTitle: "", target: context.coordinator, action: #selector(context.coordinator.onToggle))
     }
-    public func updateNSView(_ button: NSButton, context: Context) {
+    func updateNSView(_ button: NSButton, context: Context) {
         button.state = isOn ? .on : .off
     }
     
-    public func makeCoordinator() -> Coordinator {
+    func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
 }
 
-extension RadioButton {
-    public class Coordinator: NSObject {
-        var parent: RadioButton
+extension SystemRadioButton {
+    class Coordinator: NSObject {
+        var parent: SystemRadioButton
         
-        
-        public init(parent: RadioButton) {
+        init(parent: SystemRadioButton) {
             self.parent = parent
         }
         
@@ -86,21 +85,38 @@ extension RadioButton {
         }
     }
 }
-#elseif os(iOS)
+#endif
 
-public struct RadioButton: View {
+public struct RadioButton<L: View>: View {
+    var label: () -> L
+    var spacing: CGFloat
     @Binding var isOn: Bool
     
-    public init(isOn: Binding<Bool>) {
+    public init(isOn: Binding<Bool>,spacing: CGFloat = 4, @ViewBuilder label: @escaping (() -> L) = {EmptyView()}) {
         self._isOn = isOn
+        self.label = label
+        self.spacing = spacing
     }
     
     public var body: some View {
-        FakeRadioButton(isOn: $isOn)
+        HStack(spacing: spacing) {
+            label()
+                .onTapGesture {
+                    self.isOn = true
+                }
+#if os(iOS)
+            FakeRadioButton(isOn: $isOn)
+#elseif os(macOS)
+            SystemRadioButton(isOn: $isOn)
+                .fixedSize()
+#endif
+        }
+//        .onChange(of: isOn) { newValue in
+//            print("on change \(newValue)")
+//        }
     }
 }
 
-#endif
 
 public struct RadioToggleStyleView<Content: View>: View {
     @Binding var isOn: Bool

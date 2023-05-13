@@ -129,8 +129,6 @@ public struct LoadableLazyVStack<Content: View,
             } else {
                 loadTrigger(makeReadyAbove)
             }
-            //            } else {
-            //                header()
         }
         
         if items.count > 0 {
@@ -169,8 +167,6 @@ public struct LoadableLazyVStack<Content: View,
             } else {
                 loadTrigger(makeReadyBelow)
             }
-            //            } else {
-            //                footer()
         }
     }
     
