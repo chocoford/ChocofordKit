@@ -26,6 +26,15 @@ extension Array {
         return items
     }
     
+    public func updatingItem(from item: Element, to newItem: Element) -> Self where Element: Hashable {
+        guard let index = self.firstIndex(where: {
+            $0 == item
+        }) else { return self }
+        var items = self
+        items[index] = newItem
+        return items
+    }
+    
     public func removingItem(where condition: (Element) -> Bool) -> Self {
         guard let index = self.firstIndex(where: condition) else { return self }
         var items = self
@@ -54,9 +63,15 @@ extension Array {
         array[at] = item
         return array
     }
-    
+
+    public func removingDuplicate() -> Self where Element: Identifiable, Element: Hashable {
+        return self.removingDuplicate(id: \.id)
+    }
     public func removingDuplicate() -> Self where Element: Identifiable {
         return self.removingDuplicate(id: \.id)
+    }
+    public func removingDuplicate() -> Self where Element: Hashable {
+        return self.removingDuplicate(id: \.self)
     }
     
     public func removingDuplicate<ID: Hashable>(id: KeyPath<Element, ID>) -> Self {

@@ -16,6 +16,8 @@ public struct ModelListView<Item: Identifiable, Cell: View, Detail: View>: View 
     var cellView: (_ item: Item) -> Cell
     var detailView: (_ item: Item) -> Detail
     
+    
+    
     public init(items: [Item],
                 @ViewBuilder cell: @escaping (_ item: Item) -> Cell,
                 @ViewBuilder detail: @escaping (_ item: Item) -> Detail) {
@@ -36,6 +38,8 @@ public struct ModelListView<Item: Identifiable, Cell: View, Detail: View>: View 
         self.detailView = detail
     }
     
+    var config: Config = .init()
+    
     @Namespace private var changlogNamespace
     
     @State private var currentItem: Item? = nil
@@ -53,44 +57,17 @@ public struct ModelListView<Item: Identifiable, Cell: View, Detail: View>: View 
     }
     
     @State private var cellHeight: CGFloat = 0
+    @State private var initialRefresh: Bool = false
     
     public var body: some View {
         ZStack {
-            ScrollView {
-                VStack {
-                    ForEach(Array(items.enumerated()), id: \.1.id) { i, item in
-                        if item.id != currentItemBinding.wrappedValue?.id {
-                            cellView(item)
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    withAnimation {
-                                        currentItemBinding.wrappedValue = item
-                                    }
-                                }
-                                .matchedGeometryEffect(id: item.id,
-                                                       in: changlogNamespace,
-                                                       properties: .frame,
-                                                       anchor: .center)
-                                .background {
-                                    if i == 0 {
-                                        GeometryReader { geometry in
-                                            Color.clear
-                                                .watchImmediately(of: geometry.size.height) { height in
-                                                    cellHeight = height
-                                                }
-                                        }
-                                    }
-                                }
-                        } else {
-                            Color.clear.frame(width: nil, height: cellHeight)
-                        }
-                    }
-                }
-                .padding(.horizontal)
+            if let refreshable = config.refreshable {
+                scrollView()
+                    .refreshable(action: refreshable)
+            } else {
+                scrollView()
             }
-            .zIndex(1)
-            .blur(radius: currentItemBinding.wrappedValue != nil ? 10 : 0)
-            
+
             if let item = currentItemBinding.wrappedValue {
                 Color.clear
                     .contentShape(Rectangle())
@@ -112,6 +89,80 @@ public struct ModelListView<Item: Identifiable, Cell: View, Detail: View>: View 
                     .zIndex(2)
             }
         }
+    }
+    
+    @ViewBuilder
+    func scrollView() -> some View {
+        ScrollView {
+            VStack {
+                if initialRefresh {
+                    ProgressView()
+                        .controlSize(.large)
+                        .padding()
+                }
+                ForEach(Array(items.enumerated()), id: \.1.id) { i, item in
+                    if item.id != currentItemBinding.wrappedValue?.id {
+                        cellView(item)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                withAnimation {
+                                    currentItemBinding.wrappedValue = item
+                                }
+                            }
+                            .matchedGeometryEffect(id: item.id,
+                                                   in: changlogNamespace,
+                                                   properties: .frame,
+                                                   anchor: .center)
+                            .background {
+                                if i == 0 {
+                                    GeometryReader { geometry in
+                                        Color.clear
+                                            .watchImmediately(of: geometry.size.height) { height in
+                                                cellHeight = height
+                                            }
+                                    }
+                                }
+                            }
+                    } else {
+                        Color.clear.frame(width: nil, height: cellHeight)
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
+        .zIndex(1)
+        .blur(radius: currentItemBinding.wrappedValue != nil ? 10 : 0)
+        .onAppear {
+            if let refreshable = config.refreshable, config.refreshOnAppear {
+                Task {
+                    withAnimation {
+                        initialRefresh = true
+                    }
+                    await refreshable()
+                    withAnimation {
+                        initialRefresh = false
+                    }
+                }
+                
+            }
+        }
+    }
+}
+
+extension ModelListView {
+    class Config: ObservableObject {
+        var refreshable: (@Sendable () async -> Void)?
+        var refreshOnAppear: Bool = false
+    }
+    
+    public func listRefreshable(action: @Sendable @escaping () async -> Void) -> ModelListView {
+        self.config.refreshable = action
+        return self
+    }
+    
+    public func refreshOnAppear(_ flag: Bool = true) -> ModelListView {
+        self.config.refreshOnAppear = flag
+        return self
     }
 }
 
@@ -178,7 +229,6 @@ struct ChangeLogPreviewView: View {
 #endif
             }
         }
-
     }
 }
 

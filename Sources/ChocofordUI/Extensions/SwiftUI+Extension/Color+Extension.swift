@@ -145,7 +145,7 @@ public extension Color {
         Color(uiColor: .separator)
     }
     static var controlBackgroundColor: Color {
-        Color(uiColor: .systemGroupedBackground)
+        Color(uiColor: .tertiarySystemGroupedBackground)
     }
     static var windowBackgroundColor: Color {
         Color(uiColor: .systemBackground)

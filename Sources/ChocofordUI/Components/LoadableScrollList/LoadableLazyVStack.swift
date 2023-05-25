@@ -44,6 +44,8 @@ public struct LoadableLazyVStack<Content: View,
                 items: Items,
                 id: KeyPath<Items.Element, ID>,
                 spacing: CGFloat? = nil,
+                isLoadingAbove: Bool = false,
+                isLoadingBelow: Bool = false,
                 @ViewBuilder content: @escaping (Items.Element) -> Content,
                 @ViewBuilder loadingActivator: @escaping (_ action: @escaping () -> Void) -> A = { _ in EmptyView() },
                 @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView().size(20) },
@@ -60,6 +62,9 @@ public struct LoadableLazyVStack<Content: View,
         self.loadingActivator = loadingActivator
         self.loadingPlaceholder = loadingPlaceholder
         self.emptyPlaceholder = emptyPlaceholder
+        
+        self.isLoadingAbove = isLoadingAbove
+        self.isLoadingBelow = isLoadingBelow
     }
     
     @State private var readyToLoadAbove: Bool = false
@@ -90,9 +95,6 @@ public struct LoadableLazyVStack<Content: View,
                 footer()
             }
         }
-        .onAppear {
-            refreshView(config.scrollProxy)
-        }
         .onChange(of: viewID) { _ in
             refreshView(config.scrollProxy)
         }
@@ -118,7 +120,7 @@ public struct LoadableLazyVStack<Content: View,
     
     @ViewBuilder
     private func contentView() -> some View {
-        if config.hasAbove {
+        if config.hasAbove || isLoadingAbove {
             if readyToLoadAbove || !config.manuallyLoad {
                 Group {
                     loadingPlaceholder()
@@ -158,7 +160,7 @@ public struct LoadableLazyVStack<Content: View,
             emptyPlaceholder()
         }
         
-        if config.hasBelow {
+        if config.hasBelow || isLoadingBelow {
             if readyToLoadBelow || !config.manuallyLoad {
                 Group {
                     loadingPlaceholder()
