@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ChocofordTools
 
 /// A List that click will show a model instaed of navigation
 public struct ModelListView<Item: Identifiable, Cell: View, Detail: View>: View {

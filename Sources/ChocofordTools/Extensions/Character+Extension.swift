@@ -6,7 +6,7 @@
 //
 
 import Foundation
-extension Character {
+public extension Character {
     /// A simple emoji is one scalar and presented to the user as an Emoji
     var isSimpleEmoji: Bool {
         guard let firstScalar = unicodeScalars.first else { return false }
