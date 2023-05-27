@@ -83,3 +83,11 @@ public struct LinkStyle: PrimitiveButtonStyle {
         
     }
 }
+
+
+
+extension PrimitiveButtonStyle where Self == LinkStyle {
+    public static var linkStyle: LinkStyle {
+        LinkStyle()
+    }
+}
