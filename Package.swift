@@ -10,12 +10,9 @@ let package = Package(
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(
-            name: "ChocofordUI",
-            targets: ["ChocofordUI"]),
-        .library(
-            name: "ChocofordTools",
-            targets: ["ChocofordTools"]),
+        .library(name: "ChocofordKit", targets: ["ChocofordUI", "ChocofordTools"]),
+        .library(name: "ChocofordUI", targets: ["ChocofordUI"]),
+        .library(name: "ChocofordTools", targets: ["ChocofordTools"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
