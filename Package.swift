@@ -4,15 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "ChocofordUI",
+    name: "ChocofordKit",
     platforms: [
         .iOS(.v15), .watchOS(.v6), .macOS(.v12)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "ChocofordUI",
-            targets: ["ChocofordUI"]),
+            name: "ChocofordKit",
+            targets: ["ChocofordUI", "ChocofordTools"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -40,17 +40,25 @@ let package = Package(
         .target(
             name: "ChocofordUI",
             dependencies: [
-            "ShapeBuilder",
-            .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
-            "SwiftyGif",
-            .product(name: "Introspect", package: "SwiftUI-Introspect"),
-            .product(name: "CachedAsyncImage", package: "swiftui-cached-async-image"),
-            "SDWebImageSwiftUI",
-            "AlertToast",
-            "SplitView",
-            "ACarousel",
-            "SwiftUIOverlayContainer"
-        ]),
+                "ChocofordTools",
+                "ShapeBuilder",
+                .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
+                "SwiftyGif",
+                .product(name: "Introspect", package: "SwiftUI-Introspect"),
+                .product(name: "CachedAsyncImage", package: "swiftui-cached-async-image"),
+                "SDWebImageSwiftUI",
+                "AlertToast",
+                "SplitView",
+                "ACarousel",
+                "SwiftUIOverlayContainer"
+            ],
+            path: "Sources/ChocofordUI"
+        ),
+        .target(
+            name: "ChocofordTools",
+            dependencies: [],
+            path: "Sources/ChocofordTools"
+        ),
         .testTarget(
             name: "ChocofordUITests",
             dependencies: ["ChocofordUI"]),
