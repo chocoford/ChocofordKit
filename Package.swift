@@ -10,9 +10,8 @@ let package = Package(
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(name: "ChocofordKit", targets: ["ChocofordUI", "ChocofordTools"]),
-        .library(name: "ChocofordUI", targets: ["ChocofordUI"]),
-        .library(name: "ChocofordTools", targets: ["ChocofordTools"]),
+        .library(name: "ChocofordUI", targets: ["ChocofordUIComponents", "ChocofordUIEssentials"]),
+        .library(name: "ChocofordUIEssentials", targets: ["ChocofordUIEssentials"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -38,9 +37,9 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "ChocofordUI",
+            name: "ChocofordUIComponents",
             dependencies: [
-                "ChocofordTools",
+                "ChocofordUIEssentials",
                 "ShapeBuilder",
                 .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
                 "SwiftyGif",
@@ -52,15 +51,15 @@ let package = Package(
                 "ACarousel",
                 "SwiftUIOverlayContainer"
             ],
-            path: "Sources/ChocofordUI"
+            path: "Sources/Components"
         ),
         .target(
-            name: "ChocofordTools",
+            name: "ChocofordUIEssentials",
             dependencies: [],
-            path: "Sources/ChocofordTools"
+            path: "Sources/Essentials"
         ),
         .testTarget(
             name: "ChocofordUITests",
-            dependencies: ["ChocofordUI"]),
+            dependencies: ["ChocofordUIComponents"]),
     ]
 )
