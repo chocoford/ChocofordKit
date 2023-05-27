@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "ChocofordKit",
+    name: "ChocofordUI",
     platforms: [
         .iOS(.v15), .watchOS(.v6), .macOS(.v12)
     ],
