@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Introspect
+//import Introspect
 
 extension View {
     /// Applies the given transform if the given condition evaluates to `true`.
@@ -171,22 +171,22 @@ extension View {
 #endif
 
 #if os(macOS)
-extension View {
-    public func window(_ callback: @escaping (_ window: NSWindow) -> Void) -> some View {
-        background(
-            List{}
-                .frame(width: 0, height: 0)
-                .opacity(0)
-                .introspectTableView(customize: { view in
-                    if let window = view.window {
-                        callback(window)
-                    } else {
-                        fatalError("no window")
-                    }
-                })
-        )
-    }
-}
+//extension View {
+//    public func window(_ callback: @escaping (_ window: NSWindow) -> Void) -> some View {
+//        background(
+//            List{}
+//                .frame(width: 0, height: 0)
+//                .opacity(0)
+//                .introspectTableView(customize: { view in
+//                    if let window = view.window {
+//                        callback(window)
+//                    } else {
+//                        fatalError("no window")
+//                    }
+//                })
+//        )
+//    }
+//}
 #endif
 
 

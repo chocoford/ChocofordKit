@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import ChocofordTools
+import ChocofordUIEssentials
 import SwiftUIOverlayContainer
 
 public struct EmojiPicker<Content: View>: View {

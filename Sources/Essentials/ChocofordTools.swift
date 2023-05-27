@@ -1,3 +1,3 @@
-public struct ChocofordTools {
+public struct ChocofordUIEssentials {
     public init() {}
 }

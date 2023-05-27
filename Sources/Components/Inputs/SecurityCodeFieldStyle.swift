@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import ChocofordTools
+import ChocofordUIEssentials
 
 public struct SecurityCodeFieldStyle: TextFieldStyle {
     @Binding var text: String
