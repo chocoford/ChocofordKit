@@ -1,5 +1,5 @@
 import XCTest
-@testable import ChocofordUIComponents
+@testable import ChocofordUI
 
 final class ChocofordUITests: XCTestCase {
     func testExample() throws {
