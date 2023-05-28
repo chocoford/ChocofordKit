@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import ChocofordUIEssentials
+import ChocofordEssentials
 
 public struct PrimitiveButtonWrapper<Content: View>: View {
     var onTrigger: () -> Void
