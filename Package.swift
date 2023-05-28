@@ -4,14 +4,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "ChocofordUI",
+    name: "ChocofordKit",
     platforms: [
         .iOS(.v15), .watchOS(.v6), .macOS(.v12)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
-        .library(name: "ChocofordUI", targets: ["ChocofordUIComponents", "ChocofordUIEssentials"]),
-        .library(name: "ChocofordUIEssentials", targets: ["ChocofordUIEssentials"]),
+        .library(name: "ChocofordUI", targets: ["ChocofordUI", "ChocofordEssentials"]),
+        .library(name: "ChocofordEssentials", targets: ["ChocofordEssentials"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -37,7 +37,7 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "ChocofordUIComponents",
+            name: "ChocofordUI",
             dependencies: [
                 "ChocofordUIEssentials",
                 "ShapeBuilder",
@@ -51,10 +51,10 @@ let package = Package(
                 "ACarousel",
                 "SwiftUIOverlayContainer"
             ],
-            path: "Sources/Components"
+            path: "Sources/UI"
         ),
         .target(
-            name: "ChocofordUIEssentials",
+            name: "ChocofordEssentials",
             dependencies: [],
             path: "Sources/Essentials"
         ),

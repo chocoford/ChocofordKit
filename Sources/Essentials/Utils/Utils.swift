@@ -5,9 +5,10 @@
 //  Created by Chocoford on 2023/4/13.
 //
 
-import SwiftUI
+import Foundation
 
 #if os(macOS)
+import AppKit
 public func togglePreferenceView() {
     if #available(macOS 13, *) {
       NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
