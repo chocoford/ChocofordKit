@@ -39,7 +39,7 @@ let package = Package(
         .target(
             name: "ChocofordUI",
             dependencies: [
-                "ChocofordUIEssentials",
+                "ChocofordEssentials",
                 "ShapeBuilder",
                 .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
                 "SwiftyGif",
@@ -60,6 +60,6 @@ let package = Package(
         ),
         .testTarget(
             name: "ChocofordUITests",
-            dependencies: ["ChocofordUIComponents"]),
+            dependencies: ["ChocofordUI"]),
     ]
 )
