@@ -64,23 +64,28 @@ public extension Array {
         return array
     }
     
-    func removingDuplicate() -> Self where Element: Identifiable, Element: Hashable {
-        return self.removingDuplicate(id: \.id)
+    func removingDuplicate(replace: Bool = false) -> Self where Element: Identifiable, Element: Hashable {
+        return self.removingDuplicate(id: \.id, replace: replace)
     }
-    func removingDuplicate() -> Self where Element: Identifiable {
-        return self.removingDuplicate(id: \.id)
+    func removingDuplicate(replace: Bool = false) -> Self where Element: Identifiable {
+        return self.removingDuplicate(id: \.id, replace: replace)
     }
-    func removingDuplicate() -> Self where Element: Hashable {
-        return self.removingDuplicate(id: \.self)
+    func removingDuplicate(replace: Bool = false) -> Self where Element: Hashable {
+        return self.removingDuplicate(id: \.self, replace: replace)
     }
     
-    func removingDuplicate<ID: Hashable>(id: KeyPath<Element, ID>) -> Self {
+    func removingDuplicate<ID: Hashable>(id: KeyPath<Element, ID>, replace: Bool = false) -> Self {
         var result: [Element] = []
         var existingIDs: Set<ID> = Set()
         for element in self {
             if !existingIDs.contains(element[keyPath: id]) {
                 result.append(element)
                 existingIDs.insert(element[keyPath: id])
+            } else if replace {
+                if let index = result.firstIndex(where: {$0[keyPath: id] == element[keyPath: id]}) {
+                    result.remove(at: index)
+                    result.append(element)
+                }
             }
         }
         return result
