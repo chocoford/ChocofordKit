@@ -87,7 +87,9 @@ struct ImageViewerView: View {
                 .placeholder {
                     Rectangle().shimmering()
                 }
+#if os(iOS)
                 .resizable()
+#endif
                 .aspectRatio(contentMode: .fit)
 #if os(macOS)
                 .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)

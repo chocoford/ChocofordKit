@@ -16,11 +16,15 @@ public struct ImageViewer<Content: View>: View {
     var disabled: Bool = false
     var content: () -> Content
     
-    @State private var showViewer = false
     
+#if os(macOS)
+    @State private var currentWindow: NSWindow? = nil
+#elseif os(iOS)
+    @State private var showViewer = false
     @State var dragOffset: CGSize = CGSize.zero
     @State var dragOffsetPredicted: CGSize = CGSize.zero
     @State private var backgroundOpacity: Double = 1.0
+#endif
     
     public init(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, @ViewBuilder content: @escaping () -> Content) {
         self.url = url
@@ -88,6 +92,11 @@ public struct ImageViewer<Content: View>: View {
     
 #if os(macOS)
     func openViewer() {
+        if let window = currentWindow {
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+        
         let window = NSWindow(contentRect: .init(origin: .zero, size: .init(width: 800, height: 500)),
                               styleMask: [.titled, .closable, .miniaturizable, .resizable],
                               backing: .buffered,
@@ -102,12 +111,22 @@ public struct ImageViewer<Content: View>: View {
         window.center()
         window.isMovable = true
         window.backgroundColor = .black
-        window.level = .floating
+        window.level = .normal
         
         if let screen = window.screen,
            let imageSize = self.imageSize {
             window.setContentSize(.init(width: min(imageSize.width, screen.frame.width * 0.9),
                                         height: min(imageSize.height, screen.frame.height * 0.9)))
+        }
+        
+        currentWindow = window
+        var observer: NSKeyValueObservation? = nil
+        observer = window.observe(\.screen) { window, screen in
+            if screen.newValue == nil {
+                currentWindow = nil
+                observer?.invalidate()
+                observer = nil
+            }
         }
     }
 #elseif os(iOS)
@@ -135,7 +154,7 @@ struct BackgroundBlurView: UIViewRepresentable {
 #if DEBUG
 struct ImageViewer_Previews: PreviewProvider {
     static var previews: some View {
-        ImageViewer(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large")) {
+        ImageViewer(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageSize: .init(width: 896, height: 1344)) {
             WebImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"))
                 .resizable()
                 .aspectRatio(contentMode: .fit)
