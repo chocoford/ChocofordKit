@@ -7,7 +7,6 @@
 
 import SwiftUI
 import ShapeBuilder
-import SwiftyGif
 import SDWebImageSwiftUI
 
 public struct AvatarView<V: View>: View {
