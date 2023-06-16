@@ -15,3 +15,4 @@ public extension Menu {
             .fixedSize()
     }
 }
+

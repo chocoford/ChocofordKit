@@ -34,10 +34,10 @@ struct UISizeClassKey: EnvironmentKey {
 }
 
 public extension EnvironmentValues {
-  var uiSizeClass: UISizeClass {
-    get { self[UISizeClassKey.self] }
-    set { self[UISizeClassKey.self] = newValue }
-  }
+    var uiSizeClass: UISizeClass {
+        get { self[UISizeClassKey.self] }
+        set { self[UISizeClassKey.self] = newValue }
+    }
 }
 
 public extension View {

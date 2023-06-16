@@ -42,10 +42,8 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
     @State private var previousSize: CGSize = .zero
 
   func makeNSView(context: Context) -> NSScrollView {
-    // set up the UIScrollView
       let scrollView = NSScrollView()
       scrollView.contentView = CenteredClipView()
-//    scrollView.delegate = context.coordinator  // for viewForZooming(in:)
       scrollView.maxMagnification = 20
       scrollView.minMagnification = 0.1
       scrollView.allowsMagnification = true
@@ -56,24 +54,6 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
       scrollView.borderType = .noBorder
       
       scrollView.autoresizingMask = [.width, .height]
-//      scrollView.horizontalScroller =
-    // create a UIHostingController to hold our SwiftUI content
-//      let hostedView = NSHostingView(rootView: content())
-//    let hostedView = context.coordinator.hostingController.view!
-//    hostedView.translatesAutoresizingMaskIntoConstraints = true
-//    hostedView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-//    hostedView.frame = scrollView.bounds
-//    scrollView.addSubview(hostedView)
-//      if let url = url,
-//         let image = NSImage(contentsOf: url) {
-//          print("image loadeed.", image)
-//          let view = NSView(frame: .init(origin: .zero, size: .init(width: 1000, height: 2000)))
-//          view.addSubview(NSImageView(image: image))
-//          view.layout()
-//          let imageView = NSImageView(image: image)
-//          imageView.image = image
-//          scrollView.documentView = view
-//      }
       let view = NSView(frame: .init(origin: .zero, size: size))
       let imageView = NSHostingView(rootView: content())
       view.addSubview(imageView)
@@ -81,12 +61,8 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
     return scrollView
   }
 
-  func makeCoordinator() -> Coordinator {
-    return Coordinator()
-  }
-
   func updateNSView(_ scrollView: NSScrollView, context: Context) {
-      print("updateNSView", scrollView.documentVisibleRect, size)
+//      print("updateNSView", scrollView.documentVisibleRect, size)
     // update the hosting controller's SwiftUI content
 //    context.coordinator.hostingController.rootView = self.content
 //    assert(context.coordinator.hostingController.view.superview == uiView)
@@ -119,12 +95,6 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
 //          imageView.image = image
 //          scrollView.documentView = view
 //      }
-  }
-
-  // MARK: - Coordinator
-
-  class Coordinator {
-    
   }
 }
 #elseif os(iOS)

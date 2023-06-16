@@ -200,4 +200,23 @@ public extension View {
             .foregroundColor(.accentColor)
             .background(Capsule().fill(Color.accentColor.opacity(0.2)))
     }
+    
+    @ViewBuilder
+    func outlinedStyle(size: ButtonSize = .normal,
+                       block: Bool = false,
+                       square: Bool = false,
+                       color: Color = .secondary,
+                       loading: Bool = false) -> some View {
+        OutlinedButtonStyleView(isPressed: false,
+                                colors: .init(default: color,
+                                              hovered: color.opacity(0.1),
+                                              pressed: color.opacity(0.5)),
+                                size: size,
+                                block: block, square: square) {
+            LoadableButtonStyleView(loading: loading,
+                                    color: color) {
+                self
+            }
+        }
+    }
 }
