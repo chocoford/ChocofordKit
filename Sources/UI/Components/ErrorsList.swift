@@ -11,7 +11,7 @@ public protocol IdentifiableError: Error, Identifiable {
     
 }
 
-public struct ErrorsView<E: Error>: View {
+public struct ErrorsView<E: LocalizedError>: View {
     @Binding var errors: [E]
     
     public init(errors: Binding<[E]>) {
@@ -22,7 +22,7 @@ public struct ErrorsView<E: Error>: View {
         List {
             ForEach(Array(errors.enumerated()), id: \.offset) { _, error in
                 HStack {
-                    Label(error.localizedDescription, systemImage: "exclamationmark.circle.fill")
+                    Label(error.errorDescription ?? error.localizedDescription, systemImage: "exclamationmark.circle.fill")
                 }
                 .padding(8)
                 .background(in: RoundedRectangle(cornerRadius: 6))
@@ -33,7 +33,7 @@ public struct ErrorsView<E: Error>: View {
 }
 
 #if os(macOS)
-public struct ErrorsViewToolbarButton<E: Error>: View {
+public struct ErrorsViewToolbarButton<E: LocalizedError>: View {
     @Binding var errors: [E]
     var preferredEdge: Edge
     

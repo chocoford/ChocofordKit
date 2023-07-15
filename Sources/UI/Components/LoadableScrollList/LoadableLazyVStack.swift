@@ -83,6 +83,7 @@ public struct LoadableLazyVStack<Content: View,
     
     public var body: some View {
         LazyVStack(spacing: spacing, pinnedViews: config.pinnedViews) {
+//        List {
             Section {
                 Color.clear.frame(height: 0.1).id("top")
                
@@ -106,11 +107,11 @@ public struct LoadableLazyVStack<Content: View,
                 return
             }
             
-            if val.first != items.first {
+            if val.first != items.first && config.hasAbove {
                 scrollToFirstElementInScreen(config.scrollProxy)
             } else if val.last != items.last {
                 // do nothing
-//                    scrollToLastElementInScreen(proxy)
+                // scrollToLastElementInScreen(proxy)
             }
         }
         .onDisappear {

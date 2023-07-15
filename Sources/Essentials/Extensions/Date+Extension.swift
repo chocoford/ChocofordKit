@@ -37,6 +37,13 @@ public extension Date {
         }
     }
     
+    /// Get the relative formatted of `Date`
+    /// - Parameters:
+    ///   - units: The relative units allowed,
+    ///   - maxRelative: if exceed the `maxRelative`, the absolute formatted will be displayed
+    ///   - extensionOutput:
+    ///   - fallbackFormat:
+    /// - Returns: a date `String` representation
     func relativeFormatted(units: [SpanUnit] = SpanUnit.allCases,
                            maxRelative: SpanUnit = .year,
                            extensionOutput: (SpanUnit, _ value: Int) -> String = { unit, value in
@@ -46,7 +53,8 @@ public extension Date {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone.current
-        
+        formatter.dateFormat = fallbackFormat() //"MMM dd"
+
         let now = Date()
         let timeDiff = now.timeIntervalSince(self)
         
@@ -54,21 +62,15 @@ public extension Date {
 
         for unit in units {
             let value = timeDiff / unit.interval
-            if value > 1 && timeDiff <= maxRelative.interval {
+            if value <= 1 {
+                return result
+            } else if value > 1 && timeDiff <= maxRelative.interval {
                 result = "\(Int(value))\(extensionOutput(unit, Int(value)))"
             } else {
-                return result
+                return formatter.string(from: self)
             }
         }
         
-        formatter.dateFormat = fallbackFormat() //"MMM dd"
         return formatter.string(from: self)
-//        if Calendar.current.isDate(self, equalTo: now, toGranularity: .year) {
-//            return dateString
-//        } else {
-//            formatter.dateFormat = "yyyy MMM dd"
-//            let dateStringWithYear = formatter.string(from: self)
-//            return dateStringWithYear
-//        }
     }
 }

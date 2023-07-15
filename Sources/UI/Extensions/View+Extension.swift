@@ -6,8 +6,8 @@
 //
 
 import SwiftUI
-//import Introspect
 
+// MARK: - Condition
 extension View {
     /// Applies the given transform if the given condition evaluates to `true`.
     /// - Parameters:
@@ -50,7 +50,13 @@ extension View {
                 .frame(width: 0, height: 0, alignment: .center)
         }
     }
-    
+
+    // MARK: - Refreshable
+    @ViewBuilder
+    public func disableRefreshable() -> some View {
+        environment(\EnvironmentValues.refresh as! WritableKeyPath<EnvironmentValues, RefreshAction?>, nil)
+    }
+
     public func border(_ edges: [Edge], width: CGFloat = 1, color: Color) -> some View {
         overlay(EdgeBorder(width: width, edges: edges).foregroundColor(color))
     }
@@ -65,6 +71,15 @@ extension View {
         }
         .onChange(of: value) { newValue in
             action(newValue)
+        }
+    }
+    
+    /// show a badge without text
+    public func badge(show: Bool = true) -> some View {
+        overlay(alignment: .topTrailing) {
+            if show {
+                Circle().fill(Color.accentColor).frame(width: 8, height: 8).offset(x: 4, y: -4)
+            }
         }
     }
 }

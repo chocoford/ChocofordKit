@@ -16,24 +16,40 @@ struct ImageViewerView: View {
             value = nextValue()
         }
     }
-    var url: URL?
+    let url: URL?
+    let image: Image?
+    
+
+    init(url: URL?, image: Image? = nil) {
+        self.url = url
+        self.image = image
+    }
     
     @State private var imageSize: CGSize = .zero
     
     var body: some View {
         ZoomableScrollView(url: url, size: imageSize) {
-            WebImage(url: url)
-                .placeholder {
-                    Rectangle().shimmering()
-                }
+            Group {
+                if let image = image {
+                    image
 #if os(iOS)
-                .resizable()
+                        .resizable()
 #endif
-                .aspectRatio(contentMode: .fit)
+                        .aspectRatio(contentMode: .fit)
+                } else {
+                    WebImage(url: url)
+                        .placeholder {
+                            Rectangle().shimmering()
+                        }
+#if os(iOS)
+                        .resizable()
+#endif
+                        .aspectRatio(contentMode: .fit)
+                }
+            }
 #if os(macOS)
                 .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
 #endif
-                
                 .background {
                     GeometryReader { geometry in
                         Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)

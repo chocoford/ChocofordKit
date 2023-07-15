@@ -3,20 +3,21 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3964D8572A6060B60039882E /* ChocofordEssentials in Frameworks */ = {isa = PBXBuildFile; productRef = 3964D8562A6060B60039882E /* ChocofordEssentials */; };
+		3964D8592A6060B60039882E /* ChocofordUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3964D8582A6060B60039882E /* ChocofordUI */; };
 		3982CD522A2C8CBF0097DDD2 /* ChocofordKitExamplesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3982CD512A2C8CBF0097DDD2 /* ChocofordKitExamplesApp.swift */; };
 		3982CD542A2C8CBF0097DDD2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3982CD532A2C8CBF0097DDD2 /* ContentView.swift */; };
 		3982CD562A2C8CC10097DDD2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3982CD552A2C8CC10097DDD2 /* Assets.xcassets */; };
 		3982CD5A2A2C8CC10097DDD2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3982CD592A2C8CC10097DDD2 /* Preview Assets.xcassets */; };
 		3982CD622A2C8CF20097DDD2 /* ImageViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3982CD612A2C8CF20097DDD2 /* ImageViewer.swift */; };
-		3982CD672A2C8DF40097DDD2 /* ChocofordUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3982CD662A2C8DF40097DDD2 /* ChocofordUI */; };
-		3982CD692A2C8DF60097DDD2 /* ChocofordEssentials in Frameworks */ = {isa = PBXBuildFile; productRef = 3982CD682A2C8DF60097DDD2 /* ChocofordEssentials */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3964D8542A6060010039882E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3982CD4E2A2C8CBF0097DDD2 /* ChocofordKitExamples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChocofordKitExamples.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3982CD512A2C8CBF0097DDD2 /* ChocofordKitExamplesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChocofordKitExamplesApp.swift; sourceTree = "<group>"; };
 		3982CD532A2C8CBF0097DDD2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -24,7 +25,6 @@
 		3982CD572A2C8CC10097DDD2 /* ChocofordKitExamples.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChocofordKitExamples.entitlements; sourceTree = "<group>"; };
 		3982CD592A2C8CC10097DDD2 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3982CD612A2C8CF20097DDD2 /* ImageViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewer.swift; sourceTree = "<group>"; };
-		3982CD642A2C8D190097DDD2 /* ChocofordKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ChocofordKit; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,18 +32,26 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3982CD672A2C8DF40097DDD2 /* ChocofordUI in Frameworks */,
-				3982CD692A2C8DF60097DDD2 /* ChocofordEssentials in Frameworks */,
+				3964D8592A6060B60039882E /* ChocofordUI in Frameworks */,
+				3964D8572A6060B60039882E /* ChocofordEssentials in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3964D85A2A6061BA0039882E /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				3982CD532A2C8CBF0097DDD2 /* ContentView.swift */,
+				3982CD602A2C8CDC0097DDD2 /* useCases */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		3982CD452A2C8CBF0097DDD2 = {
 			isa = PBXGroup;
 			children = (
-				3982CD632A2C8D190097DDD2 /* Packages */,
 				3982CD502A2C8CBF0097DDD2 /* ChocofordKitExamples */,
 				3982CD4F2A2C8CBF0097DDD2 /* Products */,
 				3982CD652A2C8DF40097DDD2 /* Frameworks */,
@@ -61,9 +69,9 @@
 		3982CD502A2C8CBF0097DDD2 /* ChocofordKitExamples */ = {
 			isa = PBXGroup;
 			children = (
-				3982CD602A2C8CDC0097DDD2 /* useCases */,
+				3964D8542A6060010039882E /* Info.plist */,
 				3982CD512A2C8CBF0097DDD2 /* ChocofordKitExamplesApp.swift */,
-				3982CD532A2C8CBF0097DDD2 /* ContentView.swift */,
+				3964D85A2A6061BA0039882E /* UI */,
 				3982CD552A2C8CC10097DDD2 /* Assets.xcassets */,
 				3982CD572A2C8CC10097DDD2 /* ChocofordKitExamples.entitlements */,
 				3982CD582A2C8CC10097DDD2 /* Preview Content */,
@@ -85,14 +93,6 @@
 				3982CD612A2C8CF20097DDD2 /* ImageViewer.swift */,
 			);
 			path = useCases;
-			sourceTree = "<group>";
-		};
-		3982CD632A2C8D190097DDD2 /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-				3982CD642A2C8D190097DDD2 /* ChocofordKit */,
-			);
-			name = Packages;
 			sourceTree = "<group>";
 		};
 		3982CD652A2C8DF40097DDD2 /* Frameworks */ = {
@@ -119,8 +119,8 @@
 			);
 			name = ChocofordKitExamples;
 			packageProductDependencies = (
-				3982CD662A2C8DF40097DDD2 /* ChocofordUI */,
-				3982CD682A2C8DF60097DDD2 /* ChocofordEssentials */,
+				3964D8562A6060B60039882E /* ChocofordEssentials */,
+				3964D8582A6060B60039882E /* ChocofordUI */,
 			);
 			productName = ChocofordKitExamples;
 			productReference = 3982CD4E2A2C8CBF0097DDD2 /* ChocofordKitExamples.app */;
@@ -150,6 +150,9 @@
 				Base,
 			);
 			mainGroup = 3982CD452A2C8CBF0097DDD2;
+			packageReferences = (
+				3964D8552A6060B60039882E /* XCLocalSwiftPackageReference ".." */,
+			);
 			productRefGroup = 3982CD4F2A2C8CBF0097DDD2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -307,6 +310,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChocofordKitExamples/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -345,6 +349,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ChocofordKitExamples/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -393,14 +398,21 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCSwiftPackageProductDependency section */
-		3982CD662A2C8DF40097DDD2 /* ChocofordUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ChocofordUI;
+/* Begin XCLocalSwiftPackageReference section */
+		3964D8552A6060B60039882E /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
 		};
-		3982CD682A2C8DF60097DDD2 /* ChocofordEssentials */ = {
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3964D8562A6060B60039882E /* ChocofordEssentials */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ChocofordEssentials;
+		};
+		3964D8582A6060B60039882E /* ChocofordUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ChocofordUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -18,7 +18,7 @@ public class UserNotificationCenter {
     
     var center: UNUserNotificationCenter { UNUserNotificationCenter.current() }
     
-    var granted: Bool = false
+    public var granted: Bool = false
     
     var badgeLabel: Int = 0
     
@@ -27,10 +27,12 @@ public class UserNotificationCenter {
 
 
 public extension UserNotificationCenter {
-    func requestPermission() {
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            self.granted = granted
-        }
+    func checkPermission() async throws -> Bool {
+        return try await center.requestAuthorization()
+    }
+    
+    func requestPermission() async throws {
+        self.granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
     }
     
     func pushNormalNotification(title: String, subtitle: String, body: String, sound: UNNotificationSound = .default) {

@@ -37,6 +37,24 @@ public extension View {
     }
     
     @ViewBuilder
+    func navigationTitleCompatible<S>(_ title: S, iOSOnly: Bool = false) -> some View where S : StringProtocol {
+#if os(iOS)
+        navigationTitle(title)
+#elseif os(macOS)
+        if iOSOnly {
+            self
+        } else {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.largeTitle)
+                
+                self
+            }
+        }
+#endif
+    }
+    
+    @ViewBuilder
     func navigationTitleCompatible(_ text: Text) -> some View {
 #if os(iOS)
         navigationTitle(text)

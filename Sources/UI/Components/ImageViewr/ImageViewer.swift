@@ -10,6 +10,7 @@ import Shimmer
 import SDWebImageSwiftUI
 
 public struct ImageViewer<Content: View>: View {
+    var image: Image?
     var url: URL?
     var imageSize: CGSize?
     
@@ -27,11 +28,19 @@ public struct ImageViewer<Content: View>: View {
 #endif
     
     public init(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, @ViewBuilder content: @escaping () -> Content) {
+        self.image = nil
         self.url = url
         self.disabled = disabled
         self.content = content
         self.imageSize = imageSize
-        
+    }
+    
+    public init(image: Image, imageSize: CGSize? = nil, disabled: Bool = false, @ViewBuilder content: @escaping () -> Content) {
+        self.image = image
+        self.url = nil
+        self.disabled = disabled
+        self.content = content
+        self.imageSize = imageSize
     }
     
     public var body: some View {
@@ -52,7 +61,7 @@ public struct ImageViewer<Content: View>: View {
                 Color.windowBackgroundColor
                     .ignoresSafeArea()
                     .overlay {
-                        ImageViewerView(url: url)
+                        ImageViewerView(url: url, image: image)
                             .offset(x: self.dragOffset.width, y: self.dragOffset.height)
                             .simultaneousGesture(
                                 DragGesture()
@@ -101,21 +110,23 @@ public struct ImageViewer<Content: View>: View {
                               styleMask: [.titled, .closable, .miniaturizable, .resizable],
                               backing: .buffered,
                               defer: true)
-        
-        let view = ImageViewerView(url: url)
+        window.animationBehavior = .documentWindow
+        let view: ImageViewerView = ImageViewerView(url: url, image: image)
+
         let contentView = NSHostingView(rootView: view)
         window.contentView = contentView
         window.isReleasedWhenClosed = false // important
         NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
-        window.center()
+        window.animator().makeKeyAndOrderFront(nil)
+        window.animator().center()
         window.isMovable = true
         window.backgroundColor = .black
-        window.level = .normal
+        window.level = .modalPanel
+        window.titleVisibility = .hidden
         
         if let screen = window.screen,
            let imageSize = self.imageSize {
-            window.setContentSize(.init(width: min(imageSize.width, screen.frame.width * 0.9),
+            window.animator().setContentSize(.init(width: min(imageSize.width, screen.frame.width * 0.9),
                                         height: min(imageSize.height, screen.frame.height * 0.9)))
         }
         
@@ -133,9 +144,25 @@ public struct ImageViewer<Content: View>: View {
     func openViewer() {
         
     }
-    
 #endif
 }
+
+extension View {
+    @ViewBuilder
+    public func imageViewer(image: Image, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
+        ImageViewer(image: image, imageSize: imageSize, disabled: disabled) {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    public func imageViewer(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
+        ImageViewer(url: url, imageSize: imageSize, disabled: disabled) {
+            self
+        }
+    }
+}
+
 
 #if os(iOS)
 struct BackgroundBlurView: UIViewRepresentable {

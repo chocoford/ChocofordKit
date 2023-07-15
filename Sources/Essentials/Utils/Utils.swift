@@ -7,8 +7,15 @@
 
 import Foundation
 
-#if os(macOS)
+#if canImport(AppKit)
 import AppKit
+#endif
+
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if os(macOS)
 public func togglePreferenceView() {
     if #available(macOS 13, *) {
       NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
@@ -16,6 +23,7 @@ public func togglePreferenceView() {
       NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
     }
 }
+
 #endif
 
 public func load<T: Decodable>(_ filename: String, type: T.Type) -> T {
@@ -43,4 +51,16 @@ public func load<T: Decodable>(_ filename: String) -> T {
     } catch {
         fatalError("Couldn't parse \(filename) as \(T.self):\n\(error)")
     }
+}
+
+
+public func openAppSettings() {
+#if os(iOS)
+    if let appSettings = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(appSettings) {
+        UIApplication.shared.open(appSettings)
+    }
+#elseif os(macOS)
+    let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!
+    NSWorkspace.shared.open(url)
+#endif
 }
