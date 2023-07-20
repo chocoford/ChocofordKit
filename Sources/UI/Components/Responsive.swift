@@ -46,7 +46,6 @@ public extension View {
         self
             .modifier(ResponsiveModifier())
     }
-    
 }
 
 

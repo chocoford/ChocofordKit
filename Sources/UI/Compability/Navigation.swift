@@ -38,8 +38,13 @@ public extension View {
     
     @ViewBuilder
     func navigationTitleCompatible<S>(_ title: S, iOSOnly: Bool = false) -> some View where S : StringProtocol {
+        navigationTitleCompatible(Text(title), iOSOnly: iOSOnly)
+    }
+    
+    @ViewBuilder
+    func navigationTitleCompatible(_ text: Text, iOSOnly: Bool = false) -> some View {
 #if os(iOS)
-        navigationTitle(title)
+        navigationTitle(text)
 #elseif os(macOS)
         if iOSOnly {
             self
@@ -51,15 +56,6 @@ public extension View {
                 self
             }
         }
-#endif
-    }
-    
-    @ViewBuilder
-    func navigationTitleCompatible(_ text: Text) -> some View {
-#if os(iOS)
-        navigationTitle(text)
-#elseif os(macOS)
-        self
 #endif
     }
 

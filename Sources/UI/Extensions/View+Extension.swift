@@ -14,21 +14,21 @@ extension View {
     ///   - condition: The condition to evaluate.
     ///   - transform: The transform to apply to the source `View`.
     /// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
-    @ViewBuilder func `if`<TrueContent: View, FalseContent: View>(_ condition: @autoclosure () -> Bool,
-                                          transform: @escaping (Self) -> TrueContent,
-                                          falseTransform: ((Self) -> FalseContent)? = nil) -> some View {
+    @ViewBuilder
+    public func `if`<TrueContent: View, FalseContent: View>(_ condition: @autoclosure () -> Bool,
+                                                            transform: (Self) -> TrueContent,
+                                                            falseTransform: (Self) -> FalseContent) -> some View {
         if condition() {
             transform(self)
-        } else if falseTransform != nil {
-            falseTransform!(self)
         } else {
-            self
+            falseTransform(self)
         }
     }
     
     
-    @ViewBuilder func `if`<TrueContent: View>(_ condition: @autoclosure () -> Bool,
-                                          transform: @escaping (Self) -> TrueContent) -> some View {
+    @ViewBuilder
+    public func `if`<TrueContent: View>(_ condition: @autoclosure () -> Bool,
+                                        transform: @escaping (Self) -> TrueContent) -> some View {
         if condition() {
             transform(self)
         } else {
@@ -41,7 +41,8 @@ extension View {
     ///   - condition: The condition to evaluate.
     ///   - transform: The transform to apply to the source `View`.
     /// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
-    @ViewBuilder func show(_ condition: @autoclosure () -> Bool) -> some View {
+    @ViewBuilder
+    public func show(_ condition: @autoclosure () -> Bool) -> some View {
         if condition() {
             self
         } else {
@@ -80,6 +81,18 @@ extension View {
             if show {
                 Circle().fill(Color.accentColor).frame(width: 8, height: 8).offset(x: 4, y: -4)
             }
+        }
+    }
+    
+    @ViewBuilder
+    public func apply<V: View>(
+        _ modifier: (_ content: Self) -> V,
+        isActive: Bool = true
+    ) -> some View {
+        if isActive {
+            modifier(self)
+        } else {
+            self
         }
     }
 }
