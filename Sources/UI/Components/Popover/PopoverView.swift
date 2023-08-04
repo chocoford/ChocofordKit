@@ -7,6 +7,7 @@
 
 import SwiftUI
 #if os(macOS)
+@available(*, deprecated)
 public struct PopoverView<L: View, Content: View>: View {
     var preferredEdge: NSRectEdge = .minY
     var label: () -> L
@@ -90,20 +91,77 @@ struct NSPopoverHolderView<T: View>: NSViewRepresentable {
         }
     }
 }
+#endif
 
-#if DEBUG
-struct PopoverView_Previews: PreviewProvider {
-    static var previews: some View {
-        PopoverView {
-            Text("Popover")
-        } content: {
-            Text("I'm in NSPopover")
-                .padding()
+
+/// - Parameters:
+///   - attachmentAnchor: The positioning anchor that defines the
+///     attachment point of the popover. The default is
+///     ``Anchor/Source/bounds``.
+///   - arrowEdge: The edge of the `attachmentAnchor` that defines the
+///     location of the popover's arrow in macOS. The default is ``Edge/top``.
+///     iOS ignores this parameter.
+///   - content: A closure returning the content of the popover.
+///   - label: A closure returning the content of the activator label..
+public struct Popover<Content: View, Label: View>: View {
+    var attachmentAnchor: PopoverAttachmentAnchor
+    var arrowEdge: Edge
+    
+    var content: () -> Content
+    var label: () -> Label
+    
+    public init(
+        attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
+        arrowEdge: Edge = .top,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        self.attachmentAnchor = attachmentAnchor
+        self.arrowEdge = arrowEdge
+        self.content = content
+        self.label = label
+    }
+    
+    @State private var showPopover: Bool = false
+    
+    public var body: some View {
+        Button {
+            showPopover.toggle()
+        } label: {
+            label()
+        }
+        .popover(isPresented: $showPopover, attachmentAnchor: attachmentAnchor, arrowEdge: arrowEdge) {
+            content()
         }
     }
 }
-#endif
 
+struct SimplePopoverModifier<V: View>: ViewModifier {
+    var arrowEdge: Edge = .top
+    var popoverContent: () -> V
+    
+    @State private var showPopover: Bool = false
+    
+    func body(content: Content) -> some View {
+        Button {
+            showPopover.toggle()
+        } label: {
+            content
+        }
+        .buttonStyle(.borderless)
+        .popover(isPresented: $showPopover, arrowEdge: arrowEdge) {
+            popoverContent()
+        }
+    }
+}
 
-#endif
+public extension View {
+    @ViewBuilder
+    func popover<V: View>(arrowEdge: Edge = .top,
+                          @ViewBuilder content: @escaping () -> V) -> some View {
+        self
+            .modifier(SimplePopoverModifier(arrowEdge: arrowEdge, popoverContent: content))
+    }
+}
+
 

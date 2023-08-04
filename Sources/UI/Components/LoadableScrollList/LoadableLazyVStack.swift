@@ -15,15 +15,17 @@ public enum LoadableListEvent {
 }
 
 /// Known issue: Use with SplitView(H/W) will cause task cancelled.
-public struct LoadableLazyVStack<Content: View,
-                                 Header: View,
-                                 Footer: View,
-                                 A: View,
-                                 P: View,
-                                 E: View,
-                                 Items: RandomAccessCollection,
-                                 VID: Hashable,
-                                 ID: Hashable>: View where Items: Hashable, Items.Element: Equatable {
+public struct LoadableLazyVStack<
+    Content: View,
+    Header: View,
+    Footer: View,
+    A: View,
+    P: View,
+    E: View,
+    Items: RandomAccessCollection,
+    VID: Hashable,
+    ID: Hashable
+>: View where Items: Hashable, Items.Element: Equatable {
     
     @ObservedObject var config = Config()
     
@@ -83,169 +85,25 @@ public struct LoadableLazyVStack<Content: View,
     
     public var body: some View {
         LazyVStack(spacing: spacing, pinnedViews: config.pinnedViews) {
-//        List {
             Section {
-                Color.clear.frame(height: 0.1).id("top")
-               
-                contentView()
-                
-                Color.clear.frame(height: 0.1).id("bottom")
+                LoadableListContentView(
+                    items: self.items,
+                    id: self.id,
+                    content: self.content,
+                    loadingPlaceholder: self.loadingPlaceholder,
+                    loadingActivator: self.loadingActivator,
+                    emptyPlaceholder: self.emptyPlaceholder
+                )
+                .scrollProxy(self.config.scrollProxy)
+                .onEvents(self.config.onEvents)
+                .hasBelow(self.config.hasBelow)
+                .hasAbove(self.config.hasAbove)
+                .manullyLoad(self.config.manuallyLoad)
+                .appearFromBottom(self.config.startFromBottom)
             } header: {
                 header()
             } footer: {
                 footer()
-            }
-        }
-        .onChange(of: viewID) { _ in
-            refreshView(config.scrollProxy)
-        }
-        .onChange(of: items) { val in
-            guard items.count != val.count else { return }
-            if firstToList {
-                initScrollPos(config.scrollProxy)
-                firstToList = false
-                return
-            }
-            
-            if val.first != items.first && config.hasAbove {
-                scrollToFirstElementInScreen(config.scrollProxy)
-            } else if val.last != items.last {
-                // do nothing
-                // scrollToLastElementInScreen(proxy)
-            }
-        }
-        .onDisappear {
-            stopGoing = true
-        }
-    }
-    
-    @ViewBuilder
-    private func contentView() -> some View {
-        if config.hasAbove || isLoadingAbove {
-            if readyToLoadAbove || !config.manuallyLoad {
-                Group {
-                    loadingPlaceholder()
-                }
-                .onAppear(perform: onLoadingAbove)
-                /// will be cancelled when use with SplitView
-                //                    .task(onLoadingAbove)
-            } else {
-                loadTrigger(makeReadyAbove)
-            }
-        }
-        
-        if items.count > 0 {
-            let contents: [EnumeratedSequence<Items>.Element] = Array(items.enumerated())
-            let keyPath = \EnumeratedSequence<Items>.Element.element
-            ForEach(contents, id: keyPath.appending(path: id)) { i, element in
-                content(element)
-                    .id(element[keyPath: id])
-                    .onAppear {
-                        inScreenElements.append((i, element[keyPath: id]))
-                        if i == 0 {
-                            Task {
-                                await config.onEvents(.onScrollOnTop)
-                            }
-                        }
-                    }
-                    .onDisappear {
-                        inScreenElements.removeAll { $0.1 == element[keyPath: id] }
-                        if i == 0 {
-                            Task {
-                                await config.onEvents(.onScrollOffTop)
-                            }
-                        }
-                    }
-            }
-        } else if !isLoadingAbove && !isLoadingBelow {
-            emptyPlaceholder()
-        }
-        
-        if config.hasBelow || isLoadingBelow {
-            if readyToLoadBelow || !config.manuallyLoad {
-                Group {
-                    loadingPlaceholder()
-                }
-                .onAppear(perform: onLoadingBelow)
-            } else {
-                loadTrigger(makeReadyBelow)
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func loadTrigger(_ action: @escaping () -> Void) -> some View {
-        loadingActivator(action)
-    }
-    
-    private func makeReadyAbove() {
-        readyToLoadAbove = true
-    }
-    
-    private func makeReadyBelow() {
-        readyToLoadBelow = true
-    }
-    
-    
-    private func refreshView(_ proxy: ScrollViewProxy?) {
-        firstToList = true
-        initScrollPos(proxy)
-        firstToList = false
-        inScreenElements.removeAll()
-    }
-    
-    private func initScrollPos(_ proxy: ScrollViewProxy?) {
-        if config.startFromBottom {
-            if let id = items.last?[keyPath: id] {
-                proxy?.scrollTo(id, anchor: .bottom)
-            } else {
-                proxy?.scrollTo("bottom", anchor: .bottom)
-            }
-        } else if config.hasAbove {
-            if let id = items.first?[keyPath: id] {
-                proxy?.scrollTo(id, anchor: .top)
-            }
-        }
-    }
-    
-    /// scroll to the position of the first element with the anchor is `.top`
-    private func scrollToFirstElementInScreen(_ proxy: ScrollViewProxy?) {
-        if let top = inScreenElements.min(by: {
-            $0.index < $1.index
-        }) {
-            proxy?.scrollTo(top.id, anchor: .top)
-        }
-    }
-    
-    /// scroll to the position of the last element with the anchor is `.bottom`
-    private func scrollToLastElementInScreen(_ proxy: ScrollViewProxy?) {
-        if let top = inScreenElements.max(by: {
-            $0.index < $1.index
-        }) {
-            proxy?.scrollTo(top.id, anchor: .bottom)
-        }
-    }
-    
-    private func onLoadingAbove() {
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
-            guard !isLoadingAbove && !stopGoing else { return }
-            isLoadingAbove = true
-            Task {
-                await config.onEvents(.onLoadingAbove)
-                //        readyToLoadAbove = false
-                isLoadingAbove = false
-            }
-        }
-    }
-    
-    private func onLoadingBelow() {
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
-            guard !isLoadingBelow && !stopGoing else { return }
-            isLoadingBelow = true
-            Task {
-                await config.onEvents(.onLoadingBelow)
-                //        readyToLoadBelow = false
-                isLoadingBelow = false
             }
         }
     }

@@ -64,3 +64,5 @@ public func openAppSettings() {
     NSWorkspace.shared.open(url)
 #endif
 }
+
+

@@ -50,7 +50,7 @@ public extension View {
             self
         } else {
             VStack(alignment: .leading, spacing: 6) {
-                Text(title)
+                text
                     .font(.largeTitle)
                 
                 self

@@ -74,6 +74,11 @@ public extension Array {
         return self.removingDuplicate(id: \.self, replace: replace)
     }
     
+    /// Returns a array with removing duplicate items.
+    /// - Parameters:
+    ///   - id: The idenfier of object.
+    ///   - replace: Indicates where a new one should replace the old one.
+    /// - Returns: The filtered array.
     func removingDuplicate<ID: Hashable>(id: KeyPath<Element, ID>, replace: Bool = false) -> Self {
         var result: [Element] = []
         var existingIDs: Set<ID> = Set()
@@ -81,11 +86,10 @@ public extension Array {
             if !existingIDs.contains(element[keyPath: id]) {
                 result.append(element)
                 existingIDs.insert(element[keyPath: id])
-            } else if replace {
-                if let index = result.firstIndex(where: {$0[keyPath: id] == element[keyPath: id]}) {
-                    result.remove(at: index)
-                    result.append(element)
-                }
+            } else if replace,
+                      let index = result.firstIndex(where: {$0[keyPath: id] == element[keyPath: id]}) {
+                result.remove(at: index)
+                result.append(element)
             }
         }
         return result

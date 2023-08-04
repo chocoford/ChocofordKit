@@ -18,6 +18,22 @@ public struct OutlinedButtonStyle: ButtonStyle {
             configuration.label
         }
     }
+    
+    public init(
+        colors: ButtonColor = .init(
+            default: .accentColor,
+            hovered: .accentColor.opacity(0.5),
+            pressed: .accentColor.opacity(0.1)
+        ),
+        size: ButtonSize = .normal,
+        block: Bool = false,
+        square: Bool = false
+    ) {
+        self.colors = colors
+        self.size = size
+        self.block = block
+        self.square = square
+    }
 }
 
 public struct OutlinedButtonStyleView<V: View>: View {
