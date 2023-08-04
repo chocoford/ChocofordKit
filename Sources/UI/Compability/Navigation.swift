@@ -67,4 +67,13 @@ public extension View {
         self
 #endif
     }
+    
+    @ViewBuilder
+    func navigationBarBackButtonHiddenCompatible(_ hidesBackButton: Bool = true) -> some View {
+        if #available(macOS 13.0, iOS 13.0, watchOS 6.0, macCatalyst 13.0, tvOS 13.0, visionOS 1.0, *) {
+            navigationBarBackButtonHidden(hidesBackButton)
+        } else {
+            self
+        }
+    }
 }
