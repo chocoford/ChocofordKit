@@ -94,4 +94,11 @@ extension Data {
             return "uknown"
         }
     }
+    
+    public func getSize(allowedUnits: ByteCountFormatter.Units = .useAll) -> String {
+        let bcf = ByteCountFormatter()
+        bcf.allowedUnits = allowedUnits
+        bcf.countStyle = .file
+        return bcf.string(fromByteCount: Int64(self.count))
+    }
 }
