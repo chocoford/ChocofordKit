@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SFSymbolEnum
+import SFSafeSymbols
 
 public struct HPageView<Pages: View, Overlay: View>: View {
     var pages: (_ proxy: PageViewProxy, _ geometry: GeometryProxy) -> PageContainer<Pages>
@@ -131,7 +131,7 @@ public final class PageViewProxy: ObservableObject {
     
     @ViewBuilder
     public func prevPageButton<L: View>(animation: Animation = .default,
-                                        @ViewBuilder label: () -> L = { Image(systemName: .chevronLeft) }) -> some View {
+                                        @ViewBuilder label: () -> L = { Image(systemSymbol: .chevronLeft) }) -> some View {
         Button {
             print("togglePrev")
             self.togglePrev(animation: animation)
@@ -144,7 +144,7 @@ public final class PageViewProxy: ObservableObject {
     
     @ViewBuilder
     public func nextPageButton<L: View>(animation: Animation = .default,
-                                        @ViewBuilder label: () -> L = { Image(systemName: .chevronRight) }) -> some View {
+                                        @ViewBuilder label: () -> L = { Image(systemSymbol: .chevronRight) }) -> some View {
         Button {
             self.toggleNext(animation: animation)
         } label: {
@@ -189,13 +189,13 @@ struct HPageView_Previews: PreviewProvider {
                 Button {
                     proxy.togglePrev()
                 } label: {
-                    Image(systemName: .chevronLeft)
+                    Image(systemSymbol: .chevronLeft)
                 }
                 Text("page 2")
                 Button {
                     proxy.toggleNext()
                 } label: {
-                    Image(systemName: .chevronRight)
+                    Image(systemSymbol: .chevronRight)
                 }
             }
 

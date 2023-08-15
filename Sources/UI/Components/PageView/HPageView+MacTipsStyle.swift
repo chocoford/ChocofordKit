@@ -7,10 +7,10 @@
 
 import SwiftUI
 import ChocofordEssentials
-import SFSymbolEnum
 import AVKit
 import Introspect
 import SDWebImageSwiftUI
+import SFSafeSymbols
 
 public struct MacTipsPageViewItem: Hashable {
     public var image: String?
@@ -193,9 +193,9 @@ public struct MacTipsPageViewControlller: View {
     }
     
     @ViewBuilder
-    func pageToggle(_ systemImage: SFSymbolEnum.SFSymbol) -> some View {
+    func pageToggle(_ symbol: SFSymbol) -> some View {
         Hover { isHover in
-            Image(systemName: systemImage)
+            Image(systemSymbol: symbol)
                 .resizable()
                 .frame(width: 8, height: 30)
                 .font(.system(size: 14, weight: .black))
