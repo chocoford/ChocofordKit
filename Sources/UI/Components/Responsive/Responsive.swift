@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 //public protocol ResponsiveRule {
 //    var compact: CGFloat { get }
 //    var regular: CGFloat { get }
@@ -37,21 +36,12 @@ internal func getSizeClass(_ width: CGFloat, with rule: ResponsiveRule = .defaul
     }
 }
 
-public enum UISizeClass: CaseIterable, Identifiable, Hashable {
+public enum UISizeClass: String, CaseIterable, Identifiable, Hashable {
     case compact
     case regular
     
-    var maxWidth: CGFloat {
-        switch self {
-            case .compact:
-                return 500
-            case .regular:
-                return 10000
-        }
-    }
-    
-    public  var id: CGFloat {
-        return maxWidth
+    public var id: String {
+        self.rawValue
     }
 }
 // MARK: - Envrionment Key
@@ -84,7 +74,7 @@ struct ResponsiveModifier: ViewModifier {
 #if os(macOS)
         SingleAxisGeometryReader(axis: .horizontal) { width in
             content
-                .environment(\.uiSizeClass, width < UISizeClass.compact.maxWidth ? .compact : .regular)
+                .environment(\.uiSizeClass, getSizeClass(width))
         }
 #elseif os(iOS)
         content
@@ -118,31 +108,9 @@ struct GetSizeClassModifier: ViewModifier {
 #endif
 
 
-// MARK: - Local Breakpoint
-#if os(macOS)
 /// Get the device class of the specific view
-public struct Responsive<Content: View>: View {
-    var content: (_ breakpoint: UISizeClass) -> Content
-    
-    public init(@ViewBuilder content: @escaping (_ breakpoint: UISizeClass) -> Content) {
-        self.content = content
-    }
-    
-    public var body: some View {
-        SingleAxisGeometryReader(axis: .horizontal) { width in
-            if width < UISizeClass.compact.maxWidth {
-                content(.compact)
-            } else {
-                content(.regular)
-            }
-        }
-    }
-}
-
-#elseif os(iOS)
-/// Get the device class of the specific view
-public struct Responsive<Content: View>: View {
-    @Environment(\.horizontalSizeClass) private var sizeClass
+internal struct ResponsiveView<Content: View>: View {
+    @Environment(\.uiSizeClass) private var uiSize
 
     var content: (_ breakpoint: UISizeClass) -> Content
     
@@ -151,17 +119,22 @@ public struct Responsive<Content: View>: View {
     }
     
     public var body: some View {
-        switch sizeClass {
-            case .compact:
-                content(.compact)
-            case .regular:
-                content(.regular)
-            default:
-                content(.regular)
-        }
+        content(uiSize)
     }
 }
-#endif
+
+public struct Responsive<Content: View>: View {
+    var content: (_ breakpoint: UISizeClass) -> Content
+    public init(@ViewBuilder content: @escaping (_ breakpoint: UISizeClass) -> Content) {
+        self.content = content
+    }
+    public var body: some View {
+        ResponsiveView { breakpoint in
+            content(breakpoint)
+        }
+        .responsive()
+    }
+}
 
 
 @available(macOS 13.0, iOS 16.0, macCatalyst 16.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *)
