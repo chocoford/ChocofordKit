@@ -16,6 +16,15 @@ import AppKit
 public class UserNotificationCenter {
     public static let shared = UserNotificationCenter()
     
+    public var delegate: UNUserNotificationCenterDelegate? {
+        set {
+            self.center.delegate = newValue
+        }
+        get {
+            return self.center.delegate
+        }
+    }
+    
     var center: UNUserNotificationCenter { UNUserNotificationCenter.current() }
     
     public var granted: Bool = false
@@ -35,12 +44,13 @@ public extension UserNotificationCenter {
         self.granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
     }
     
-    func pushNormalNotification(title: String, subtitle: String, body: String, sound: UNNotificationSound = .default) {
+    func pushNormalNotification(title: String, subtitle: String, body: String, sound: UNNotificationSound = .default, userInfo: [AnyHashable : Any] = [:]) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.subtitle = subtitle
         content.body = body
         content.sound = sound
+        content.userInfo = userInfo
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
         center.add(request)
     }
