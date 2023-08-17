@@ -240,7 +240,9 @@ struct TrailingSidebarPreviewView: View {
 }
 
 
-#Preview {
-    TrailingSidebarPreviewView()
+struct TrailingSidebarView_Previews: PreviewProvider {
+    static var previews: some View {
+        TrailingSidebarPreviewView()
+    }
 }
 #endif

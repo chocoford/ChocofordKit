@@ -89,7 +89,9 @@ extension MetalView {
 }
 
 #if DEBUG
-#Preview {
-    MetalView()
+struct MetalView_Previews: PreviewProvider {
+    static var previews: some View {
+        MetalView()
+    }
 }
 #endif

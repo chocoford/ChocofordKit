@@ -64,15 +64,16 @@ public struct FilledButtonStyle: ButtonStyle {
 
 
 #if DEBUG
-#Preview {
-    Button {
-        
-    } label: {
-        Text("Button")
+struct FilledButtonStyle_Previews: PreviewProvider {
+    static var previews: some View {
+        Button {
+            
+        } label: {
+            Text("Button")
+        }
+        .buttonStyle(FilledButtonStyle())
     }
-    .buttonStyle(FilledButtonStyle())
 }
-
 #endif
 
 

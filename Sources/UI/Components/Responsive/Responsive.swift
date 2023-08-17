@@ -185,19 +185,21 @@ public struct ResponsiveHStack: Layout {
 
 
 #if DEBUG
-#Preview {
-    if #available(macOS 13.0, iOS 16.0, *) {
-        ResponsiveHStack {
-            Text("ResponsiveHStack")
-
-            Text("ResponsiveHStack")
-
-            Text("ResponsiveHStack")
-
+struct Responsive_Previews: PreviewProvider {
+    static var previews: some View {
+        if #available(macOS 13.0, iOS 16.0, *) {
+            ResponsiveHStack {
+                Text("ResponsiveHStack")
+                
+                Text("ResponsiveHStack")
+                
+                Text("ResponsiveHStack")
+                
+            }
+        } else {
+            // Fallback on earlier versions
+            Text("Not support")
         }
-    } else {
-        // Fallback on earlier versions
-        Text("Not support")
     }
 }
 #endif
