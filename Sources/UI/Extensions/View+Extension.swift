@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftUIIntrospect
 
 // MARK: - Condition
 extension View {
@@ -201,18 +202,7 @@ extension View {
 #if os(macOS)
 //extension View {
 //    public func window(_ callback: @escaping (_ window: NSWindow) -> Void) -> some View {
-//        background(
-//            List{}
-//                .frame(width: 0, height: 0)
-//                .opacity(0)
-//                .introspectTableView(customize: { view in
-//                    if let window = view.window {
-//                        callback(window)
-//                    } else {
-//                        fatalError("no window")
-//                    }
-//                })
-//        )
+//        introspect(.window, on: <#T##(PlatformViewVersionPredicate<IntrospectableViewType, PlatformEntity>)...##(PlatformViewVersionPredicate<IntrospectableViewType, PlatformEntity>)#>, customize: <#T##(PlatformEntity) -> Void#>)
 //    }
 //}
 #endif

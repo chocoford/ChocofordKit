@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Introspect
+import SwiftUIIntrospect
 
 public enum NavigationSplitViewVisibilityCompatible {
     case automatic
@@ -132,7 +132,7 @@ public struct NavigationSplitViewCompatible<Sidebar: View, Detail: View>: View {
 extension NavigationSplitViewCompatible {
     #if os(macOS)
     @ViewBuilder public func removeSidebarToggle() -> some View {
-        introspectSplitView(customize: { splitView in
+        introspect(.navigationSplitView, on: .macOS(.v13)) { splitView in
             let toolbar = splitView.window?.toolbar
             let toolbarItems = toolbar?.items
 //            let identifiers = toolbarItems?.map { $0.itemIdentifier }
@@ -141,7 +141,7 @@ extension NavigationSplitViewCompatible {
             if let index = toolbarItems?.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
                 toolbar?.removeItem(at: index)
             }
-        })
+        }
     }
     #endif
 }

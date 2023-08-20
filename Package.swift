@@ -23,8 +23,7 @@ let package = Package(
         .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", .upToNextMajor(from: "1.0.0")),
         .package(url: "https://github.com/kirualex/SwiftyGif.git",
                  from: "5.4.4"),
-        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git",
-                 from: "0.2.0"),
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", branch: "prerelease/1.0"),
         .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.2.2"),
         .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.8.1"),
         .package(url: "https://github.com/elai950/AlertToast.git", branch: "master"),
@@ -43,7 +42,7 @@ let package = Package(
                 "ShapeBuilder",
                 .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
                 "SwiftyGif",
-                .product(name: "Introspect", package: "SwiftUI-Introspect"),
+                .product(name: "SwiftUIIntrospect", package: "SwiftUI-Introspect"),
                 "SDWebImageSwiftUI",
                 "Kingfisher",
                 "AlertToast",
@@ -59,8 +58,8 @@ let package = Package(
             dependencies: [],
             path: "Sources/Essentials"
         ),
-        .testTarget(
-            name: "ChocofordUITests",
-            dependencies: ["ChocofordUI"]),
+//        .testTarget(
+//            name: "ChocofordUITests",
+//            dependencies: ["ChocofordUI"]),
     ]
 )

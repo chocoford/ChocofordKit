@@ -8,7 +8,7 @@
 import SwiftUI
 import ChocofordEssentials
 import AVKit
-import Introspect
+import SwiftUIIntrospect
 import SDWebImageSwiftUI
 import SFSafeSymbols
 
