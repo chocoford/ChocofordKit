@@ -5,6 +5,7 @@
 //  Created by Chocoford on 2023/5/8.
 //
 
+#if canImport(UserNotifications)
 import Foundation
 import UserNotifications
 #if os(iOS)
@@ -52,7 +53,11 @@ public extension UserNotificationCenter {
         content.sound = sound
         content.userInfo = userInfo
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        center.add(request)
+        center.add(request) { error in
+            if let error = error {
+                dump(error)
+            }
+        }
     }
     
     func setBadgeLabel(_ label: Int) {
@@ -71,3 +76,4 @@ public extension UserNotificationCenter {
 #endif
     }
 }
+#endif
