@@ -26,6 +26,7 @@ public func togglePreferenceView() {
     } else {
       NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
     }
+    activateApp()
 #endif
 }
 
@@ -49,5 +50,16 @@ public func openSecuritySettings() {
 #elseif os(macOS)
     let url = URL(string: "x-apple.systempreferences:com.apple.preference.security")!
     NSWorkspace.shared.open(url)
+#endif
+}
+
+
+public func activateApp() {
+#if canImport(AppKit)
+    if #available(macOS 14.0, *) {
+        NSApp.activate()
+    } else {
+        NSApp.activate(ignoringOtherApps: true)
+    }
 #endif
 }
