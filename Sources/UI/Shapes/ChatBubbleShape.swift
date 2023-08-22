@@ -5,10 +5,11 @@
 //  Created by Dove Zachary on 2023/6/27.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 public struct ChatBubbleShape: Shape {
-    public enum Direction: String {
+    public enum Direction: String, Sendable {
         case left
         case right
     }
@@ -89,3 +90,4 @@ public struct ChatBubbleShape: Shape {
         return path
     }
 }
+#endif

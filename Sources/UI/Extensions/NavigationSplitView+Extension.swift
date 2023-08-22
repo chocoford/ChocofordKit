@@ -7,8 +7,9 @@
 
 import SwiftUI
 
+#if os(macOS)
 /// Copied and modified from [Swiftcord](https://github.com/SwiftcordApp/Swiftcord)
-@available(macOS 13.0, iOS 16.0, *)
+@available(macOS 13.0, *)
 /// Remove the side bar toogle in macos Settings view.
 extension NavigationSplitView {
     public func removeSettingsSidebarToggle(windowModifier: @escaping (NSWindow) -> Void = { _ in }) -> some View {
@@ -30,4 +31,4 @@ private struct RemoveSettingsSidebarToggleModifier: ViewModifier {
         }
     }
 }
-
+#endif

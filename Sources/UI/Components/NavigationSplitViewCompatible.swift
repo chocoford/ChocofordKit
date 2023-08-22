@@ -132,7 +132,7 @@ public struct NavigationSplitViewCompatible<Sidebar: View, Detail: View>: View {
 extension NavigationSplitViewCompatible {
     #if os(macOS)
     @ViewBuilder public func removeSidebarToggle() -> some View {
-        introspect(.navigationSplitView, on: .macOS(.v13)) { splitView in
+        introspect(.navigationSplitView, on: .macOS(.v13, .v14)) { splitView in
             let toolbar = splitView.window?.toolbar
             let toolbarItems = toolbar?.items
 //            let identifiers = toolbarItems?.map { $0.itemIdentifier }

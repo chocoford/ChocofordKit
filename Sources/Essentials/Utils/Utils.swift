@@ -7,24 +7,6 @@
 
 import Foundation
 
-#if canImport(AppKit)
-import AppKit
-#endif
-
-#if canImport(UIKit)
-import UIKit
-#endif
-
-#if os(macOS)
-public func togglePreferenceView() {
-    if #available(macOS 13, *) {
-      NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-    } else {
-      NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-    }
-}
-
-#endif
 
 public func load<T: Decodable>(_ filename: String, type: T.Type) -> T {
     return load(filename)
@@ -52,28 +34,4 @@ public func load<T: Decodable>(_ filename: String) -> T {
         fatalError("Couldn't parse \(filename) as \(T.self):\n\(error)")
     }
 }
-
-
-public func openNotificationSettings() {
-#if os(iOS)
-    if let appSettings = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(appSettings) {
-        UIApplication.shared.open(appSettings)
-    }
-#elseif os(macOS)
-    let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!
-    NSWorkspace.shared.open(url)
-#endif
-}
-
-public func openSecuritySettings() {
-#if os(iOS)
-    if let appSettings = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(appSettings) {
-        UIApplication.shared.open(appSettings)
-    }
-#elseif os(macOS)
-    let url = URL(string: "x-apple.systempreferences:com.apple.preference.security")!
-    NSWorkspace.shared.open(url)
-#endif
-}
-
 
