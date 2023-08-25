@@ -5,6 +5,7 @@
 //  Created by Dove Zachary on 2023/6/15.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 public enum TitleDisplayModeCompatible {
@@ -77,3 +78,4 @@ public extension View {
         }
     }
 }
+#endif

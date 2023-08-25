@@ -54,19 +54,14 @@ public enum FakeNSWindowAnimationBehavior {
 }
 
 extension View {
-#if os(macOS)
     @available(macOS 10.15, *)
     @ViewBuilder
     public func autoActivationPolicy() -> some View {
         self
+#if os(macOS)
             .modifier(AutoActivationPolicyModifer())
-    }
-    
-#elseif os(iOS)
-    public func autoActivationPolicy() -> some View {
-        self
-    }
 #endif
+    }
     
     
 #if os(macOS)
@@ -82,5 +77,16 @@ extension View {
         self
     }
 #endif
+    
+#if os(macOS)
+    @ViewBuilder
+    public func window(perform action: @escaping (NSWindow) -> Void) -> some View {
+        introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
+            action(window)
+        }
+    }
+#endif
 }
+
+
 
