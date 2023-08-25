@@ -85,6 +85,15 @@ extension View {
             action(window)
         }
     }
+    
+    @ViewBuilder
+    public func bindWindow(_ windowBinding: Binding<NSWindow?>) -> some View {
+        introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
+            DispatchQueue.main.async {
+                windowBinding.wrappedValue = window
+            }
+        }
+    }
 #endif
 }
 
