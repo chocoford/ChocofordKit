@@ -37,8 +37,9 @@ public class UserNotificationCenter {
 
 
 public extension UserNotificationCenter {
-    func checkPermission() async throws -> Bool {
-        return try await center.requestAuthorization()
+    func checkPermission() async -> UNAuthorizationStatus {
+        let settings = await center.notificationSettings()
+        return settings.authorizationStatus
     }
     
     func requestPermission() async throws {
