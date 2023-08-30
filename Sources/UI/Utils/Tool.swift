@@ -12,6 +12,10 @@ import UIKit
 import AppKit
 #endif
 
+public var isPreview: Bool {
+    return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+}
+
 
 public func resignAllFirstResponder() {
 #if canImport(UIKit)
