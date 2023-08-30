@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct UnexpectedError: LocalizedError {
+public struct AsyncButtonError: LocalizedError {
 //    var error: Error?
 //    
 //    public var errorDescription: String {
@@ -16,28 +16,19 @@ public struct UnexpectedError: LocalizedError {
 }
 
 /// A button that allow perform async throw action, with alert.
-public struct AsyncButton<Label: View, E: LocalizedError>: View {
+public struct AsyncButton<Label: View>: View {
     
     internal var role: ButtonRole?
     internal var action: () async throws -> Void
     internal var label: () -> Label
     
-//    internal var config: Config = .init()
     
     @State private var showAlert = false
-    @State private var error: E? = nil
-    
-    public init(role: ButtonRole? = nil,
-                throwingAction: @escaping () async throws -> Void,
-                @ViewBuilder label: @escaping () -> Label) {
-        self.role = role
-        self.action = throwingAction
-        self.label = label
-    }
+    @State private var error: Error? = nil
     
     public init(role: ButtonRole? = nil,
                 action: @escaping () async -> Void,
-                @ViewBuilder label: @escaping () -> Label) where E == UnexpectedError {
+                @ViewBuilder label: @escaping () -> Label) {
         self.role = role
         self.action = action
         self.label = label
@@ -52,32 +43,25 @@ public struct AsyncButton<Label: View, E: LocalizedError>: View {
                 isRunning = true
                 do {
                     try await action()
-                } catch let error as E {
+                } catch {
                     self.error = error
                 }
                 isRunning = false
             }
         }, label: label)
         .disabled(isRunning)
-        .alert(isPresented: $showAlert, error: error) {
+        .alert("Error occured!", isPresented: $showAlert) {
             Button {
                 showAlert.toggle()
             } label: {
                 Text("OK")
             }
+        } message: {
+            if let error = self.error {
+                Text(String(describing: error))
+            } else {
+                Text("Unexpected error.")
+            }
         }
     }
 }
-
-//extension AsyncButton {
-//    class Config<A: View>: ObservableObject {
-//        var alertAction: () -> A
-//        
-//        init(@ViewBuilder alertAction: @escaping () -> A = { EmptyView() }) {
-//            self.alertAction = alertAction
-//        }
-//        
-//        func alertAction() ->
-//    }
-//}
-
