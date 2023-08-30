@@ -15,7 +15,7 @@ public struct ToggleButton<L: View>: View {
     var isOn: Bool
     var action: Action
     
-    public init(isOn: Bool, action: @escaping Action, @ViewBuilder label: @escaping () -> L) {
+    public init(isOn: Bool, action: @escaping Action, @ViewBuilder label: @escaping () -> L = {EmptyView()}) {
         self.label = label
         self.isOn = isOn
         self.action = action
