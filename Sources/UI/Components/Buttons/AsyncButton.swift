@@ -27,7 +27,7 @@ public struct AsyncButton<Label: View>: View {
     @State private var error: Error? = nil
     
     public init(role: ButtonRole? = nil,
-                action: @escaping () async -> Void,
+                action: @escaping () async throws -> Void,
                 @ViewBuilder label: @escaping () -> Label) {
         self.role = role
         self.action = action
