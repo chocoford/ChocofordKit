@@ -25,6 +25,7 @@ public struct ToggleButton<L: View>: View {
     
     public var body: some View {
         Toggle(isOn: $localIsOn, label: self.label)
+            .toggleStyle(.switch)
             .onChange(of: localIsOn) { newVal in
                 if newVal != self.isOn {
                     self.action()
