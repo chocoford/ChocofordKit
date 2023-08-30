@@ -28,10 +28,10 @@ public struct AsyncButton<Label: View, E: LocalizedError>: View {
     @State private var error: E? = nil
     
     public init(role: ButtonRole? = nil,
-                action: @escaping () async throws -> Void,
+                throwingAction: @escaping () async throws -> Void,
                 @ViewBuilder label: @escaping () -> Label) {
         self.role = role
-        self.action = action
+        self.action = throwingAction
         self.label = label
     }
     
@@ -80,3 +80,4 @@ public struct AsyncButton<Label: View, E: LocalizedError>: View {
 //        func alertAction() ->
 //    }
 //}
+
