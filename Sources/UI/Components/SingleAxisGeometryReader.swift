@@ -60,9 +60,9 @@ public struct ViewSizeReader<Content: View>: View {
     public var body: some View {
         content(size)
             .background {
-                GeometryReader {
-                    proxy in
+                GeometryReader { proxy in
                     Color.clear
+                        .watchImmediately(of: proxy.size) { size = $0 }
                         .preference(key: SizeKey.self, value: proxy.size)
                 }
             }
