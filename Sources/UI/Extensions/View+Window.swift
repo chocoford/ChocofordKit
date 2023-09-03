@@ -19,7 +19,8 @@ struct AutoActivationPolicyModifer: ViewModifier {
             .onAppear {
                 NSApp.setActivationPolicy(.regular)
                 activateApp()
-                self.window?.makeKeyAndOrderFront(nil)
+//                self.window?.makeKeyAndOrderFront(nil)
+                self.window?.orderFrontRegardless()
             }
             .introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
                 DispatchQueue.main.async {
