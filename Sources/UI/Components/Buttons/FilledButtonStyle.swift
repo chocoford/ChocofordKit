@@ -13,6 +13,7 @@ public struct FilledButtonStyle: PrimitiveButtonStyle {
     var color: Color
     var block: Bool
     var loading: Bool
+    var square: Bool
     var shape: ButtonShape
     
     public init(
@@ -20,12 +21,14 @@ public struct FilledButtonStyle: PrimitiveButtonStyle {
         color: Color = .accentColor,
         block: Bool = false,
         loading: Bool = false,
+        square: Bool = false,
         shape: ButtonShape = .automatic
     ) {
         self.size = size
         self.color = color
         self.block = block
         self.loading = loading
+        self.square = square
         self.shape = shape
     }
     
@@ -38,6 +41,7 @@ public struct FilledButtonStyle: PrimitiveButtonStyle {
         var size: ButtonSize = .normal
         var bgColor: Color = .accentColor
         var block = false
+        var square = false
         var shape: ButtonShape
         
         let content: () -> V
@@ -52,7 +56,7 @@ public struct FilledButtonStyle: PrimitiveButtonStyle {
                     Spacer()
                 }
             }
-            .buttonSized(size, square: false)
+            .buttonSized(size, square: self.square)
             .foregroundColor(Color.white)
             .background(
                 buttonShape(shape)
@@ -72,12 +76,37 @@ public struct FilledButtonStyle: PrimitiveButtonStyle {
         PrimitiveButtonWrapper {
             configuration.trigger()
         } content: { isPressed in
-            FilledButtonStyleView(isPressed: isPressed, size: size, bgColor: self.color, block: block, shape: shape) {
+            FilledButtonStyleView(isPressed: isPressed, size: size, bgColor: self.color, block: block, square: square, shape: shape) {
                 LoadableButtonStyleView(loading: loading, color: .white) {
                     configuration.label
                 }
             }
         }
+    }
+}
+
+
+extension PrimitiveButtonStyle where Self == FilledButtonStyle {
+    public static var fill: FilledButtonStyle {
+        FilledButtonStyle()
+    }
+    
+    public static func fill(
+        size: ButtonSize = .normal,
+        color: Color = .primary,
+        block: Bool = false,
+        loading: Bool = false,
+        square: Bool = false,
+        shape: ButtonShape = .automatic
+    ) -> FilledButtonStyle {
+        FilledButtonStyle(
+            size: size,
+            color: color,
+            block: block,
+            loading: loading,
+            square: square,
+            shape: shape
+        )
     }
 }
 
@@ -90,7 +119,7 @@ struct FilledButtonStyle_Previews: PreviewProvider {
         } label: {
             Text("Button")
         }
-        .buttonStyle(FilledButtonStyle())
+        .buttonStyle(.fill)
     }
 }
 #endif
