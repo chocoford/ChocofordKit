@@ -93,7 +93,7 @@ extension PrimitiveButtonStyle where Self == FilledButtonStyle {
     
     public static func fill(
         size: ButtonSize = .normal,
-        color: Color = .primary,
+        color: Color = .accentColor,
         block: Bool = false,
         loading: Bool = false,
         square: Bool = false,
