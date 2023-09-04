@@ -6,26 +6,27 @@
 //
 
 import SwiftUI
-public struct FilledButtonStyle: ButtonStyle {
+
+
+public struct FilledButtonStyle: PrimitiveButtonStyle {
     var size: ButtonSize
     var color: Color
     var block: Bool
     var loading: Bool
-    var disabled: Bool
-    
+    var shape: ButtonShape
     
     public init(
         size: ButtonSize = .normal,
         color: Color = .accentColor,
         block: Bool = false,
         loading: Bool = false,
-        disabled: Bool = false
+        shape: ButtonShape = .automatic
     ) {
         self.size = size
         self.color = color
         self.block = block
         self.loading = loading
-        self.disabled = disabled
+        self.shape = shape
     }
     
     private struct FilledButtonStyleView<V: View>: View {
@@ -37,8 +38,8 @@ public struct FilledButtonStyle: ButtonStyle {
         var size: ButtonSize = .normal
         var bgColor: Color = .accentColor
         var block = false
-        var disabled = false
-
+        var shape: ButtonShape
+        
         let content: () -> V
         
         var body: some View {
@@ -54,13 +55,13 @@ public struct FilledButtonStyle: ButtonStyle {
             .buttonSized(size, square: false)
             .foregroundColor(Color.white)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(disabled ? Color.gray : self.bgColor)
+                buttonShape(shape)
+                    .fill(isEnabled ? self.bgColor : Color.gray)
                     .brightness(isPressed ? -0.1 : hovering ? -0.05 : 0.0)
             )
             .animation(.easeOut(duration: 0.2), value: hovering)
             .onHover { over in
-                guard !disabled else {return}
+                guard isEnabled else {return}
                 self.hovering = over
             }
         }
@@ -68,9 +69,13 @@ public struct FilledButtonStyle: ButtonStyle {
     
     
     public func makeBody(configuration: Self.Configuration) -> some View {
-        FilledButtonStyleView(isPressed: configuration.isPressed, size: size, bgColor: self.color, block: block, disabled: disabled) {
-            LoadableButtonStyleView(loading: loading, color: .white) {
-                configuration.label
+        PrimitiveButtonWrapper {
+            configuration.trigger()
+        } content: { isPressed in
+            FilledButtonStyleView(isPressed: isPressed, size: size, bgColor: self.color, block: block, shape: shape) {
+                LoadableButtonStyleView(loading: loading, color: .white) {
+                    configuration.label
+                }
             }
         }
     }

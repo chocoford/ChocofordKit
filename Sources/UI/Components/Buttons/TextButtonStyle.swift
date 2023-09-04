@@ -14,7 +14,7 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
     var block: Bool
     var loading: Bool
     var square: Bool
-    var capsule: Bool
+    var shape: ButtonShape
     
     public init(
         size: ButtonSize = .normal,
@@ -22,14 +22,14 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
         block: Bool = false,
         loading: Bool = false,
         square: Bool = false,
-        capsule: Bool = false
+        shape: ButtonShape = .automatic
     ) {
         self.size = size
         self.color = color
         self.block = block
         self.loading = loading
         self.square = square
-        self.capsule = capsule
+        self.shape = shape
     }
     
     private struct TextButtonStyleView<V: View>: View {
@@ -41,8 +41,8 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
         var size: ButtonSize = .normal
         var color: Color = Color.primary
         var block = false
-        var square = false
-        var capsule = false
+        var square: Bool
+        var shape: ButtonShape
 
         let content: () -> V
         
@@ -59,7 +59,7 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
             }
             .buttonSized(size, square: self.square)
             .background {
-                background()
+                buttonShape(shape)
                     .fill(self.color)
                     .opacity(!self.isEnabled ? 0 : self.isPressed ? 0.1 : self.hovering ? 0.15 : 0)
             }
@@ -82,18 +82,8 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
                 }
             }
         }
-        
-        @ShapeBuilder
-        func background() -> some Shape {
-            if self.capsule {
-                Capsule()
-            } else {
-                RoundedRectangle(cornerRadius: 8)
-            }
-        }
+      
     }
-
-    
     
     public func makeBody(configuration: Configuration) -> some View {
         PrimitiveButtonWrapper {
@@ -104,7 +94,7 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
                                 color: self.color,
                                 block: block,
                                 square: square, 
-                                capsule: capsule) {
+                                shape: shape) {
                 LoadableButtonStyleView(loading: loading, color: .white) {
                     configuration.label
                 }
@@ -124,8 +114,7 @@ extension PrimitiveButtonStyle where Self == TextButtonStyle {
         block: Bool = false,
         loading: Bool = false,
         square: Bool = false,
-        capsule: Bool = false,
-        disabled: Bool = false
+        shape: ButtonShape = .automatic
     ) -> TextButtonStyle {
         TextButtonStyle(
             size: size,
@@ -133,7 +122,7 @@ extension PrimitiveButtonStyle where Self == TextButtonStyle {
             block: block,
             loading: loading,
             square: square,
-            capsule: capsule
+            shape: shape
         )
     }
 }
@@ -147,7 +136,7 @@ struct TextButtonStyle_Previews: PreviewProvider {
 //            Text("Button")
             Image(systemSymbol: .xmark)
         }
-        .buttonStyle(.text(square: true, capsule: true))
+        .buttonStyle(.text(square: true))
         .padding()
     }
 }

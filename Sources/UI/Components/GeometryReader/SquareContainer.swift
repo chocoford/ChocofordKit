@@ -40,7 +40,7 @@ struct SquareContainer_Previews: PreviewProvider {
 //            Text("Button")
             Image(systemSymbol: .xmark)
         }
-        .buttonStyle(.text(square: true, capsule: true))
+        .buttonStyle(.text(square: true))
         .padding()
     }
 }
