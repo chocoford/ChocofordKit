@@ -29,20 +29,20 @@ public extension View {
     func buttonSized(_ size: ButtonSize, square: Bool) -> some View {
         switch size {
             case .large:
-                padding(.vertical, square ? 16 : 10)
-                    .padding(.horizontal, 16)
+                padding(.vertical, 10)
+                    .padding(.horizontal,  square ? 10 : 16)
                     
             case .normal:
-                padding(.vertical, square ? 12 : 8)
-                    .padding(.horizontal, 12)
+                padding(.vertical, 8)
+                    .padding(.horizontal, square ? 8 : 12)
                 
             case .small:
-                padding(.vertical, square ? 10 : 4)
-                    .padding(.horizontal, 10)
+                padding(.vertical, 4)
+                    .padding(.horizontal, square ? 4 : 10)
                 
             case .xsmall:
-                padding(.vertical, square ? 6 : 2)
-                    .padding(.horizontal, 6)
+                padding(.vertical, 2)
+                    .padding(.horizontal, square ? 2 : 6)
               
         }
     }
