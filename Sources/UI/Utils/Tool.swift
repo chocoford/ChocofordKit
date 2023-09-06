@@ -35,14 +35,13 @@ public func togglePreferenceView() {
 }
 
 
-public func openNotificationSettings() {
+public func openNotificationSettings(_ appName: String?) {
 #if os(iOS)
     if let appSettings = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(appSettings) {
         UIApplication.shared.open(appSettings)
     }
 #elseif os(macOS)
-    let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!
-    NSWorkspace.shared.open(url)
+    NSWorkspace.shared.openSettings(.notification(appName))
 #endif
 }
 

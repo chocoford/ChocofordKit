@@ -12,6 +12,8 @@ public extension NSWorkspace {
     enum OpenSettingsType {
         case accessibility(AccessibilitySettingsType)
         case security(SecuritySettingsType)
+        case notification(String?)
+
         
         public enum AccessibilitySettingsType {
             case main
@@ -118,6 +120,12 @@ public extension NSWorkspace {
                         url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Weibo")!
                     case .screenCpature:
                         url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
+                }
+            case .notification(let appName):
+                if let name = appName {
+                    url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!
+                } else {
+                    url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!
                 }
         }
         open(url)
