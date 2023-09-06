@@ -85,7 +85,6 @@ public struct FilledButtonStyle: PrimitiveButtonStyle {
     }
 }
 
-
 extension PrimitiveButtonStyle where Self == FilledButtonStyle {
     public static var fill: FilledButtonStyle {
         FilledButtonStyle()
@@ -109,7 +108,6 @@ extension PrimitiveButtonStyle where Self == FilledButtonStyle {
         )
     }
 }
-
 
 #if DEBUG
 struct FilledButtonStyle_Previews: PreviewProvider {
