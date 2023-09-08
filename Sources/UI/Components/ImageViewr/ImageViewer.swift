@@ -9,7 +9,9 @@ import SwiftUI
 import Shimmer
 import SDWebImageSwiftUI
 
-public struct ImageViewer<Content: View>: View {
+public struct ImageViewer<Content: View/*, Activator: View*/>: View {
+    var isPresent: Binding<Bool>?
+    
     var image: Image?
     var url: URL?
     var imageSize: CGSize?
@@ -17,6 +19,8 @@ public struct ImageViewer<Content: View>: View {
     var disabled: Bool = false
     var content: () -> Content
     
+//    typealias ActivatorBuilder<V> = (_ action: () -> Void, _ content: V) -> Activator
+//    var activator: ActivatorBuilder?
     
 #if os(macOS)
     @State private var currentWindow: NSWindow? = nil
@@ -27,34 +31,69 @@ public struct ImageViewer<Content: View>: View {
     @State private var backgroundOpacity: Double = 1.0
 #endif
     
-    public init(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, @ViewBuilder content: @escaping () -> Content) {
+//    public init(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, 
+//                @ViewBuilder content: @escaping () -> Content,
+//                @ViewBuilder activator: @escaping (_ action: () -> Void) -> Activator) {
+//        self.image = nil
+//        self.url = url
+//        self.disabled = disabled
+//        self.imageSize = imageSize
+//        self.content = content
+//        self.activator = activator
+//    }
+    public init(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false,
+                @ViewBuilder content: @escaping () -> Content) /*where Activator == EmptyView*/ {
         self.image = nil
         self.url = url
         self.disabled = disabled
-        self.content = content
         self.imageSize = imageSize
+        self.content = content
+//        self.activator = nil
     }
     
-    public init(image: Image, imageSize: CGSize? = nil, disabled: Bool = false, @ViewBuilder content: @escaping () -> Content) {
+//    public init(image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
+//                @ViewBuilder content: @escaping () -> Content,
+//                @ViewBuilder activator: @escaping (_ action: () -> Void) -> Activator) {
+//        self.image = image
+//        self.url = nil
+//        self.disabled = disabled
+//        self.content = content
+//        self.imageSize = imageSize
+//        self.activator = activator
+//    }
+
+    public init(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
+                @ViewBuilder content: @escaping () -> Content)/* where Activator == EmptyView*/ {
         self.image = image
         self.url = nil
         self.disabled = disabled
         self.content = content
         self.imageSize = imageSize
+//        self.activator = nil
     }
+    
+    
     
     public var body: some View {
         content()
             .onTapGesture {
-#if os(macOS)
+                if self.isPresent != nil { return }
                 openViewer()
-#elseif os(iOS)
-                withAnimation {
-                    showViewer = true
-                    backgroundOpacity = 1
-                }
-#endif
             }
+            .watchImmediately(of: self.isPresent?.wrappedValue, perform: { val in
+                guard let val = val else { return }
+                if val {
+                    openViewer()
+                } else {
+                    closeViewer()
+                }
+            })
+        .apply(imageViewerOverlay)
+    }
+    
+    @ViewBuilder
+    private func imageViewerOverlay<C: View>(content: C) -> some View {
+        content
 #if os(iOS)
             .fullScreenCover(isPresented: $showViewer) {
                 let dismissThreshold: Double = 360
@@ -98,9 +137,14 @@ public struct ImageViewer<Content: View>: View {
             }
 #endif
     }
-    
-#if os(macOS)
+        
+
+}
+
+
+extension ImageViewer {
     func openViewer() {
+#if os(macOS)
         if let window = currentWindow {
             window.makeKeyAndOrderFront(nil)
             return
@@ -112,7 +156,7 @@ public struct ImageViewer<Content: View>: View {
                               defer: true)
         window.animationBehavior = .documentWindow
         let view: ImageViewerView = ImageViewerView(url: url, image: image)
-
+        
         let contentView = NSHostingView(rootView: view)
         window.contentView = contentView
         window.isReleasedWhenClosed = false // important
@@ -127,7 +171,7 @@ public struct ImageViewer<Content: View>: View {
         if let screen = window.screen,
            let imageSize = self.imageSize {
             window.animator().setContentSize(.init(width: min(imageSize.width, screen.frame.width * 0.9),
-                                        height: min(imageSize.height, screen.frame.height * 0.9)))
+                                                   height: min(imageSize.height, screen.frame.height * 0.9)))
         }
         
         currentWindow = window
@@ -139,25 +183,55 @@ public struct ImageViewer<Content: View>: View {
                 observer = nil
             }
         }
-    }
 #elseif os(iOS)
-    func openViewer() {
-        
-    }
+        withAnimation {
+            showViewer = true
+            backgroundOpacity = 1
+        }
 #endif
+    }
+    
+    func closeViewer() {
+#if os(macOS)
+        self.currentWindow?.close()
+#elseif os(iOS)
+        withAnimation {
+            showViewer = false
+            backgroundOpacity = 0
+        }
+#endif
+    }
 }
 
 extension View {
+//    @ViewBuilder
+//    public func imageViewer<A: View>(image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
+//                            @ViewBuilder activator: @escaping (_ action: () -> Void) -> A) -> some View {
+//        ImageViewer(image: image, imageSize: imageSize, disabled: disabled) {
+//            self
+//        } activator: { action in
+//            activator(action)
+//        }
+//    }
     @ViewBuilder
-    public func imageViewer(image: Image, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
-        ImageViewer(image: image, imageSize: imageSize, disabled: disabled) {
+    public func imageViewer(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
+        ImageViewer(isPresent: isPresent, image: image, imageSize: imageSize, disabled: disabled) {
             self
         }
     }
     
+//    @ViewBuilder
+//    public func imageViewer<A: View>(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false,
+//                                     @ViewBuilder activator: @escaping (_ action: () -> Void) -> A) -> some View {
+//        ImageViewer(url: url, imageSize: imageSize, disabled: disabled) {
+//            self
+//        } activator: { action in
+//            activator(action)
+//        }
+//    }
     @ViewBuilder
-    public func imageViewer(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
-        ImageViewer(url: url, imageSize: imageSize, disabled: disabled) {
+    public func imageViewer(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
+        ImageViewer(isPresent: isPresent, url: url, imageSize: imageSize, disabled: disabled) {
             self
         }
     }
