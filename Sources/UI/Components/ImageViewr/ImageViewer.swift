@@ -88,7 +88,14 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
                     closeViewer()
                 }
             })
-        .apply(imageViewerOverlay)
+            .apply(imageViewerOverlay)
+            .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
+                if let window = notification.object as? NSWindow,
+                   window == self.currentWindow {
+                    self.currentWindow?.close()
+                    self.isPresent?.wrappedValue = false
+                }
+            }
     }
     
     @ViewBuilder
@@ -147,25 +154,27 @@ extension ImageViewer {
 #if os(macOS)
         if let window = currentWindow {
             window.makeKeyAndOrderFront(nil)
-            return
+            window.center()
+        } else {
+            let window = NSWindow(
+                contentRect: .init(origin: .zero, size: .init(width: 800, height: 500)),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: true
+            )
+            window.animationBehavior = .documentWindow
+            self.currentWindow = window
         }
         
-        let window = NSWindow(contentRect: .init(origin: .zero, size: .init(width: 800, height: 500)),
-                              styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                              backing: .buffered,
-                              defer: true)
-        window.animationBehavior = .documentWindow
+        guard let window = self.currentWindow else { return }
+        
         let view: ImageViewerView = ImageViewerView(url: url, image: image)
         
         let contentView = NSHostingView(rootView: view)
         window.contentView = contentView
         window.isReleasedWhenClosed = false // important
-        NSApp.activate(ignoringOtherApps: true)
-        window.animator().makeKeyAndOrderFront(nil)
-        window.animator().center()
         window.isMovable = true
         window.backgroundColor = .black
-        window.level = .modalPanel
         window.titleVisibility = .hidden
         
         if let screen = window.screen,
@@ -174,15 +183,19 @@ extension ImageViewer {
                                                    height: min(imageSize.height, screen.frame.height * 0.9)))
         }
         
+        NSApp.activate(ignoringOtherApps: true)
+        window.animator().makeKeyAndOrderFront(nil)
+        window.animator().center()
+        
         currentWindow = window
-        var observer: NSKeyValueObservation? = nil
-        observer = window.observe(\.screen) { window, screen in
-            if screen.newValue == nil {
-                currentWindow = nil
-                observer?.invalidate()
-                observer = nil
-            }
-        }
+//        var observer: NSKeyValueObservation? = nil
+//        observer = window.observe(\.screen) { window, screen in
+//            if screen.newValue == nil {
+//                currentWindow = nil
+//                observer?.invalidate()
+//                observer = nil
+//            }
+//        }
 #elseif os(iOS)
         withAnimation {
             showViewer = true
@@ -194,6 +207,7 @@ extension ImageViewer {
     func closeViewer() {
 #if os(macOS)
         self.currentWindow?.close()
+        self.currentWindow = nil
 #elseif os(iOS)
         withAnimation {
             showViewer = false
