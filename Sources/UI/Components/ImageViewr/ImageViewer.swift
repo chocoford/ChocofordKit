@@ -43,6 +43,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
 //    }
     public init(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false,
                 @ViewBuilder content: @escaping () -> Content) /*where Activator == EmptyView*/ {
+        self.isPresent = isPresent
         self.image = nil
         self.url = url
         self.disabled = disabled
@@ -64,6 +65,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
 
     public init(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
                 @ViewBuilder content: @escaping () -> Content)/* where Activator == EmptyView*/ {
+        self.isPresent = isPresent
         self.image = image
         self.url = nil
         self.disabled = disabled
@@ -80,14 +82,14 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
                 if self.isPresent != nil { return }
                 openViewer()
             }
-            .watchImmediately(of: self.isPresent?.wrappedValue, perform: { val in
+            .watchImmediately(of: self.isPresent?.wrappedValue) { val in
                 guard let val = val else { return }
                 if val {
                     openViewer()
                 } else {
                     closeViewer()
                 }
-            })
+            }
             .apply(imageViewerOverlay)
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
                 if let window = notification.object as? NSWindow,
