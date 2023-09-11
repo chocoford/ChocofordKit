@@ -52,6 +52,7 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
       scrollView.hasHorizontalScroller = true
       
       scrollView.borderType = .noBorder
+      scrollView.backgroundColor = .clear
       
       scrollView.autoresizingMask = [.width, .height]
       let view = NSView(frame: .init(origin: .zero, size: size))
