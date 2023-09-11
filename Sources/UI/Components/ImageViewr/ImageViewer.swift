@@ -155,8 +155,8 @@ extension ImageViewer {
     func openViewer() {
 #if os(macOS)
         if let window = currentWindow {
+            NSApp.activate(ignoringOtherApps: true)
             window.makeKeyAndOrderFront(nil)
-            window.center()
         } else {
             let window = NSWindow(
                 contentRect: .init(origin: .zero, size: .init(width: 800, height: 500)),
@@ -190,14 +190,6 @@ extension ImageViewer {
         window.animator().center()
         
         currentWindow = window
-//        var observer: NSKeyValueObservation? = nil
-//        observer = window.observe(\.screen) { window, screen in
-//            if screen.newValue == nil {
-//                currentWindow = nil
-//                observer?.invalidate()
-//                observer = nil
-//            }
-//        }
 #elseif os(iOS)
         withAnimation {
             showViewer = true
@@ -209,7 +201,6 @@ extension ImageViewer {
     func closeViewer() {
 #if os(macOS)
         self.currentWindow?.close()
-        self.currentWindow = nil
 #elseif os(iOS)
         withAnimation {
             showViewer = false
