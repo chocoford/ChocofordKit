@@ -5,6 +5,7 @@
 //  Created by Dove Zachary on 2023/5/24.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 public extension Timer {
@@ -17,3 +18,4 @@ public extension Timer {
         }
     }
 }
+#endif

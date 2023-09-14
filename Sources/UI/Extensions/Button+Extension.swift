@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+#if canImport(SwiftUI)
 
 //extension Button {
 //    public init<S>(_ title: S, action: @escaping () async -> Void) where S: StringProtocol {
@@ -16,3 +17,4 @@ import SwiftUI
 //        }
 //    }
 //}
+#endif

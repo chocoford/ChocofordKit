@@ -5,9 +5,9 @@
 //  Created by Dove Zachary on 2023/9/4.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 import ShapeBuilder
-
 
 public enum ButtonShape {
     case automatic
@@ -30,3 +30,4 @@ internal func buttonShape(_ shape: ButtonShape) -> some Shape {
             Rectangle()
     }
 }
+#endif

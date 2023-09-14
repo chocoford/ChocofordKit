@@ -5,6 +5,7 @@
 //  Created by Chocoford on 2023/4/21.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 extension Edge {
@@ -21,3 +22,4 @@ extension Edge {
         }
     }
 }
+#endif

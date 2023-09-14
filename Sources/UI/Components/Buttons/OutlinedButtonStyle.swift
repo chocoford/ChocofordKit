@@ -5,20 +5,15 @@
 //  Created by Chocoford on 2022/12/10.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
-public struct OutlinedButtonStyle: ButtonStyle {
+public struct OutlinedButtonStyle: PrimitiveButtonStyle {
     var colors: ButtonColor
     var size: ButtonSize = .normal
     var block: Bool = false
     var square: Bool = false
 
-    public func makeBody(configuration: Self.Configuration) -> some View {
-        OutlinedButtonStyleView(isPressed: configuration.isPressed, colors: colors, size: size, block: block) {
-            configuration.label
-        }
-    }
-    
     public init(
         colors: ButtonColor = .init(
             default: .accentColor,
@@ -34,6 +29,17 @@ public struct OutlinedButtonStyle: ButtonStyle {
         self.block = block
         self.square = square
     }
+    
+    public func makeBody(configuration: Self.Configuration) -> some View {
+        PrimitiveButtonWrapper {
+            configuration.trigger()
+        } content: { isPressed in
+            OutlinedButtonStyleView(isPressed: isPressed, colors: colors, size: size, block: block) {
+                configuration.label
+            }
+        }
+    }
+    
 }
 
 public struct OutlinedButtonStyleView<V: View>: View {
@@ -86,8 +92,28 @@ public struct OutlinedButtonStyleView<V: View>: View {
     }
 }
 
-extension ButtonStyle {
-//    public var outlined
+extension PrimitiveButtonStyle where Self == OutlinedButtonStyle {
+    public static var outlined: OutlinedButtonStyle {
+        OutlinedButtonStyle()
+    }
+    
+    public static func outlined(
+        colors: ButtonColor = .init(
+            default: .accentColor,
+            hovered: .accentColor.opacity(0.5),
+            pressed: .accentColor.opacity(0.1)
+        ),
+        size: ButtonSize = .normal,
+        block: Bool = false,
+        square: Bool = false
+    ) -> OutlinedButtonStyle {
+        OutlinedButtonStyle(
+            colors: colors,
+            size: size,
+            block: block,
+            square: square
+        )
+    }
 }
 
 public struct OutlinedMenuButtonStyle: MenuStyle {
@@ -122,4 +148,6 @@ struct OutlinedButtonStyle_Previews: PreviewProvider {
         .padding()
     }
 }
+#endif
+
 #endif

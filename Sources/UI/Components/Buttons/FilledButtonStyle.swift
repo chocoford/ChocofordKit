@@ -5,8 +5,9 @@
 //  Created by Dove Zachary on 2023/8/17.
 //
 
-import SwiftUI
+#if canImport(SwiftUI)
 
+import SwiftUI
 
 public struct FilledButtonStyle: PrimitiveButtonStyle {
     var size: ButtonSize
@@ -64,9 +65,9 @@ public struct FilledButtonStyle: PrimitiveButtonStyle {
                     .brightness(isPressed ? -0.1 : hovering ? -0.05 : 0.0)
             )
             .animation(.easeOut(duration: 0.2), value: hovering)
-            .onHover { over in
-                guard isEnabled else {return}
-                self.hovering = over
+            .onHover { hover in
+                guard isEnabled else { return }
+                self.hovering = hover
             }
         }
     }
@@ -110,16 +111,25 @@ extension PrimitiveButtonStyle where Self == FilledButtonStyle {
 }
 
 #if DEBUG
-struct FilledButtonStyle_Previews: PreviewProvider {
-    static var previews: some View {
+struct FillButtonView: View {
+    @State private var isLoading = false
+    var body: some View {
         Button {
-            
+            isLoading = true
         } label: {
             Text("Button")
         }
-        .buttonStyle(.fill)
+        .buttonStyle(.fill(loading: isLoading, shape: .roundedRectangle(cornerRadius: 4)))
+    }
+}
+
+struct FilledButtonStyle_Previews: PreviewProvider {
+    static var previews: some View {
+        FillButtonView()
+            .padding()
     }
 }
 #endif
 
 
+#endif

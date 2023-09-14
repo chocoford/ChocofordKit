@@ -1,10 +1,11 @@
 //
-//  File.swift
+//  ScrollView+FadeMask.swift
 //  
 //
 //  Created by Dove Zachary on 2023/7/24.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 extension View {
@@ -34,3 +35,5 @@ extension View {
             }
     }
 }
+
+#endif

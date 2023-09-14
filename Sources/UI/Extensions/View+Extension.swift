@@ -4,7 +4,7 @@
 //
 //  Created by Chocoford on 2022/11/28.
 //
-
+#if canImport(SwiftUI)
 import SwiftUI
 import SwiftUIIntrospect
 
@@ -186,27 +186,8 @@ extension View {
         )
     }
 }
-//#elseif os(iOS)
-//extension View {
-//    @ViewBuilder
-//    public func visualEffect(
-//        material: Any,
-//        blendingMode: Any,
-//        emphasized: Any
-//    ) -> some View {
-//        self
-//    }
-//}
-#endif
 
-#if os(macOS)
-//extension View {
-//    public func window(_ callback: @escaping (_ window: NSWindow) -> Void) -> some View {
-//        introspect(.window, on: <#T##(PlatformViewVersionPredicate<IntrospectableViewType, PlatformEntity>)...##(PlatformViewVersionPredicate<IntrospectableViewType, PlatformEntity>)#>, customize: <#T##(PlatformEntity) -> Void#>)
-//    }
-//}
 #endif
-
 
 // MARK: - Styles
 
@@ -238,3 +219,4 @@ public extension View {
         }
     }
 }
+#endif

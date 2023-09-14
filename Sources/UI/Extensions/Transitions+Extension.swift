@@ -6,6 +6,7 @@
 //  https://swiftui-lab.com/matchedGeometryEffect-part1
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 extension AnyTransition {
@@ -176,3 +177,4 @@ public struct HeroConfiguration {
     }
 }
 
+#endif

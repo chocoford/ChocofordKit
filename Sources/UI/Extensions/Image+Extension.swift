@@ -5,6 +5,7 @@
 //  Created by Chocoford on 2023/2/20.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 extension Image {
@@ -30,3 +31,4 @@ extension Image {
 #endif
     }
 }
+#endif

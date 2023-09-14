@@ -4,14 +4,15 @@
 //
 //  Created by Dove Zachary on 2023/8/20.
 //
-
+#if canImport(SwiftUI)
 import SwiftUI
 
 #if os(macOS)
-/// Copied and modified from [Swiftcord](https://github.com/SwiftcordApp/Swiftcord)
+
 @available(macOS 13.0, *)
-/// Remove the side bar toogle in macos Settings view.
 extension NavigationSplitView {
+    /// Copied and modified from [Swiftcord](https://github.com/SwiftcordApp/Swiftcord)
+    /// Remove the side bar toogle in macos Settings view.
     public func removeSettingsSidebarToggle(windowModifier: @escaping (NSWindow) -> Void = { _ in }) -> some View {
         modifier(RemoveSettingsSidebarToggleModifier(windowModifier: windowModifier))
     }
@@ -31,4 +32,6 @@ private struct RemoveSettingsSidebarToggleModifier: ViewModifier {
         }
     }
 }
+#endif
+
 #endif

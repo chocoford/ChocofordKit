@@ -5,6 +5,7 @@
 //  Created by Dove Zachary on 2023/8/22.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 #if os(macOS)
 /// Auto set `ActivationPolicy` for `UIElement` App..
@@ -19,7 +20,6 @@ struct AutoActivationPolicyModifer: ViewModifier {
             .onAppear {
                 NSApp.setActivationPolicy(.regular)
                 activateApp()
-//                self.window?.makeKeyAndOrderFront(nil)
                 self.window?.orderFrontRegardless()
             }
             .introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
@@ -100,3 +100,4 @@ extension View {
 
 
 
+#endif

@@ -9,11 +9,11 @@ import SwiftUI
 public struct LoadableButtonStyleView<V: View>: View {
     var loading: Bool = false
     var color: Color = .white
-    @State private var hovering = false
     
     let content: () -> V
     
-    public init(loading: Bool = false, color: Color = .white, @ViewBuilder content: @escaping () -> V) {
+    public init(loading: Bool = false, color: Color = .white,
+                @ViewBuilder content: @escaping () -> V) {
         self.loading = loading
         self.color = color
         self.content = content
@@ -29,14 +29,11 @@ public struct LoadableButtonStyleView<V: View>: View {
                     .stroke(color)
             }
         }
-        .onHover { over in
-            self.hovering = over
-        }
     }
 }
 
 
-public struct LoadableButtonStyle: ButtonStyle {
+internal struct LoadableButtonStyle: ButtonStyle {
     var loading: Bool = false
     var color: Color = .white
     

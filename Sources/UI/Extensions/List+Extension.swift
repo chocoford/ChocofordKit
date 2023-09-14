@@ -5,6 +5,7 @@
 //  Created by Chocoford on 2023/4/9.
 //
 
+#if canImport(SwiftUI)
 import SwiftUI
 
 #if os(iOS)
@@ -15,4 +16,6 @@ import SwiftUI
 //        self.init
 //    }
 //}
+#endif
+
 #endif

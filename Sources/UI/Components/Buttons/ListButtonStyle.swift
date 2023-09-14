@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct ListButtonStyle: ButtonStyle {
+public struct ListButtonStyle: PrimitiveButtonStyle {
     var showIndicator = false
     var selected: Bool = false
 
@@ -51,10 +51,31 @@ public struct ListButtonStyle: ButtonStyle {
     
     
     public func makeBody(configuration: Self.Configuration) -> some View {
-        ListButtonStyleView(isPressed: configuration.isPressed,
-                            showIndicator: showIndicator,
-                            selected: selected) {
-            configuration.label
+        PrimitiveButtonWrapper {
+            configuration.trigger()
+        } content: { isPressed in
+            ListButtonStyleView(isPressed: isPressed,
+                                showIndicator: showIndicator,
+                                selected: selected) {
+                configuration.label
+            }
         }
+    }
+}
+
+
+extension PrimitiveButtonStyle where Self == ListButtonStyle {
+    public static var listCell: ListButtonStyle {
+        ListButtonStyle()
+    }
+    
+    public static func listCell(
+        showIndicator: Bool = false,
+        selected: Bool = false
+    ) -> ListButtonStyle {
+        ListButtonStyle(
+            showIndicator: showIndicator,
+            selected: selected
+        )
     }
 }

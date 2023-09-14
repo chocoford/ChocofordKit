@@ -1,3 +1,4 @@
+#if canImport(SwiftUI)
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -34,6 +35,7 @@ extension Color {
     }
     
     public init(hue: Double, saturation: Double, lightness: Double, opacity: Double = 1) {
+        
         precondition(0...1 ~= hue &&
                      0...1 ~= saturation &&
                      0...1 ~= lightness &&
@@ -155,3 +157,4 @@ public extension Color {
     }
     #endif
 }
+#endif
