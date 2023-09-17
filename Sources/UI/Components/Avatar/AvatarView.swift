@@ -9,6 +9,15 @@ import SwiftUI
 import ShapeBuilder
 import SDWebImageSwiftUI
 
+public protocol AvatarUserRepresentable: Hashable, Identifiable {
+    associatedtype AvatarURL
+    
+    var name: String? { get }
+    var avatarURL: AvatarURL? { get }
+}
+
+
+
 public struct AvatarView<V: View>: View {
     public class Config: ObservableObject {
         public enum AvatarShape {
