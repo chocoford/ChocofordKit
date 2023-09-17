@@ -22,24 +22,26 @@ public struct AvatarsGroupView<T: AvatarUserRepresentable>: View {
     
     
     public var body: some View {
-        ForEach(Array(users.prefix(5))) { member in
-            if let url = member.avatarURL as? URL {
-                AvatarView(url,
-                           fallbackText: String(member.name?.first ?? "?"))
-                .size(20)
-            } else if let urlString = member.avatarURL as? String {
-                AvatarView(urlString: urlString,
-                           fallbackText: String(member.name?.first ?? "?"))
-                .size(20)
-            } else {
-                AvatarView(nil,
-                           fallbackText: String(member.name?.first ?? "?"))
-                .size(20)
+        HStack(spacing: -6) {
+            ForEach(Array(users.prefix(5))) { member in
+                if let url = member.avatarURL as? URL {
+                    AvatarView(url,
+                               fallbackText: String(member.name?.first ?? "?"))
+                    .size(20)
+                } else if let urlString = member.avatarURL as? String {
+                    AvatarView(urlString: urlString,
+                               fallbackText: String(member.name?.first ?? "?"))
+                    .size(20)
+                } else {
+                    AvatarView(nil,
+                               fallbackText: String(member.name?.first ?? "?"))
+                    .size(20)
+                }
             }
-        }
-        if users.count > 5 {
-            AvatarView(nil, fallbackText: "+\(users.count - 5)")
-            .size(20)
+            if users.count > 5 {
+                AvatarView(nil, fallbackText: "+\(users.count - 5)")
+                    .size(20)
+            }
         }
     }
 }
