@@ -95,7 +95,7 @@ public extension Array {
         return result
     }
     
-    func merged<T>() -> [String : T] where Element == [String : T]  {
-        reduce(into: [String : T]()) { $0.merge($1) { $1 } }
+    func merged<K, T>() -> [K : T] where K: Hashable, Element == [K : T]  {
+        reduce(into: [K : T]()) { $0.merge($1) { $1 } }
     }
 }
