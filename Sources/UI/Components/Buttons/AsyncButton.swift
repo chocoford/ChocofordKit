@@ -16,11 +16,12 @@ public struct AsyncButtonError: LocalizedError {
 }
 
 /// A button that allow perform async throw action, with alert.
-public struct AsyncButton<Label: View>: View {
+public struct AsyncButton<Label: View, Loading: View>: View {
     
     internal var role: ButtonRole?
     internal var action: () async throws -> Void
     internal var label: () -> Label
+    internal var loadingLabel: () -> Loading
     
     
     @State private var showAlert = false
@@ -28,16 +29,18 @@ public struct AsyncButton<Label: View>: View {
     
     public init(role: ButtonRole? = nil,
                 action: @escaping () async throws -> Void,
-                @ViewBuilder label: @escaping () -> Label) {
+                @ViewBuilder label: @escaping () -> Label,
+                @ViewBuilder loadingLabel: @escaping () -> Loading = {  ProgressView().controlSize(.small) }) {
         self.role = role
         self.action = action
         self.label = label
+        self.loadingLabel = loadingLabel
     }
     
     @State private var isRunning: Bool = false
     
     public var body: some View {
-        Button(role: role, action: {
+        Button(role: role) {
             guard !isRunning else { return }
             Task {
                 isRunning = true
@@ -48,7 +51,13 @@ public struct AsyncButton<Label: View>: View {
                 }
                 isRunning = false
             }
-        }, label: label)
+        } label: {
+            if isRunning {
+                loadingLabel()
+            } else {
+                label()
+            }
+        }
         .disabled(isRunning)
         .alert("Error occured!", isPresented: $showAlert) {
             Button {
