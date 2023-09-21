@@ -52,10 +52,13 @@ public struct AsyncButton<Label: View, Loading: View>: View {
                 isRunning = false
             }
         } label: {
-            if isRunning {
-                loadingLabel()
-            } else {
-                label()
+            SingleAxisGeometryReader(axis: .horizontal) { width in
+                if isRunning {
+                    loadingLabel()
+                        .frame(width: width)
+                } else {
+                    label()
+                }
             }
         }
         .disabled(isRunning)
@@ -74,3 +77,21 @@ public struct AsyncButton<Label: View, Loading: View>: View {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    VStack {
+        AsyncButton {
+            await Timer.wait(2)
+        } label: {
+            Center(.horizontal) {
+                Text("Button")
+            }
+        }
+        .buttonStyle(.borderedProminent)
+        .padding()
+        .controlSize(.large)
+    }
+    .frame(width: 200)
+}
+#endif

@@ -56,7 +56,7 @@ public struct Center<Content: View>: View {
 #if DEBUG
 struct Center_Previews: PreviewProvider {
     static var previews: some View {
-        Center{ }
+        Center(.horizontal){ }
     }
 }
 #endif

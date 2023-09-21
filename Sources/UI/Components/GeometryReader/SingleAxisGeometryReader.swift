@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// SingleAxisGeometryReader keeps the max width of its subview.
 public struct SingleAxisGeometryReader<Content: View>: View {
     private struct SizeKey: PreferenceKey {
         static var defaultValue: CGFloat { 10 }
