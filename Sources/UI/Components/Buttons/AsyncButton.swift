@@ -27,6 +27,8 @@ public struct AsyncButton<Label: View, Loading: View>: View {
     @State private var showAlert = false
     @State private var error: Error? = nil
     
+    @State private var labelWidth: CGFloat = .zero
+    
     public init(role: ButtonRole? = nil,
                 action: @escaping () async throws -> Void,
                 @ViewBuilder label: @escaping () -> Label,
@@ -52,12 +54,15 @@ public struct AsyncButton<Label: View, Loading: View>: View {
                 isRunning = false
             }
         } label: {
-            SingleAxisGeometryReader(axis: .horizontal) { width in
+            ViewSizeReader { size in
                 if isRunning {
                     loadingLabel()
-                        .frame(width: width)
+                        .frame(width: labelWidth)
                 } else {
                     label()
+                        .onChange(of: size.width) { width in
+                            labelWidth = width
+                        }
                 }
             }
         }
