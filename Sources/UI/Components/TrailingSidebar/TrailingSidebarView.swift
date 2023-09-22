@@ -66,7 +66,7 @@ struct TrailingSidebarView<Master: View, Detail: View>: View {
         content
             .transition(
                 .move(edge: self.uiSize == .regular ? .trailing : .bottom)
-                .combined(with: .fade)
+                .combined(with: .opacity)
                 .animation(.default)
             )
     }

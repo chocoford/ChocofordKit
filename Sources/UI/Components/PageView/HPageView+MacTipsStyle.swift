@@ -9,8 +9,8 @@ import SwiftUI
 import ChocofordEssentials
 import AVKit
 import SwiftUIIntrospect
-import SDWebImageSwiftUI
 import SFSafeSymbols
+import CachedAsyncImage
 
 public struct MacTipsPageViewItem: Hashable {
     public var image: String?
@@ -115,9 +115,13 @@ public struct MacTipsPageViewContent: View {
     func mediaContent() -> some View {
         if let image = item.image {
             if image.hasPrefix("http"), let url = URL(string: image) {
-                WebImage(url: url)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
+                CachedAsyncImage(url: url) {
+                    $0
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    
+                }
             } else {
                 Image(image)
                     .resizable()

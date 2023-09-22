@@ -7,7 +7,7 @@
 
 import SwiftUI
 import ShapeBuilder
-import SDWebImageSwiftUI
+import CachedAsyncImage
 
 public protocol AvatarUserRepresentable: Hashable, Identifiable {
     associatedtype AvatarURL
@@ -80,23 +80,24 @@ public struct AvatarView<V: View>: View {
     }
     
     public var body: some View {
-        WebImage(url: url, options: [.lowPriority, .scaleDownLargeImages])
-            .resizable()
-            .placeholder {
-                Rectangle()
-                    .foregroundColor(.gray)
-                    .overlay(alignment: .center) {
-                        if shouldAdjustTextSize {
-                            fallbackView()
-                                .font(.system(size: config.size / 2))
-                                .foregroundColor(.white)
-                        } else {
-                            fallbackView()
-                        }
+        CachedAsyncImage(url: url) { image in
+            image
+                .resizable()
+        } placeholder: {
+            Rectangle()
+                .foregroundColor(.gray)
+                .overlay(alignment: .center) {
+                    if shouldAdjustTextSize {
+                        fallbackView()
+                            .font(.system(size: config.size / 2))
+                            .foregroundColor(.white)
+                    } else {
+                        fallbackView()
                     }
-            }
-            .frame(width: config.size, height: config.size, alignment: .center)
-            .clipShape(clipShape)
+                }
+        }
+        .frame(width: config.size, height: config.size, alignment: .center)
+        .clipShape(clipShape)
     }
 }
 

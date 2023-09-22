@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import SDWebImage
-import SDWebImageSwiftUI
 
 #if os(macOS)
 class CenteredClipView: NSClipView {

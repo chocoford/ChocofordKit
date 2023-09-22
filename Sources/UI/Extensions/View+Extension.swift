@@ -44,13 +44,9 @@ extension View {
     /// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
     @ViewBuilder
     public func show(_ condition: @autoclosure () -> Bool) -> some View {
-        if condition() {
-            self
-        } else {
-            self
-                .opacity(0)
-                .frame(width: 0, height: 0, alignment: .center)
-        }
+        self
+            .opacity(condition() ? 1 : 0)
+            .frame(width: condition() ? nil : 0, height: condition() ? nil : 0, alignment: .center)
     }
 
     // MARK: - Refreshable

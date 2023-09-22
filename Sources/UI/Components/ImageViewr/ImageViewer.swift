@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Shimmer
-import SDWebImageSwiftUI
+import CachedAsyncImage
 
 public struct ImageViewer<Content: View/*, Activator: View*/>: View {
     var isPresent: Binding<Bool>?
@@ -263,11 +263,16 @@ struct BackgroundBlurView: UIViewRepresentable {
 struct ImageViewer_Previews: PreviewProvider {
     static var previews: some View {
         ImageViewer(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageSize: .init(width: 896, height: 1344)) {
-            WebImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"))
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 200, height: 200)
-
+            CachedAsyncImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large")) {
+                $0
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            } placeholder: {
+                
+            }
+            
+            .frame(width: 200, height: 200)
+            
         }
     }
 }

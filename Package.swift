@@ -24,13 +24,12 @@ let package = Package(
         .package(url: "https://github.com/kirualex/SwiftyGif.git",
                  from: "5.4.4"),
         .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "0.12.0"),
-        .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.2.2"),
-        .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.8.1"),
         .package(url: "https://github.com/elai950/AlertToast.git", branch: "master"),
         .package(url: "https://github.com/stevengharris/SplitView.git", from: "3.0.0"),
         .package(url: "https://github.com/fatbobman/SwiftUIOverlayContainer.git", from: "2.0.0"),
         .package(url: "https://github.com/lucaszischka/BottomSheet", from: "3.1.0"),
-        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "4.1.1"))
+        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "4.1.1")),
+        .package(url: "https://github.com/lorenzofiamingo/swiftui-cached-async-image.git", .upToNextMajor(from: "2.1.1"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -43,13 +42,12 @@ let package = Package(
                 .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
                 "SwiftyGif",
                 .product(name: "SwiftUIIntrospect", package: "SwiftUI-Introspect"),
-                "SDWebImageSwiftUI",
-                "Kingfisher",
                 "AlertToast",
                 "SplitView",
                 "SwiftUIOverlayContainer",
                 "BottomSheet",
-                "SFSafeSymbols"
+                "SFSafeSymbols",
+                .product(name: "CachedAsyncImage", package: "swiftui-cached-async-image")
             ],
             path: "Sources/UI"
         ),

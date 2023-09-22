@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SDWebImageSwiftUI
+import CachedAsyncImage
 
 struct ImageViewerView: View {
     struct ImageSizeKey: PreferenceKey {
@@ -37,27 +37,28 @@ struct ImageViewerView: View {
 #endif
                         .aspectRatio(contentMode: .fit)
                 } else {
-                    WebImage(url: url)
-                        .placeholder {
-                            Rectangle().shimmering()
-                        }
+                    CachedAsyncImage(url: url) { image in
+                        image
 #if os(iOS)
-                        .resizable()
+                            .resizable()
 #endif
-                        .aspectRatio(contentMode: .fit)
+                            .aspectRatio(contentMode: .fit)
+                    } placeholder: {
+                        Rectangle().shimmering()
+                    }
                 }
             }
 #if os(macOS)
-                .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
+            .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
 #endif
-                .background {
-                    GeometryReader { geometry in
-                        Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
-                            .onChange(of: geometry.size) { newValue in
-                                self.imageSize = newValue
-                            }
-                    }
+            .background {
+                GeometryReader { geometry in
+                    Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
+                        .onChange(of: geometry.size) { newValue in
+                            self.imageSize = newValue
+                        }
                 }
+            }
         }
         .ignoresSafeArea()
         .onPreferenceChange(ImageSizeKey.self) {
