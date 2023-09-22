@@ -45,7 +45,6 @@ struct ImageViewerView: View {
                         .resizable()
 #endif
                         .aspectRatio(contentMode: .fit)
-
                 }
             }
 #if os(macOS)
