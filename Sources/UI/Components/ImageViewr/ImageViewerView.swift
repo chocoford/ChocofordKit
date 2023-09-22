@@ -87,7 +87,7 @@ struct ImageViewerView: View {
             Rectangle()
                 .frame(width: imageSize.width, height: imageSize.height)
                 .shimmering()
-                .opacity(isLoading ? 1 : 0)
+//                .opacity(isLoading ? 1 : 0)
         }
     }
 }
