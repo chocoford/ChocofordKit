@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SDWebImageSwiftUI
+import Shimmer
 
 struct ImageViewerView: View {
     struct ImageSizeKey: PreferenceKey {
