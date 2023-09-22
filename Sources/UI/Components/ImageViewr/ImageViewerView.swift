@@ -40,20 +40,28 @@ struct ImageViewerView: View {
                         .aspectRatio(contentMode: .fit)
                 } else {
                     WebImage(url: url)
-                        .onProgress(perform: { _, _ in
-                            withAnimation {
-                                isLoading = true
+                        .onProgress(perform: { cur, total in
+                            if cur < total {
+                                withAnimation {
+                                    isLoading = true
+                                }
+                            } else {
+                                withAnimation {
+                                    isLoading = false
+                                }
                             }
                         })
-                        .onSuccess(perform: { _, _, _ in
-                            withAnimation {
-                                isLoading = false
-                            }
-                        })
+                    
+//                        .onSuccess(perform: { _, _, _ in
+//                            withAnimation {
+//                                isLoading = false
+//                            }
+//                        })
 #if os(iOS)
                         .resizable()
 #endif
                         .aspectRatio(contentMode: .fit)
+                    
                 }
             }
 #if os(macOS)
@@ -73,11 +81,10 @@ struct ImageViewerView: View {
             self.imageSize = $0
         }
         .overlay {
-            if isLoading {
-                Rectangle()
-                    .frame(width: imageSize.width, height: imageSize.height)
-                    .shimmering()
-            }
+            Rectangle()
+                .frame(width: imageSize.width, height: imageSize.height)
+                .shimmering()
+                .opacity(isLoading ? 1 : 0)
         }
     }
 }
