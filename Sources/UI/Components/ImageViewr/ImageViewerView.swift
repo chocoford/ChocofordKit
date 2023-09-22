@@ -40,22 +40,20 @@ struct ImageViewerView: View {
                         .aspectRatio(contentMode: .fit)
                 } else {
                     WebImage(url: url, options: [.fromLoaderOnly])
-                        .onProgress(perform: { cur, total in
-                            if cur < total {
-                                withAnimation {
-                                    isLoading = true
-                                }
-                            } else {
-                                DispatchQueue.main.async {
-                                    withAnimation {
-                                        isLoading = false
-                                    }
-                                }
+//                        .onProgress(perform: { cur, total in
+//                            if cur < total {
+//                                isLoading = true
+//                            } else {
+//                                DispatchQueue.main.async {
+//                                    isLoading = false
+//                                }
+//                            }
+//                        })
+                        .onSuccess(perform: { _, _, _ in
+                            withAnimation {
+                                isLoading = false
                             }
                         })
-//                        .onSuccess(perform: { _, _, _ in
-//                            isLoading = false
-//                        })
 #if os(iOS)
                         .resizable()
 #endif
@@ -78,11 +76,9 @@ struct ImageViewerView: View {
         .onPreferenceChange(ImageSizeKey.self) {
             self.imageSize = $0
         }
-//        .onAppear {
-//            withAnimation {
-//                isLoading = true
-//            }
-//        }
+        .onAppear {
+            isLoading = true
+        }
         .overlay {
             Rectangle()
                 .shimmering()
