@@ -27,12 +27,10 @@ class CenteredClipView: NSClipView {
 }
 
 struct ZoomableScrollView<Content: View>: NSViewRepresentable {
-    var url: URL?
     var size: CGSize
     private var content: () -> Content
     
-    init(url: URL?, size: CGSize, @ViewBuilder content: @escaping () -> Content) {
-        self.url = url
+    init(size: CGSize, @ViewBuilder content: @escaping () -> Content) {
         self.size = size
         self.content = content
     }

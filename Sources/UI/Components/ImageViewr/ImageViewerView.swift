@@ -20,6 +20,7 @@ struct ImageViewerView: View {
     let url: URL?
     let image: Image?
     
+    @State private var isLoading = false
 
     init(url: URL?, image: Image? = nil) {
         self.url = url
@@ -29,7 +30,7 @@ struct ImageViewerView: View {
     @State private var imageSize: CGSize = .zero
     
     var body: some View {
-        ZoomableScrollView(url: url, size: imageSize) {
+        ZoomableScrollView(size: imageSize) {
             Group {
                 if let image = image {
                     image
@@ -39,9 +40,16 @@ struct ImageViewerView: View {
                         .aspectRatio(contentMode: .fit)
                 } else {
                     WebImage(url: url)
-                        .placeholder {
-                            Rectangle().shimmering()
-                        }
+                        .onProgress(perform: { _, _ in
+                            withAnimation {
+                                isLoading = true
+                            }
+                        })
+                        .onSuccess(perform: { _, _, _ in
+                            withAnimation {
+                                isLoading = false
+                            }
+                        })
 #if os(iOS)
                         .resizable()
 #endif
@@ -64,11 +72,24 @@ struct ImageViewerView: View {
         .onPreferenceChange(ImageSizeKey.self) {
             self.imageSize = $0
         }
+        .overlay {
+            if isLoading {
+                Rectangle()
+                    .frame(width: imageSize.width, height: imageSize.height)
+                    .shimmering()
+            }
+        }
     }
 }
 
 struct ImageViewerView_Previews: PreviewProvider {
     static var previews: some View {
         ImageViewerView(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"))
+        
+//        WebImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"))
+//            .placeholder {
+//                ProgressView()
+//            }
+        
     }
 }
