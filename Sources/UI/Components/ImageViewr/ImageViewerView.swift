@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CachedAsyncImage
+import SDWebImageSwiftUI
 
 struct ImageViewerView: View {
     struct ImageSizeKey: PreferenceKey {
@@ -37,15 +37,15 @@ struct ImageViewerView: View {
 #endif
                         .aspectRatio(contentMode: .fit)
                 } else {
-                    CachedAsyncImage(url: url) { image in
-                        image
+                    WebImage(url: url)
+                        .placeholder {
+                            Rectangle().shimmering()
+                        }
 #if os(iOS)
-                            .resizable()
+                        .resizable()
 #endif
-                            .aspectRatio(contentMode: .fit)
-                    } placeholder: {
-                        Rectangle().shimmering()
-                    }
+                        .aspectRatio(contentMode: .fit)
+
                 }
             }
 #if os(macOS)

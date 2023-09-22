@@ -4,7 +4,7 @@
 //
 //  Created by Vincent Kwok on 28/7/22.
 //
-
+/*
 import SwiftUI
 import SwiftyGif
 
@@ -79,3 +79,4 @@ struct MacEditorTextView_Previews: PreviewProvider {
 	}
 }
 #endif
+*/

@@ -4,7 +4,7 @@
 //
 //  Created by Chocoford on 2023/2/25.
 //
-
+/*
 import SwiftUI
 import SwiftyGif
 
@@ -66,3 +66,4 @@ extension SwiftyGifUIView: SwiftyGifDelegate {
 
 #endif
 
+*/
