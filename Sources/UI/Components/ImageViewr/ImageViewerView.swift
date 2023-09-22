@@ -39,20 +39,9 @@ struct ImageViewerView: View {
 #endif
                         .aspectRatio(contentMode: .fit)
                 } else {
-                    WebImage(url: url, options: [.fromLoaderOnly])
-//                        .onProgress(perform: { cur, total in
-//                            if cur < total {
-//                                isLoading = true
-//                            } else {
-//                                DispatchQueue.main.async {
-//                                    isLoading = false
-//                                }
-//                            }
-//                        })
+                    WebImage(url: url)
                         .onSuccess(perform: { _, _, _ in
-                            withAnimation {
-                                isLoading = false
-                            }
+                            isLoading = false
                         })
 #if os(iOS)
                         .resizable()
