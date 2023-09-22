@@ -39,7 +39,7 @@ struct ImageViewerView: View {
 #endif
                         .aspectRatio(contentMode: .fit)
                 } else {
-                    WebImage(url: url)
+                    WebImage(url: url, options: [.fromLoaderOnly])
                         .onProgress(perform: { cur, total in
                             if cur < total {
                                 withAnimation {
@@ -53,9 +53,9 @@ struct ImageViewerView: View {
                                 }
                             }
                         })
-                        .onSuccess(perform: { _, _, _ in
-                            isLoading = false
-                        })
+//                        .onSuccess(perform: { _, _, _ in
+//                            isLoading = false
+//                        })
 #if os(iOS)
                         .resizable()
 #endif
@@ -78,16 +78,15 @@ struct ImageViewerView: View {
         .onPreferenceChange(ImageSizeKey.self) {
             self.imageSize = $0
         }
-        .onAppear {
-            withAnimation {
-                isLoading = true
-            }
-        }
+//        .onAppear {
+//            withAnimation {
+//                isLoading = true
+//            }
+//        }
         .overlay {
             Rectangle()
-                .frame(width: imageSize.width, height: imageSize.height)
                 .shimmering()
-//                .opacity(isLoading ? 1 : 0)
+                .opacity(isLoading ? 1 : 0)
         }
     }
 }
