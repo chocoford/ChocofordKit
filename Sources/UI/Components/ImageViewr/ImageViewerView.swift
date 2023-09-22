@@ -46,22 +46,20 @@ struct ImageViewerView: View {
                                     isLoading = true
                                 }
                             } else {
-                                withAnimation {
-                                    isLoading = false
+                                DispatchQueue.main.async {
+                                    withAnimation {
+                                        isLoading = false
+                                    }
                                 }
                             }
                         })
-                    
-//                        .onSuccess(perform: { _, _, _ in
-//                            withAnimation {
-//                                isLoading = false
-//                            }
-//                        })
+                        .onSuccess(perform: { _, _, _ in
+                            isLoading = false
+                        })
 #if os(iOS)
                         .resizable()
 #endif
                         .aspectRatio(contentMode: .fit)
-                    
                 }
             }
 #if os(macOS)
@@ -79,6 +77,11 @@ struct ImageViewerView: View {
         .ignoresSafeArea()
         .onPreferenceChange(ImageSizeKey.self) {
             self.imageSize = $0
+        }
+        .onAppear {
+            withAnimation {
+                isLoading = true
+            }
         }
         .overlay {
             Rectangle()
