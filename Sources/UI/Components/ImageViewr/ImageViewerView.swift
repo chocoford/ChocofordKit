@@ -78,9 +78,9 @@ public struct ImageViewerView: View {
                    
                 }
             }
-#if os(macOS)
-            .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
-#endif
+//#if os(macOS)
+//            .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
+//#endif
             .background {
                 GeometryReader { geometry in
                     Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
