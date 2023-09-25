@@ -22,14 +22,15 @@ public struct ImageViewerView: View {
     let image: Image?
     
     public enum ImageRenderer {
-        case sdWebImage
-        case cachedAsyncImage
+        case animatableCached
+        case cached
+        case noCached
     }
-    var imageRenderer: ImageRenderer = .cachedAsyncImage
+    var imageRenderer: ImageRenderer = .cached
     
     @State private var isLoading = false
 
-    init(url: URL?, image: Image? = nil, imageRenderer: ImageRenderer = .cachedAsyncImage) {
+    init(url: URL?, image: Image? = nil, imageRenderer: ImageRenderer = .animatableCached) {
         self.url = url
         self.image = image
         self.imageRenderer = imageRenderer
@@ -48,7 +49,37 @@ public struct ImageViewerView: View {
                         .aspectRatio(contentMode: .fit)
                 } else {
                     switch imageRenderer {
-                        case .cachedAsyncImage:
+                        case .noCached:
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                    case .success(let image):
+                                        image
+#if os(iOS)
+                                            .resizable()
+#endif
+//                                            .frame(width: imageSize.width, height: imageSize.height)
+                                            .aspectRatio(contentMode: .fit)
+                                            .onAppear {
+                                                DispatchQueue.main.async {
+                                                    isLoading = false
+                                                }
+                                            }
+                                    case .failure(let error):
+                                        Center {
+                                            Text(error.localizedDescription)
+                                        }
+                                        .onAppear {
+                                            DispatchQueue.main.async {
+                                                isLoading = false
+                                            }
+                                        }
+                                        
+                                    default:
+                                        EmptyView()
+                                        
+                                }
+                            }
+                        case .cached:
                             CachedAsyncImage(url: url) { phase in
                                 switch phase {
                                     case .success(let image):
@@ -58,14 +89,26 @@ public struct ImageViewerView: View {
 #endif
                                             .aspectRatio(contentMode: .fit)
                                             .onAppear {
+                                                DispatchQueue.main.async {
+                                                    isLoading = false
+                                                }
+                                            }
+                                    case .failure(let error):
+                                        Center {
+                                            Text(error.localizedDescription)
+                                        }
+                                        .onAppear {
+                                            DispatchQueue.main.async {
                                                 isLoading = false
                                             }
+                                        }
+                                        
                                     default:
                                         EmptyView()
                                         
                                 }
                             }
-                        case .sdWebImage:
+                        case .animatableCached:
                             WebImage(url: url)
                                 .onSuccess(perform: { _, _, _ in
                                     isLoading = false
@@ -78,9 +121,9 @@ public struct ImageViewerView: View {
                    
                 }
             }
-//#if os(macOS)
-//            .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
-//#endif
+#if os(macOS)
+            .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
+#endif
             .background {
                 GeometryReader { geometry in
                     Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
@@ -107,7 +150,7 @@ public struct ImageViewerView: View {
 
 struct ImageViewerView_Previews: PreviewProvider {
     static var previews: some View {
-        ImageViewerView(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"))
+        ImageViewerView(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageRenderer: .noCached)
         
 //        WebImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"))
 //            .placeholder {

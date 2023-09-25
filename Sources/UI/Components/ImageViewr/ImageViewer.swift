@@ -43,7 +43,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
 //        self.activator = activator
 //    }
     public init(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false,
-                imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage,
+                imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content) /*where Activator == EmptyView*/ {
         self.isPresent = isPresent
         self.image = nil
@@ -67,7 +67,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
 //    }
 
     public init(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
-                imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage,
+                imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content)/* where Activator == EmptyView*/ {
         self.isPresent = isPresent
         self.image = image
@@ -226,7 +226,7 @@ extension View {
 //        }
 //    }
     @ViewBuilder
-    public func imageViewer(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage) -> some View {
+    public func imageViewer(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .animatableCached) -> some View {
         ImageViewer(isPresent: isPresent, image: image, imageSize: imageSize, disabled: disabled, imageRenderer: imageRenderer) {
             self
         }
@@ -242,7 +242,7 @@ extension View {
 //        }
 //    }
     @ViewBuilder
-    public func imageViewer(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage) -> some View {
+    public func imageViewer(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .animatableCached) -> some View {
         ImageViewer(isPresent: isPresent, url: url, imageSize: imageSize, disabled: disabled, imageRenderer: imageRenderer) {
             self
         }
