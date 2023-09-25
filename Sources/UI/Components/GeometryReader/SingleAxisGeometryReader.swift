@@ -36,7 +36,11 @@ public struct SingleAxisGeometryReader<Content: View>: View {
                    alignment: alignment)
             .background(GeometryReader {
                 proxy in
-                Color.clear.preference(key: SizeKey.self, value: axis == .horizontal ? proxy.size.width : proxy.size.height)
-            }).onPreferenceChange(SizeKey.self) { size = $0 }
+                Color.clear
+                    .preference(key: SizeKey.self, value: axis == .horizontal ? proxy.size.width : proxy.size.height)
+                    .onAppear { size = axis == .horizontal ? proxy.size.width : proxy.size.height }
+
+            })
+            .onPreferenceChange(SizeKey.self) { size = $0 }
     }
 }
