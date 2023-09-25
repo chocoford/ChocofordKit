@@ -15,6 +15,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
     var image: Image?
     var url: URL?
     var imageSize: CGSize?
+    var imageRenderer: ImageViewerView.ImageRenderer
     
     var disabled: Bool = false
     var content: () -> Content
@@ -42,6 +43,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
 //        self.activator = activator
 //    }
     public init(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false,
+                imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage,
                 @ViewBuilder content: @escaping () -> Content) /*where Activator == EmptyView*/ {
         self.isPresent = isPresent
         self.image = nil
@@ -49,6 +51,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
         self.disabled = disabled
         self.imageSize = imageSize
         self.content = content
+        self.imageRenderer = imageRenderer
 //        self.activator = nil
     }
     
@@ -64,6 +67,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
 //    }
 
     public init(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
+                imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage,
                 @ViewBuilder content: @escaping () -> Content)/* where Activator == EmptyView*/ {
         self.isPresent = isPresent
         self.image = image
@@ -71,6 +75,7 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
         self.disabled = disabled
         self.content = content
         self.imageSize = imageSize
+        self.imageRenderer = imageRenderer
 //        self.activator = nil
     }
     
@@ -170,7 +175,7 @@ extension ImageViewer {
         
         guard let window = self.currentWindow else { return }
         
-        let view: ImageViewerView = ImageViewerView(url: url, image: image)
+        let view: ImageViewerView = ImageViewerView(url: url, image: image, imageRenderer: imageRenderer)
         
         let contentView = NSHostingView(rootView: view)
         window.contentView = contentView
@@ -221,8 +226,8 @@ extension View {
 //        }
 //    }
     @ViewBuilder
-    public func imageViewer(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
-        ImageViewer(isPresent: isPresent, image: image, imageSize: imageSize, disabled: disabled) {
+    public func imageViewer(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage) -> some View {
+        ImageViewer(isPresent: isPresent, image: image, imageSize: imageSize, disabled: disabled, imageRenderer: imageRenderer) {
             self
         }
     }
@@ -237,8 +242,8 @@ extension View {
 //        }
 //    }
     @ViewBuilder
-    public func imageViewer(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false) -> some View {
-        ImageViewer(isPresent: isPresent, url: url, imageSize: imageSize, disabled: disabled) {
+    public func imageViewer(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .cachedAsyncImage) -> some View {
+        ImageViewer(isPresent: isPresent, url: url, imageSize: imageSize, disabled: disabled, imageRenderer: imageRenderer) {
             self
         }
     }

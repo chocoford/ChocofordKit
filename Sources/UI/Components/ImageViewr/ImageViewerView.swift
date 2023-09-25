@@ -7,9 +7,10 @@
 
 import SwiftUI
 import SDWebImageSwiftUI
+import CachedAsyncImage
 import Shimmer
 
-struct ImageViewerView: View {
+public struct ImageViewerView: View {
     struct ImageSizeKey: PreferenceKey {
         static var defaultValue: CGSize = .zero
 
@@ -20,16 +21,23 @@ struct ImageViewerView: View {
     let url: URL?
     let image: Image?
     
+    public enum ImageRenderer {
+        case sdWebImage
+        case cachedAsyncImage
+    }
+    var imageRenderer: ImageRenderer = .cachedAsyncImage
+    
     @State private var isLoading = false
 
-    init(url: URL?, image: Image? = nil) {
+    init(url: URL?, image: Image? = nil, imageRenderer: ImageRenderer = .cachedAsyncImage) {
         self.url = url
         self.image = image
+        self.imageRenderer = imageRenderer
     }
     
     @State private var imageSize: CGSize = .zero
     
-    var body: some View {
+    public var body: some View {
         ZoomableScrollView(size: imageSize) {
             Group {
                 if let image = image {
@@ -39,14 +47,35 @@ struct ImageViewerView: View {
 #endif
                         .aspectRatio(contentMode: .fit)
                 } else {
-                    WebImage(url: url)
-                        .onSuccess(perform: { _, _, _ in
-                            isLoading = false
-                        })
+                    switch imageRenderer {
+                        case .cachedAsyncImage:
+                            CachedAsyncImage(url: url) { phase in
+                                switch phase {
+                                    case .success(let image):
+                                        image
 #if os(iOS)
-                        .resizable()
+                                            .resizable()
 #endif
-                        .aspectRatio(contentMode: .fit)
+                                            .aspectRatio(contentMode: .fit)
+                                            .onAppear {
+                                                isLoading = false
+                                            }
+                                    default:
+                                        EmptyView()
+                                        
+                                }
+                            }
+                        case .sdWebImage:
+                            WebImage(url: url)
+                                .onSuccess(perform: { _, _, _ in
+                                    isLoading = false
+                                })
+        #if os(iOS)
+                                .resizable()
+        #endif
+                                .aspectRatio(contentMode: .fit)
+                    }
+                   
                 }
             }
 #if os(macOS)
