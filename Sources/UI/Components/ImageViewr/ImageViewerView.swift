@@ -141,9 +141,10 @@ public struct ImageViewerView: View {
             isLoading = true
         }
         .overlay {
-            Rectangle()
-                .shimmering()
-                .opacity(isLoading ? 1 : 0)
+            Center {
+                ProgressView()
+            }
+            .opacity(isLoading ? 1 : 0)
         }
     }
 }
