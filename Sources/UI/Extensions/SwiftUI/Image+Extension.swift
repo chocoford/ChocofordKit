@@ -41,7 +41,7 @@ extension Image {
     }
 #endif
     
-    init(cgImage: CGImage, size: CGSize = .zero) {
+    public init(cgImage: CGImage, size: CGSize = .zero) {
 #if canImport(AppKit)
         let image = NSImage(cgImage: cgImage, size: size)
         self.init(nsImage: image)
