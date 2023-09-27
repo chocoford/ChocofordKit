@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension CGImage {
-    static func createFormData(_ data: Data) -> CGImage? {
+    public static func createFormData(_ data: Data) -> CGImage? {
         if let cgImageSource = CGImageSourceCreateWithData(data as CFData, nil),
            let cgImage = CGImageSourceCreateImageAtIndex(cgImageSource, 0, nil) {
             return cgImage
@@ -17,7 +17,7 @@ extension CGImage {
         return nil
     }
     
-    static func createFormURL(_ url: URL) -> CGImage? {
+    public static func createFormURL(_ url: URL) -> CGImage? {
         if let cgImageSource = CGImageSourceCreateWithURL(url as CFURL, nil),
            let cgImage = CGImageSourceCreateImageAtIndex(cgImageSource, 0, nil) {
             return cgImage
@@ -25,7 +25,7 @@ extension CGImage {
         return nil
     }
     
-    static func createFormURLs<T>(_ urls: T) -> [CGImage] where T: Sequence, T.Element == URL {
+    public static func createFormURLs<T>(_ urls: T) -> [CGImage] where T: Sequence, T.Element == URL {
         urls.compactMap { url in
             if let cgImageSource = CGImageSourceCreateWithURL(url as CFURL, nil),
                 let cgImage = CGImageSourceCreateImageAtIndex(cgImageSource, 0, nil) {
