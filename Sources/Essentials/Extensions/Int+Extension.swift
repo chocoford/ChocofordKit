@@ -13,3 +13,20 @@ public extension Int {
         self = Int(double)
     }
 }
+
+public enum FileSizeUnit {
+    case bit
+    case byte
+}
+
+extension Int {
+    public func fileSizeFormatted(unit: FileSizeUnit = .byte) -> String {
+        let kBytes = Double(self) / 1024
+        if kBytes > 1024 {
+            let mBytes: Double = kBytes / 1024
+            return String(format: "%.1fMB", mBytes)
+        } else {
+            return String(format: "%.1fKB", kBytes)
+        }
+    }
+}
