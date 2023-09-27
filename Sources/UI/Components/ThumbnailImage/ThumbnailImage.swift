@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+var thumbnailImagesCache: [ThumbnailImage.ThumbnailImage : ThumbnailImage.ThumbnailImage] = [:]
+
 public struct ThumbnailImageWrapper<P: View>: ViewModifier {
 #if canImport(AppKit)
     public typealias ThumbnailImage = NSImage
@@ -14,16 +16,16 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
     public typealias ThumbnailImage = UIImage
 #endif
     
-    var srouceImage: ThumbnailImage
+    var sourceImage: ThumbnailImage
     var thumbnailSize: CGSize
     var placeholder: () -> P
     
-    public init(_ srouceImage: ThumbnailImage,
+    public init(_ sourceImage: ThumbnailImage,
                 thumbnailSize: CGSize,
                 @ViewBuilder placeholder: @escaping () -> P = {
         Center { ProgressView().controlSize(.small) }
     }) {
-        self.srouceImage = srouceImage
+        self.sourceImage = sourceImage
         self.thumbnailSize = thumbnailSize
         self.placeholder = placeholder
     }
@@ -50,8 +52,17 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
     }
     
     func loadThumbnail() {
+        if let thumbnail = thumbnailImagesCache[self.sourceImage] {
+            self.thumbnail = thumbnail
+            return
+        }
         Task { @MainActor in
-            self.thumbnail = await self.srouceImage.byPreparingThumbnail(ofSize: thumbnailSize)
+            self.thumbnail = await self.sourceImage.byPreparingThumbnail(ofSize: thumbnailSize)
+            thumbnailImagesCache[self.sourceImage] = self.thumbnail
+            
+            if thumbnailImagesCache.count > 20 {
+                _ = thumbnailImagesCache.dropFirst(10)
+            }
         }
     }
 }
