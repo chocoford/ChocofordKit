@@ -45,24 +45,23 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
 #endif
         } else {
             placeholder()
-                .onAppear {
-                    loadThumbnail()
+                .task {
+                    await loadThumbnail()
                 }
         }
     }
     
-    func loadThumbnail() {
+    @MainActor
+    func loadThumbnail() async {
         if let thumbnail = thumbnailImagesCache[self.sourceImage] {
             self.thumbnail = thumbnail
             return
         }
-        Task { @MainActor in
-            self.thumbnail = await self.sourceImage.byPreparingThumbnail(ofSize: thumbnailSize)
-            thumbnailImagesCache[self.sourceImage] = self.thumbnail
-            
-            if thumbnailImagesCache.count > 20 {
-                _ = thumbnailImagesCache.dropFirst(10)
-            }
+        self.thumbnail = await self.sourceImage.byPreparingThumbnail(ofSize: thumbnailSize)
+        thumbnailImagesCache[self.sourceImage] = self.thumbnail
+        
+        if thumbnailImagesCache.count > 20 {
+            _ = thumbnailImagesCache.dropFirst(10)
         }
     }
 }
