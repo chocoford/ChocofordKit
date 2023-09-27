@@ -53,16 +53,15 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
     
     @MainActor
     func loadThumbnail() async {
+        if thumbnailImagesCache.count > 20 {
+            _ = thumbnailImagesCache.dropFirst(10)
+        }
         if let thumbnail = thumbnailImagesCache[self.sourceImage] {
             self.thumbnail = thumbnail
             return
         }
         self.thumbnail = await self.sourceImage.byPreparingThumbnail(ofSize: thumbnailSize)
         thumbnailImagesCache[self.sourceImage] = self.thumbnail
-        
-        if thumbnailImagesCache.count > 20 {
-            _ = thumbnailImagesCache.dropFirst(10)
-        }
     }
 }
 
