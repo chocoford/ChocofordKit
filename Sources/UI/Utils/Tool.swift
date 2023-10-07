@@ -23,12 +23,10 @@ public func resignAllFirstResponder() {
 #endif
 }
 
-@available(*, deprecated, message: "Please use SettingsButton instead")
+@available(macOS, deprecated: 14.0, message: "Please use SettingsButton instead")
 public func togglePreferenceView() {
 #if canImport(AppKit)
-    if #available(macOS 14, *) {
-        
-    } else if #available(macOS 13, *) {
+    if #available(macOS 13, *) {
       NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
     } else {
       NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
