@@ -19,24 +19,6 @@ public protocol AvatarUserRepresentable: Hashable, Identifiable {
 
 
 public struct AvatarView<V: View>: View {
-    public class Config: ObservableObject {
-        public enum AvatarShape {
-            case circle
-            case rounded
-            case tile
-        }
-        
-        var shape: AvatarShape
-        var size: CGFloat
-        
-        
-        init(shape: AvatarShape = .circle, size: CGFloat = 28) {
-            self.shape = shape
-            self.size = size
-        }
-    }
-    
-    
     var url: URL?
     var fallbackView: () -> V
     var config: Config = .init()
@@ -83,8 +65,8 @@ public struct AvatarView<V: View>: View {
         WebImage(url: url, options: [.lowPriority, .scaleDownLargeImages])
             .resizable()
             .placeholder {
-                Rectangle()
-                    .foregroundColor(.gray)
+                clipShape
+                    .fill(self.config.bgColor)
                     .overlay(alignment: .center) {
                         if shouldAdjustTextSize {
                             fallbackView()
@@ -101,6 +83,24 @@ public struct AvatarView<V: View>: View {
 }
 
 public extension AvatarView {
+    class Config: ObservableObject {
+        public enum AvatarShape {
+            case circle
+            case rounded
+            case tile
+        }
+        
+        var shape: AvatarShape
+        var size: CGFloat
+        var bgColor: Color
+        
+        init(shape: AvatarShape = .circle, size: CGFloat = 28, bgColor: Color = .gray) {
+            self.shape = shape
+            self.size = size
+            self.bgColor = bgColor
+        }
+    }
+    
     func size(_ size: CGFloat) -> AvatarView {
         self.config.size = size
         return self
@@ -111,6 +111,10 @@ public extension AvatarView {
         return self
     }
     
+    func fallbackBackgroundColor(_ color: Color) -> AvatarView {
+        self.config.bgColor = color
+        return self
+    }
 }
 
 #if DEBUG
