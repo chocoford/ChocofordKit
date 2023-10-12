@@ -9,7 +9,9 @@ import SwiftUI
 import Shimmer
 import CachedAsyncImage
 
-public struct ImageViewer<Content: View/*, Activator: View*/>: View {
+public struct ImageViewer<Content: View>: View {
+    @Environment(\.isEnabled) var isEnabled
+    
     var isPresent: Binding<Bool>?
     
     var image: Image?
@@ -17,11 +19,8 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
     var imageSize: CGSize?
     var imageRenderer: ImageViewerView.ImageRenderer
     
-    var disabled: Bool = false
+    var disabled: Bool { !isEnabled }
     var content: () -> Content
-    
-//    typealias ActivatorBuilder<V> = (_ action: () -> Void, _ content: V) -> Activator
-//    var activator: ActivatorBuilder?
     
 #if os(macOS)
     @State private var currentWindow: NSWindow? = nil
@@ -32,51 +31,26 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
     @State private var backgroundOpacity: Double = 1.0
 #endif
     
-//    public init(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, 
-//                @ViewBuilder content: @escaping () -> Content,
-//                @ViewBuilder activator: @escaping (_ action: () -> Void) -> Activator) {
-//        self.image = nil
-//        self.url = url
-//        self.disabled = disabled
-//        self.imageSize = imageSize
-//        self.content = content
-//        self.activator = activator
-//    }
-    public init(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false,
+    public init(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil,
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
-                @ViewBuilder content: @escaping () -> Content) /*where Activator == EmptyView*/ {
+                @ViewBuilder content: @escaping () -> Content) {
         self.isPresent = isPresent
         self.image = nil
         self.url = url
-        self.disabled = disabled
         self.imageSize = imageSize
         self.content = content
         self.imageRenderer = imageRenderer
-//        self.activator = nil
     }
-    
-//    public init(image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
-//                @ViewBuilder content: @escaping () -> Content,
-//                @ViewBuilder activator: @escaping (_ action: () -> Void) -> Activator) {
-//        self.image = image
-//        self.url = nil
-//        self.disabled = disabled
-//        self.content = content
-//        self.imageSize = imageSize
-//        self.activator = activator
-//    }
 
-    public init(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
+    public init(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil,
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
-                @ViewBuilder content: @escaping () -> Content)/* where Activator == EmptyView*/ {
+                @ViewBuilder content: @escaping () -> Content) {
         self.isPresent = isPresent
         self.image = image
         self.url = nil
-        self.disabled = disabled
         self.content = content
         self.imageSize = imageSize
         self.imageRenderer = imageRenderer
-//        self.activator = nil
     }
     
     
@@ -154,6 +128,33 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
 
 }
 
+//final class ImageViewerInjection: ObservableObject {
+//    @Published var isPresent: Bool = false
+//    @Published var url: URL? = nil
+//}
+//
+//public struct ImageViewerHolder: ViewModifier {
+//    @StateObject var imageViewer: ImageViewerInjection = .init()
+//    
+//    public func body(content: Content) -> some View {
+//        content
+//            .imageViewer(isPresent: $imageViewer.isPresent, url: imageViewer.url)
+//    }
+//}
+//
+//public struct ImageViewerModifier: ViewModifier {
+//    @EnvironmentObject var imageViewer: ImageViewerInjection
+//    
+//    var url: URL?
+//    
+//    public func body(content: Content) -> some View {
+//        content
+//            .environmentObject(imageViewer)
+//            .onChange(of: url) { val in
+//                imageViewer.url = val
+//            }
+//    }
+//}
 
 extension ImageViewer {
     func openViewer() {
@@ -215,38 +216,37 @@ extension ImageViewer {
 }
 
 extension View {
-//    @ViewBuilder
-//    public func imageViewer<A: View>(image: Image, imageSize: CGSize? = nil, disabled: Bool = false,
-//                            @ViewBuilder activator: @escaping (_ action: () -> Void) -> A) -> some View {
-//        ImageViewer(image: image, imageSize: imageSize, disabled: disabled) {
-//            self
-//        } activator: { action in
-//            activator(action)
-//        }
-//    }
     @ViewBuilder
-    public func imageViewer(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .animatableCached) -> some View {
-        ImageViewer(isPresent: isPresent, image: image, imageSize: imageSize, disabled: disabled, imageRenderer: imageRenderer) {
+    public func imageViewer(
+        isPresent: Binding<Bool>? = nil,
+        image: Image,
+        imageSize: CGSize? = nil,
+        imageRenderer: ImageViewerView.ImageRenderer = .animatableCached
+    ) -> some View {
+        ImageViewer(isPresent: isPresent, image: image, imageSize: imageSize, imageRenderer: imageRenderer) {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    public func imageViewer(
+        isPresent: Binding<Bool>? = nil,
+        url: URL?,
+        imageSize: CGSize? = nil,
+        imageRenderer: ImageViewerView.ImageRenderer = .animatableCached
+    ) -> some View {
+        ImageViewer(isPresent: isPresent, url: url, imageSize: imageSize, imageRenderer: imageRenderer) {
             self
         }
     }
     
 //    @ViewBuilder
-//    public func imageViewer<A: View>(url: URL?, imageSize: CGSize? = nil, disabled: Bool = false,
-//                                     @ViewBuilder activator: @escaping (_ action: () -> Void) -> A) -> some View {
-//        ImageViewer(url: url, imageSize: imageSize, disabled: disabled) {
-//            self
-//        } activator: { action in
-//            activator(action)
-//        }
+//    public func imageViewer(url: Binding<URL?>, disabled: Bool = false) -> some View {
+//        modifier(ImageViewerModifier())
 //    }
-    @ViewBuilder
-    public func imageViewer(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil, disabled: Bool = false, imageRenderer: ImageViewerView.ImageRenderer = .animatableCached) -> some View {
-        ImageViewer(isPresent: isPresent, url: url, imageSize: imageSize, disabled: disabled, imageRenderer: imageRenderer) {
-            self
-        }
-    }
 }
+
+
 
 
 #if os(iOS)
@@ -266,17 +266,21 @@ struct BackgroundBlurView: UIViewRepresentable {
 #if DEBUG
 struct ImageViewer_Previews: PreviewProvider {
     static var previews: some View {
-        ImageViewer(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageSize: .init(width: 896, height: 1344)) {
-            CachedAsyncImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large")) {
-                $0
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-            } placeholder: {
-                
+        ScrollView {
+            LazyVStack {
+                ImageViewer(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageSize: .init(width: 896, height: 1344)) {
+                    CachedAsyncImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large")) {
+                        $0
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } placeholder: {
+                        Rectangle()
+                    }
+                    .frame(width: 200, height: 200)
+                    
+                }
+                Rectangle().frame(height: 800)
             }
-            
-            .frame(width: 200, height: 200)
-            
         }
     }
 }

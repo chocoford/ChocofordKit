@@ -18,6 +18,7 @@ public struct ImageViewerView: View {
             value = nextValue()
         }
     }
+    
     let url: URL?
     let image: Image?
     
@@ -41,30 +42,26 @@ public struct ImageViewerView: View {
     public var body: some View {
         ZoomableScrollView(size: imageSize) {
             Group {
-                if let image = image {
-                    image
+                switch imageRenderer {
+                    case .noCached:
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                                case .success(let image):
+                                    image
 #if os(iOS)
-                        .resizable()
+                                        .resizable()
 #endif
-                        .aspectRatio(contentMode: .fit)
-                } else {
-                    switch imageRenderer {
-                        case .noCached:
-                            AsyncImage(url: url) { phase in
-                                switch phase {
-                                    case .success(let image):
-                                        image
-#if os(iOS)
-                                            .resizable()
-#endif
-//                                            .frame(width: imageSize.width, height: imageSize.height)
-                                            .aspectRatio(contentMode: .fit)
-                                            .onAppear {
-                                                DispatchQueue.main.async {
-                                                    isLoading = false
-                                                }
+                                    //                                            .frame(width: imageSize.width, height: imageSize.height)
+                                        .aspectRatio(contentMode: .fit)
+                                        .onAppear {
+                                            DispatchQueue.main.async {
+                                                isLoading = false
                                             }
-                                    case .failure(let error):
+                                        }
+                                case .failure(let error):
+                                    if let image = image {
+                                        placeholderImageView()
+                                    } else {
                                         Center {
                                             Text(error.localizedDescription)
                                         }
@@ -73,27 +70,35 @@ public struct ImageViewerView: View {
                                                 isLoading = false
                                             }
                                         }
-                                        
-                                    default:
+                                    }
+                                    
+                                default:
+                                    if let image = image {
+                                        placeholderImageView()
+                                    } else {
                                         EmptyView()
-                                        
-                                }
+                                    }
+                                    
                             }
-                        case .cached:
-                            CachedAsyncImage(url: url) { phase in
-                                switch phase {
-                                    case .success(let image):
-                                        image
+                        }
+                    case .cached:
+                        CachedAsyncImage(url: url) { phase in
+                            switch phase {
+                                case .success(let image):
+                                    image
 #if os(iOS)
-                                            .resizable()
+                                        .resizable()
 #endif
-                                            .aspectRatio(contentMode: .fit)
-                                            .onAppear {
-                                                DispatchQueue.main.async {
-                                                    isLoading = false
-                                                }
+                                        .aspectRatio(contentMode: .fit)
+                                        .onAppear {
+                                            DispatchQueue.main.async {
+                                                isLoading = false
                                             }
-                                    case .failure(let error):
+                                        }
+                                case .failure(let error):
+                                    if let image = image {
+                                        placeholderImageView()
+                                    } else {
                                         Center {
                                             Text(error.localizedDescription)
                                         }
@@ -102,23 +107,29 @@ public struct ImageViewerView: View {
                                                 isLoading = false
                                             }
                                         }
-                                        
-                                    default:
+                                    }
+                                    
+                                default:
+                                    if let image = image {
+                                        placeholderImageView()
+                                    } else {
                                         EmptyView()
-                                        
-                                }
+                                    }
+                                    
                             }
-                        case .animatableCached:
-                            WebImage(url: url)
-                                .onSuccess(perform: { _, _, _ in
-                                    isLoading = false
-                                })
-        #if os(iOS)
-                                .resizable()
-        #endif
-                                .aspectRatio(contentMode: .fit)
-                    }
-                   
+                        }
+                    case .animatableCached:
+                        WebImage(url: url)
+                            .placeholder {
+                                placeholderImageView()
+                            }
+                            .onSuccess(perform: { _, _, _ in
+                                isLoading = false
+                            })
+#if os(iOS)
+                            .resizable()
+#endif
+                            .aspectRatio(contentMode: .fit)
                 }
             }
 #if os(macOS)
@@ -146,6 +157,16 @@ public struct ImageViewerView: View {
             }
             .opacity(isLoading ? 1 : 0)
         }
+    }
+    
+    
+    @ViewBuilder
+    private func placeholderImageView() -> some View {
+        image
+#if os(iOS)
+            .resizable()
+#endif
+            .aspectRatio(contentMode: .fit)
     }
 }
 
