@@ -12,6 +12,11 @@ public enum LoadableListEvent {
     case onLoadingBelow
     case onScrollOffTop
     case onScrollOnTop
+    
+    case onReachTop
+    case onLeaveTop
+    case onReachBottom
+    case onLeaveBottom
 }
 
 /// Known issue: Use with SplitView(H/W) will cause task cancelled.

@@ -81,6 +81,16 @@ public struct LoadableListContentView<
     public var body: some View {
         Color.clear.frame(height: 0.1).id("top")
             .apply(listRowStyle)
+            .onAppear {
+                Task {
+                    await self.config.onEvents(.onReachTop)
+                }
+            }
+            .onDisappear {
+                Task {
+                    await self.config.onEvents(.onLeaveTop)
+                }
+            }
         
         contentView()
             .onChange(of: viewID) { _ in
@@ -106,6 +116,16 @@ public struct LoadableListContentView<
         
         Color.clear.frame(height: 0.1).id("bottom")
             .apply(listRowStyle)
+            .onAppear {
+                Task {
+                    await self.config.onEvents(.onReachBottom)
+                }
+            }
+            .onDisappear {
+                Task {
+                    await self.config.onEvents(.onLeaveBottom)
+                }
+            }
     }
     
     
