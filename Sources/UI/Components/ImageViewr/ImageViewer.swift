@@ -16,6 +16,7 @@ public struct ImageViewer<Content: View>: View {
     
     var image: Image?
     var url: URL?
+    var thumbnailURL: URL?
     var imageSize: CGSize?
     var imageRenderer: ImageViewerView.ImageRenderer
     
@@ -31,12 +32,16 @@ public struct ImageViewer<Content: View>: View {
     @State private var backgroundOpacity: Double = 1.0
 #endif
     
-    public init(isPresent: Binding<Bool>? = nil, url: URL?, imageSize: CGSize? = nil,
+    public init(isPresent: Binding<Bool>? = nil,
+                url: URL?,
+                thumbnailURL: URL?,
+                imageSize: CGSize? = nil,
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content) {
         self.isPresent = isPresent
         self.image = nil
         self.url = url
+        self.thumbnailURL = thumbnailURL
         self.imageSize = imageSize
         self.content = content
         self.imageRenderer = imageRenderer
@@ -175,7 +180,7 @@ extension ImageViewer {
         
         guard let window = self.currentWindow else { return }
         
-        let view: ImageViewerView = ImageViewerView(url: url, image: image, imageRenderer: imageRenderer)
+        let view: ImageViewerView = ImageViewerView(url: url, thumbnailURL: thumbnailURL, image: image, imageRenderer: imageRenderer)
         
         let contentView = NSHostingView(rootView: view)
         window.contentView = contentView
@@ -232,10 +237,11 @@ extension View {
     public func imageViewer(
         isPresent: Binding<Bool>? = nil,
         url: URL?,
+        thumbnailURL: URL?,
         imageSize: CGSize? = nil,
         imageRenderer: ImageViewerView.ImageRenderer = .animatableCached
     ) -> some View {
-        ImageViewer(isPresent: isPresent, url: url, imageSize: imageSize, imageRenderer: imageRenderer) {
+        ImageViewer(isPresent: isPresent, url: url, thumbnailURL: thumbnailURL, imageSize: imageSize, imageRenderer: imageRenderer) {
             self
         }
     }

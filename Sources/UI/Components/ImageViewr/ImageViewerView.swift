@@ -20,6 +20,7 @@ public struct ImageViewerView: View {
     }
     
     let url: URL?
+    var thumbnailURL: URL?
     let image: Image?
     
     public enum ImageRenderer {
@@ -31,8 +32,14 @@ public struct ImageViewerView: View {
     
     @State private var isLoading = false
 
-    init(url: URL?, image: Image? = nil, imageRenderer: ImageRenderer = .animatableCached) {
+    init(
+        url: URL?,
+        thumbnailURL: URL? = nil,
+        image: Image? = nil,
+        imageRenderer: ImageRenderer = .animatableCached
+    ) {
         self.url = url
+        self.thumbnailURL = thumbnailURL
         self.image = image
         self.imageRenderer = imageRenderer
     }
@@ -41,108 +48,15 @@ public struct ImageViewerView: View {
     
     public var body: some View {
         ZoomableScrollView(size: imageSize) {
-            Group {
-                switch imageRenderer {
-                    case .noCached:
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                                case .success(let image):
-                                    image
-#if os(iOS)
-                                        .resizable()
-#endif
-                                    //                                            .frame(width: imageSize.width, height: imageSize.height)
-                                        .aspectRatio(contentMode: .fit)
-                                        .onAppear {
-                                            DispatchQueue.main.async {
-                                                isLoading = false
-                                            }
-                                        }
-                                case .failure(let error):
-                                    if let image = image {
-                                        placeholderImageView()
-                                    } else {
-                                        Center {
-                                            Text(error.localizedDescription)
-                                        }
-                                        .onAppear {
-                                            DispatchQueue.main.async {
-                                                isLoading = false
-                                            }
-                                        }
-                                    }
-                                    
-                                default:
-                                    if let image = image {
-                                        placeholderImageView()
-                                    } else {
-                                        EmptyView()
-                                    }
-                                    
+            imageRenderer(url: url)
+                .background {
+                    GeometryReader { geometry in
+                        Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
+                            .onChange(of: geometry.size) { newValue in
+                                self.imageSize = newValue
                             }
-                        }
-                    case .cached:
-                        CachedAsyncImage(url: url) { phase in
-                            switch phase {
-                                case .success(let image):
-                                    image
-#if os(iOS)
-                                        .resizable()
-#endif
-                                        .aspectRatio(contentMode: .fit)
-                                        .onAppear {
-                                            DispatchQueue.main.async {
-                                                isLoading = false
-                                            }
-                                        }
-                                case .failure(let error):
-                                    if let image = image {
-                                        placeholderImageView()
-                                    } else {
-                                        Center {
-                                            Text(error.localizedDescription)
-                                        }
-                                        .onAppear {
-                                            DispatchQueue.main.async {
-                                                isLoading = false
-                                            }
-                                        }
-                                    }
-                                    
-                                default:
-                                    if let image = image {
-                                        placeholderImageView()
-                                    } else {
-                                        EmptyView()
-                                    }
-                                    
-                            }
-                        }
-                    case .animatableCached:
-                        WebImage(url: url)
-                            .placeholder {
-                                placeholderImageView()
-                            }
-                            .onSuccess(perform: { _, _, _ in
-                                isLoading = false
-                            })
-#if os(iOS)
-                            .resizable()
-#endif
-                            .aspectRatio(contentMode: .fit)
+                    }
                 }
-            }
-#if os(macOS)
-            .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
-#endif
-            .background {
-                GeometryReader { geometry in
-                    Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
-                        .onChange(of: geometry.size) { newValue in
-                            self.imageSize = newValue
-                        }
-                }
-            }
         }
         .ignoresSafeArea()
         .onPreferenceChange(ImageSizeKey.self) {
@@ -159,14 +73,208 @@ public struct ImageViewerView: View {
         }
     }
     
+    @ViewBuilder
+    private func imageRenderer() -> some View {
+        Group {
+            switch imageRenderer {
+                case .noCached:
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                            case .success(let image):
+                                image
+#if os(iOS)
+                                    .resizable()
+#endif
+                                    .aspectRatio(contentMode: .fit)
+                                    .onAppear {
+                                        DispatchQueue.main.async {
+                                            isLoading = false
+                                        }
+                                    }
+                            case .failure(let error):
+                                if thumbnailURL != nil {
+                                    thumbnailImageView()
+                                } else {
+                                    Center {
+                                        Text(error.localizedDescription)
+                                    }
+                                    .onAppear {
+                                        DispatchQueue.main.async {
+                                            isLoading = false
+                                        }
+                                    }
+                                }
+                                
+                            default:
+                                if thumbnailURL != nil {
+                                    thumbnailImageView()
+                                } else {
+                                    EmptyView()
+                                }
+                                
+                        }
+                    }
+                case .cached:
+                    CachedAsyncImage(url: url) { phase in
+                        switch phase {
+                            case .success(let image):
+                                image
+#if os(iOS)
+                                    .resizable()
+#endif
+                                    .aspectRatio(contentMode: .fit)
+                                    .onAppear {
+                                        DispatchQueue.main.async {
+                                            isLoading = false
+                                        }
+                                    }
+                            case .failure(let error):
+                                if thumbnailURL != nil {
+                                    thumbnailImageView()
+                                } else {
+                                    Center {
+                                        Text(error.localizedDescription)
+                                    }
+                                    .onAppear {
+                                        DispatchQueue.main.async {
+                                            isLoading = false
+                                        }
+                                    }
+                                }
+                                
+                            default:
+                                if thumbnailURL != nil {
+                                    thumbnailImageView()
+                                } else {
+                                    EmptyView()
+                                }
+                                
+                        }
+                    }
+                case .animatableCached:
+                    WebImage(url: url)
+                        .placeholder {
+                            thumbnailImageView()
+                        }
+                        .onSuccess(perform: { _, _, _ in
+                            isLoading = false
+                        })
+#if os(iOS)
+                        .resizable()
+#endif
+                        .aspectRatio(contentMode: .fit)
+            }
+        }
+#if os(macOS)
+        .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
+#endif
+    }
+    
+    @ViewBuilder
+    private func thumbnailImageView() -> some View {
+        switch imageRenderer {
+            case .noCached:
+                AsyncImage(url: thumbnailURL) { phase in
+                    switch phase {
+                        case .success(let image):
+                            image
+#if os(iOS)
+                                .resizable()
+#endif
+                                .aspectRatio(contentMode: .fit)
+                                .onAppear {
+                                    DispatchQueue.main.async {
+                                        isLoading = false
+                                    }
+                                }
+                        case .failure(let error):
+                            if let image = image {
+                                placeholderImageView()
+                            } else {
+                                Center {
+                                    Text(error.localizedDescription)
+                                }
+                                .onAppear {
+                                    DispatchQueue.main.async {
+                                        isLoading = false
+                                    }
+                                }
+                            }
+                            
+                        default:
+                            if let image = image {
+                                placeholderImageView()
+                            } else {
+                                EmptyView()
+                            }
+                            
+                    }
+                }
+            case .cached:
+                CachedAsyncImage(url: thumbnailURL) { phase in
+                    switch phase {
+                        case .success(let image):
+                            image
+#if os(iOS)
+                                .resizable()
+#endif
+                                .aspectRatio(contentMode: .fit)
+                                .onAppear {
+                                    DispatchQueue.main.async {
+                                        isLoading = false
+                                    }
+                                }
+                        case .failure(let error):
+                            if let image = image {
+                                placeholderImageView()
+                            } else {
+                                Center {
+                                    Text(error.localizedDescription)
+                                }
+                                .onAppear {
+                                    DispatchQueue.main.async {
+                                        isLoading = false
+                                    }
+                                }
+                            }
+                            
+                        default:
+                            if let image = image {
+                                placeholderImageView()
+                            } else {
+                                EmptyView()
+                            }
+                            
+                    }
+                }
+            case .animatableCached:
+                WebImage(url: thumbnailURL)
+                    .placeholder {
+                        placeholderImageView()
+                    }
+                    .onSuccess(perform: { _, _, _ in
+                        isLoading = false
+                    })
+#if os(iOS)
+                    .resizable()
+#endif
+                    .aspectRatio(contentMode: .fit)
+        }
+    }
     
     @ViewBuilder
     private func placeholderImageView() -> some View {
-        image
+        if let image = image {
+            image
 #if os(iOS)
-            .resizable()
+                .resizable()
 #endif
-            .aspectRatio(contentMode: .fit)
+                .aspectRatio(contentMode: .fit)
+        } else {
+            Center {
+                ProgressView().controlSize(.small)
+            }
+        }
     }
 }
 
