@@ -94,6 +94,10 @@ public struct LoadableListContentView<
                         self.config.scrollProxy?.scrollTo("bottom")
                     }
                 }
+                DispatchQueue.main.async {
+                    makeReadyAbove()
+                    makeReadyBelow()
+                }
             }
             .onDisappear {
                 print("LoadableListContentView onDisappear")
@@ -108,7 +112,7 @@ public struct LoadableListContentView<
     @ViewBuilder
     private func contentView() -> some View {
         if config.hasAbove || isLoadingAbove {
-            if readyToLoadAbove || !config.manuallyLoad {
+            if readyToLoadAbove {
                 self.config.loadingIndicator
                     .onAppear(perform: onLoadingAbove)
                 /// will be cancelled when use with SplitView
