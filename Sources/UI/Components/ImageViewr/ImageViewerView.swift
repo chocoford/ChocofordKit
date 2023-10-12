@@ -48,7 +48,7 @@ public struct ImageViewerView: View {
     
     public var body: some View {
         ZoomableScrollView(size: imageSize) {
-            imageRenderer(url: url)
+            asyncImageView()
                 .background {
                     GeometryReader { geometry in
                         Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
@@ -74,7 +74,7 @@ public struct ImageViewerView: View {
     }
     
     @ViewBuilder
-    private func imageRenderer() -> some View {
+    private func asyncImageView() -> some View {
         Group {
             switch imageRenderer {
                 case .noCached:
@@ -188,7 +188,7 @@ public struct ImageViewerView: View {
                                     }
                                 }
                         case .failure(let error):
-                            if let image = image {
+                            if image != nil {
                                 placeholderImageView()
                             } else {
                                 Center {
@@ -202,11 +202,7 @@ public struct ImageViewerView: View {
                             }
                             
                         default:
-                            if let image = image {
-                                placeholderImageView()
-                            } else {
-                                EmptyView()
-                            }
+                            placeholderImageView()
                             
                     }
                 }
@@ -225,7 +221,7 @@ public struct ImageViewerView: View {
                                     }
                                 }
                         case .failure(let error):
-                            if let image = image {
+                            if image != nil {
                                 placeholderImageView()
                             } else {
                                 Center {
@@ -239,11 +235,7 @@ public struct ImageViewerView: View {
                             }
                             
                         default:
-                            if let image = image {
-                                placeholderImageView()
-                            } else {
-                                EmptyView()
-                            }
+                            placeholderImageView()
                             
                     }
                 }

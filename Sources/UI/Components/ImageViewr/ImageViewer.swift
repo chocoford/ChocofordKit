@@ -34,7 +34,7 @@ public struct ImageViewer<Content: View>: View {
     
     public init(isPresent: Binding<Bool>? = nil,
                 url: URL?,
-                thumbnailURL: URL?,
+                thumbnailURL: URL? = nil,
                 imageSize: CGSize? = nil,
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content) {
