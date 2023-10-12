@@ -79,43 +79,29 @@ public struct LoadableListContentView<
     @State private var stopGoing = false
     
     public var body: some View {
-        Group {
-            Color.clear.frame(height: 0.1).id("top")
-                .apply(listRowStyle)
-            contentView()
-            Color.clear.frame(height: 0.1).id("bottom")
-                .apply(listRowStyle)
-        }
-        .compositingGroup()
-        .onChange(of: viewID) { _ in
-            refreshView(config.scrollProxy)
-        }
-        .onAppear {
-            if self.config.startFromBottom {
-                self.config.scrollProxy?.scrollTo("bottom")
-                DispatchQueue.main.async {
+        Color.clear.frame(height: 0.1).id("top")
+            .apply(listRowStyle)
+        
+        contentView()
+            .onChange(of: viewID) { _ in
+                refreshView(config.scrollProxy)
+            }
+            .onAppear {
+                print("LoadableListContentView onAppear")
+                if self.config.startFromBottom {
                     self.config.scrollProxy?.scrollTo("bottom")
+                    DispatchQueue.main.async {
+                        self.config.scrollProxy?.scrollTo("bottom")
+                    }
                 }
             }
-        }
-//        .onChange(of: items) { val in
-//            guard items.count != val.count else { return }
-//            if firstToList {
-//                initScrollPos(config.scrollProxy)
-//                firstToList = false
-//                return
-//            }
-//            
-//            if val.first != items.first && config.hasAbove {
-//                scrollToFirstElementInScreen(config.scrollProxy)
-//            } else if val.last != items.last {
-//                // do nothing
-//                // scrollToLastElementInScreen(proxy)
-//            }
-//        }
-        .onDisappear {
-            stopGoing = true
-        }
+            .onDisappear {
+                print("LoadableListContentView onDisappear")
+                stopGoing = true
+            }
+        
+        Color.clear.frame(height: 0.1).id("bottom")
+            .apply(listRowStyle)
     }
     
     
@@ -241,15 +227,14 @@ internal extension LoadableListContentView {
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
             guard !isLoadingAbove && !stopGoing else { return }
             isLoadingAbove = true
-            let currentTop = self.items.first
+            let oldTop = self.items.first
             Task {
                 await config.onEvents(.onLoadingAbove)
-                //        readyToLoadAbove = false
-                if let top = currentTop {
+                if !inScreenElements.isEmpty,
+                   let id = inScreenElements.sorted(by: {$0.index < $1.index}).first?.id {
+                    self.config.scrollProxy?.scrollTo(id, anchor: .top)
+                } else if let top = oldTop {
                     self.config.scrollProxy?.scrollTo(top[keyPath: id], anchor: .bottom)
-//                    DispatchQueue.main.async {
-//                        self.config.scrollProxy?.scrollTo(top[keyPath: id], anchor: .bottom)
-//                    }
                 }
                 isLoadingAbove = false
             }
