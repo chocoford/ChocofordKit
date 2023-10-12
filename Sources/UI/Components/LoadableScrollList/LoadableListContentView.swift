@@ -86,6 +86,7 @@ public struct LoadableListContentView<
             Color.clear.frame(height: 0.1).id("bottom")
                 .apply(listRowStyle)
         }
+        .compositingGroup()
         .onChange(of: viewID) { _ in
             refreshView(config.scrollProxy)
         }
@@ -245,9 +246,10 @@ internal extension LoadableListContentView {
                 await config.onEvents(.onLoadingAbove)
                 //        readyToLoadAbove = false
                 if let top = currentTop {
-                    DispatchQueue.main.async {
-                        self.config.scrollProxy?.scrollTo(top[keyPath: id], anchor: .bottom)
-                    }
+                    self.config.scrollProxy?.scrollTo(top[keyPath: id], anchor: .bottom)
+//                    DispatchQueue.main.async {
+//                        self.config.scrollProxy?.scrollTo(top[keyPath: id], anchor: .bottom)
+//                    }
                 }
                 isLoadingAbove = false
             }
