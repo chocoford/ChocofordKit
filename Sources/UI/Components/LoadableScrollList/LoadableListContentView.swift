@@ -97,21 +97,21 @@ public struct LoadableListContentView<
                 }
             }
         }
-        .onChange(of: items) { val in
-            guard items.count != val.count else { return }
-            if firstToList {
-                initScrollPos(config.scrollProxy)
-                firstToList = false
-                return
-            }
-            
-            if val.first != items.first && config.hasAbove {
-                scrollToFirstElementInScreen(config.scrollProxy)
-            } else if val.last != items.last {
-                // do nothing
-                // scrollToLastElementInScreen(proxy)
-            }
-        }
+//        .onChange(of: items) { val in
+//            guard items.count != val.count else { return }
+//            if firstToList {
+//                initScrollPos(config.scrollProxy)
+//                firstToList = false
+//                return
+//            }
+//            
+//            if val.first != items.first && config.hasAbove {
+//                scrollToFirstElementInScreen(config.scrollProxy)
+//            } else if val.last != items.last {
+//                // do nothing
+//                // scrollToLastElementInScreen(proxy)
+//            }
+//        }
         .onDisappear {
             stopGoing = true
         }
@@ -240,9 +240,15 @@ internal extension LoadableListContentView {
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
             guard !isLoadingAbove && !stopGoing else { return }
             isLoadingAbove = true
+            let currentTop = self.items.first
             Task {
                 await config.onEvents(.onLoadingAbove)
                 //        readyToLoadAbove = false
+                if let top = currentTop {
+                    DispatchQueue.main.async {
+                        self.config.scrollProxy?.scrollTo(top[keyPath: id], anchor: .bottom)
+                    }
+                }
                 isLoadingAbove = false
             }
         }
@@ -254,7 +260,6 @@ internal extension LoadableListContentView {
             isLoadingBelow = true
             Task {
                 await config.onEvents(.onLoadingBelow)
-                //        readyToLoadBelow = false
                 isLoadingBelow = false
             }
         }
