@@ -347,7 +347,7 @@ extension LoadableListContentView {
     
     
     /// Set the height of top/bottom anchor, default is `20`.
-    public func anchorHeight(anchor: UnitPoint? = nil, _ height: CGFloat) -> LoadableListContentView {
+    public func anchorHeight(_ anchor: UnitPoint? = nil, _ height: CGFloat) -> LoadableListContentView {
         switch anchor {
             case .some(.top):
                 self.config.anchorTopHeight = height
