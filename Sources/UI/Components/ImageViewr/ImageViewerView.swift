@@ -23,6 +23,8 @@ public struct ImageViewerView: View {
     var thumbnailURL: URL?
     let image: Image?
     
+//    var placeholder: AnyView
+    
     public enum ImageRenderer {
         case animatableCached
         case cached
@@ -35,28 +37,44 @@ public struct ImageViewerView: View {
     init(
         url: URL?,
         thumbnailURL: URL? = nil,
-        image: Image? = nil,
         imageRenderer: ImageRenderer = .animatableCached
     ) {
         self.url = url
-        self.thumbnailURL = thumbnailURL
-        self.image = image
+//        self.placeholder = AnyView(placeholder())
+        self.image = nil
         self.imageRenderer = imageRenderer
+    }
+    
+    init(image: Image) {
+//        self.placeholder = AnyView(EmptyView())
+        self.image = image
+        self.imageRenderer = .cached
+        self.url = nil
+        self.thumbnailURL = nil
     }
     
     @State private var imageSize: CGSize = .zero
     
     public var body: some View {
         ZoomableScrollView(size: imageSize) {
-            asyncImageView()
-                .background {
-                    GeometryReader { geometry in
-                        Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
-                            .onChange(of: geometry.size) { newValue in
-                                self.imageSize = newValue
-                            }
-                    }
+            Group {
+                if let image = image {
+                    imageView(image: image)
+                } else {
+                    asyncImageView()
                 }
+            }
+#if os(macOS)
+        .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
+#endif
+            .background {
+                GeometryReader { geometry in
+                    Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
+                        .onChange(of: geometry.size) { newValue in
+                            self.imageSize = newValue
+                        }
+                }
+            }
         }
         .ignoresSafeArea()
         .onPreferenceChange(ImageSizeKey.self) {
@@ -81,11 +99,7 @@ public struct ImageViewerView: View {
                     AsyncImage(url: url) { phase in
                         switch phase {
                             case .success(let image):
-                                image
-#if os(iOS)
-                                    .resizable()
-#endif
-                                    .aspectRatio(contentMode: .fit)
+                                imageView(image: image)
                                     .onAppear {
                                         DispatchQueue.main.async {
                                             isLoading = false
@@ -111,18 +125,13 @@ public struct ImageViewerView: View {
                                 } else {
                                     EmptyView()
                                 }
-                                
                         }
                     }
                 case .cached:
                     CachedAsyncImage(url: url) { phase in
                         switch phase {
                             case .success(let image):
-                                image
-#if os(iOS)
-                                    .resizable()
-#endif
-                                    .aspectRatio(contentMode: .fit)
+                                imageView(image: image)
                                     .onAppear {
                                         DispatchQueue.main.async {
                                             isLoading = false
@@ -165,9 +174,6 @@ public struct ImageViewerView: View {
                         .aspectRatio(contentMode: .fit)
             }
         }
-#if os(macOS)
-        .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
-#endif
     }
     
     @ViewBuilder
@@ -177,32 +183,24 @@ public struct ImageViewerView: View {
                 AsyncImage(url: thumbnailURL) { phase in
                     switch phase {
                         case .success(let image):
-                            image
-#if os(iOS)
-                                .resizable()
-#endif
-                                .aspectRatio(contentMode: .fit)
+                            imageView(image: image)
                                 .onAppear {
                                     DispatchQueue.main.async {
                                         isLoading = false
                                     }
                                 }
                         case .failure(let error):
-                            if image != nil {
-                                placeholderImageView()
-                            } else {
-                                Center {
-                                    Text(error.localizedDescription)
-                                }
-                                .onAppear {
-                                    DispatchQueue.main.async {
-                                        isLoading = false
-                                    }
+                            Center {
+                                Text(error.localizedDescription)
+                            }
+                            .onAppear {
+                                DispatchQueue.main.async {
+                                    isLoading = false
                                 }
                             }
                             
                         default:
-                            placeholderImageView()
+                            EmptyView()
                             
                     }
                 }
@@ -210,40 +208,29 @@ public struct ImageViewerView: View {
                 CachedAsyncImage(url: thumbnailURL) { phase in
                     switch phase {
                         case .success(let image):
-                            image
-#if os(iOS)
-                                .resizable()
-#endif
-                                .aspectRatio(contentMode: .fit)
+                            imageView(image: image)
                                 .onAppear {
                                     DispatchQueue.main.async {
                                         isLoading = false
                                     }
                                 }
                         case .failure(let error):
-                            if image != nil {
-                                placeholderImageView()
-                            } else {
-                                Center {
-                                    Text(error.localizedDescription)
-                                }
-                                .onAppear {
-                                    DispatchQueue.main.async {
-                                        isLoading = false
-                                    }
+                            Center {
+                                Text(error.localizedDescription)
+                            }
+                            .onAppear {
+                                DispatchQueue.main.async {
+                                    isLoading = false
                                 }
                             }
                             
                         default:
-                            placeholderImageView()
+                            EmptyView()
                             
                     }
                 }
             case .animatableCached:
                 WebImage(url: thumbnailURL)
-                    .placeholder {
-                        placeholderImageView()
-                    }
                     .onSuccess(perform: { _, _, _ in
                         isLoading = false
                     })
@@ -255,29 +242,17 @@ public struct ImageViewerView: View {
     }
     
     @ViewBuilder
-    private func placeholderImageView() -> some View {
-        if let image = image {
-            image
+    private func imageView(image: Image) -> some View {
+        image
 #if os(iOS)
-                .resizable()
+            .resizable()
 #endif
-                .aspectRatio(contentMode: .fit)
-        } else {
-            Center {
-                ProgressView().controlSize(.small)
-            }
-        }
+            .aspectRatio(contentMode: .fit)
     }
 }
 
 struct ImageViewerView_Previews: PreviewProvider {
     static var previews: some View {
-        ImageViewerView(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageRenderer: .noCached)
-        
-//        WebImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"))
-//            .placeholder {
-//                ProgressView()
-//            }
-        
+        ImageViewerView(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageRenderer: .cached)
     }
 }

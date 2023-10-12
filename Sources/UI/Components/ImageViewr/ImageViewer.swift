@@ -180,10 +180,10 @@ extension ImageViewer {
         
         guard let window = self.currentWindow else { return }
         
-        let view: ImageViewerView = ImageViewerView(url: url, thumbnailURL: thumbnailURL, image: image, imageRenderer: imageRenderer)
-        
-        let contentView = NSHostingView(rootView: view)
-        window.contentView = contentView
+//        let view: ImageViewerView = ImageViewerView(url: url, thumbnailURL: thumbnailURL, image: image, imageRenderer: imageRenderer)
+//        
+//        let contentView = NSHostingView(rootView: view)
+//        window.contentView = contentView
         window.isReleasedWhenClosed = false // important
         window.isMovable = true
         window.backgroundColor = .black
@@ -237,7 +237,7 @@ extension View {
     public func imageViewer(
         isPresent: Binding<Bool>? = nil,
         url: URL?,
-        thumbnailURL: URL?,
+        thumbnailURL: URL? = nil,
         imageSize: CGSize? = nil,
         imageRenderer: ImageViewerView.ImageRenderer = .animatableCached
     ) -> some View {
