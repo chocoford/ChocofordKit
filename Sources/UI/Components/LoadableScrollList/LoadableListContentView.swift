@@ -90,14 +90,14 @@ public struct LoadableListContentView<
         .onChange(of: viewID) { _ in
             refreshView(config.scrollProxy)
         }
-//        .onAppear {
-//            if self.config.startFromBottom {
-//                self.config.scrollProxy?.scrollTo("bottom")
-//                DispatchQueue.main.async {
-//                    self.config.scrollProxy?.scrollTo("bottom")
-//                }
-//            }
-//        }
+        .onAppear {
+            if self.config.startFromBottom {
+                self.config.scrollProxy?.scrollTo("bottom")
+                DispatchQueue.main.async {
+                    self.config.scrollProxy?.scrollTo("bottom")
+                }
+            }
+        }
 //        .onChange(of: items) { val in
 //            guard items.count != val.count else { return }
 //            if firstToList {
@@ -281,7 +281,7 @@ extension LoadableListContentView {
         var onEvents: (_ event: LoadableListEvent) async -> Void = {_ in return}
         
         var placeholder: AnyView = AnyView(EmptyView())
-        var loadingIndicator: AnyView = AnyView(ProgressView().controlSize(.small))
+        var loadingIndicator: AnyView = AnyView(Center(.horizontal) {ProgressView().controlSize(.small)})
         var loadMoreActivator: (_ action: @escaping () async throws -> Void) -> AnyView = { _ in AnyView(EmptyView()) }
 
     }
