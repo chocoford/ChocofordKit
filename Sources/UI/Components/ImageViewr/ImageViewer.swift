@@ -87,9 +87,8 @@ public struct ImageViewer<Content: View/*, Activator: View*/>: View {
                 if self.isPresent != nil { return }
                 openViewer()
             }
-            .onChange(of: self.isPresent?.wrappedValue) { val in
-                guard let val = val else { return }
-                if val {
+            .onReceive(self.isPresent.publisher) { val in
+                if val.wrappedValue {
                     openViewer()
                 } else {
                     closeViewer()
