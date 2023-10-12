@@ -38,7 +38,7 @@ public struct LoadableLazyVStack<
     var content: (Items.Element) -> Content
     var header: () -> Header
     var footer: () -> Footer
-    var loadingActivator: (_ action: @escaping () -> Void) -> A
+    var loadingActivator: (_ action: @escaping () async throws -> Void) -> A
     var loadingPlaceholder: () -> P
     var emptyPlaceholder: () -> E
     
@@ -49,7 +49,7 @@ public struct LoadableLazyVStack<
                 isLoadingAbove: Bool = false,
                 isLoadingBelow: Bool = false,
                 @ViewBuilder content: @escaping (Items.Element) -> Content,
-                @ViewBuilder loadingActivator: @escaping (_ action: @escaping () -> Void) -> A = { _ in EmptyView() },
+                @ViewBuilder loadingActivator: @escaping (_ action: @escaping () async throws -> Void) -> A = { _ in EmptyView() },
                 @ViewBuilder loadingPlaceholder: @escaping () -> P = { ProgressView().controlSize(.small) },
                 @ViewBuilder emptyPlaceholder: @escaping () -> E = { EmptyView() },
                 @ViewBuilder header: @escaping () -> Header = { EmptyView() },
@@ -89,16 +89,13 @@ public struct LoadableLazyVStack<
                 LoadableListContentView(
                     items: self.items,
                     id: self.id,
-                    content: self.content,
-                    loadingPlaceholder: self.loadingPlaceholder,
-                    loadingActivator: self.loadingActivator,
-                    emptyPlaceholder: self.emptyPlaceholder
+                    content: self.content
                 )
                 .scrollProxy(self.config.scrollProxy)
                 .onEvents(self.config.onEvents)
                 .hasBelow(self.config.hasBelow)
                 .hasAbove(self.config.hasAbove)
-                .manullyLoad(self.config.manuallyLoad)
+                .manullyLoad(self.config.manuallyLoad) { self.loadingActivator($0) }
                 .appearFromBottom(self.config.startFromBottom)
             } header: {
                 header()
