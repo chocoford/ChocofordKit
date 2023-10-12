@@ -97,7 +97,7 @@ public struct LoadableListContentView<
             }
             .onDisappear {
                 print("LoadableListContentView onDisappear")
-                stopGoing = true
+//                stopGoing = true
             }
         
         Color.clear.frame(height: 0.1).id("bottom")
