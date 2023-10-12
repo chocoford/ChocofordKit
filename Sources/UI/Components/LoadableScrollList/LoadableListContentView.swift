@@ -79,7 +79,7 @@ public struct LoadableListContentView<
     @State private var stopGoing = false
     
     public var body: some View {
-        Color.clear.frame(height: 0.1).id("top")
+        Color.clear.frame(height: self.config.anchorHeight).id("top")
             .apply(listRowStyle)
             .onAppear {
                 Task {
@@ -114,7 +114,7 @@ public struct LoadableListContentView<
 //                stopGoing = true
             }
         
-        Color.clear.frame(height: 0.1).id("bottom")
+        Color.clear.frame(height: self.config.anchorHeight).id("bottom")
             .apply(listRowStyle)
             .onAppear {
                 Task {
@@ -292,7 +292,8 @@ extension LoadableListContentView {
         var placeholder: AnyView = AnyView(EmptyView())
         var loadingIndicator: AnyView = AnyView(Center(.horizontal) {ProgressView().controlSize(.small)})
         var loadMoreActivator: (_ action: @escaping () async throws -> Void) -> AnyView = { _ in AnyView(EmptyView()) }
-
+        
+        var anchorHeight: CGFloat = 20
     }
     
     public func scrollProxy(_ proxy: ScrollViewProxy?) -> LoadableListContentView {
@@ -322,8 +323,8 @@ extension LoadableListContentView {
         return self
     }
     
-    public func loadingIndicator<Indicator: View>(@ViewBuilder placeholder: () -> Indicator) -> LoadableListContentView {
-        self.config.loadingIndicator = AnyView(placeholder())
+    public func loadingIndicator<Indicator: View>(@ViewBuilder indicator: () -> Indicator) -> LoadableListContentView {
+        self.config.loadingIndicator = AnyView(indicator())
         return self
     }
     
@@ -340,6 +341,13 @@ extension LoadableListContentView {
     
     public func placeholder<P: View>(@ViewBuilder placeholder: () -> P) -> LoadableListContentView {
         self.config.placeholder = AnyView(placeholder())
+        return self
+    }
+    
+    
+    /// Set the height of top/bottom anchor, default is `20`.
+    public func anchorHeight(_ height: CGFloat) -> LoadableListContentView {
+        self.config.anchorHeight = height
         return self
     }
 }
