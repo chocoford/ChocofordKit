@@ -90,6 +90,11 @@ public extension Loadable {
         self = .loaded(data: data)
     }
     
+    mutating func setAsLoaded(_ transform: (inout T?) throws -> T) throws {
+        var value = self.value
+        self = try .loaded(data: transform(&value))
+    }
+    
     mutating func transform(_ transform: (inout T) throws -> Void) {
         self = self.map {
             var el = $0
