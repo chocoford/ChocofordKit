@@ -90,14 +90,14 @@ public struct LoadableListContentView<
         .onChange(of: viewID) { _ in
             refreshView(config.scrollProxy)
         }
-        .onAppear {
-            if self.config.startFromBottom {
-                self.config.scrollProxy?.scrollTo("bottom")
-                DispatchQueue.main.async {
-                    self.config.scrollProxy?.scrollTo("bottom")
-                }
-            }
-        }
+//        .onAppear {
+//            if self.config.startFromBottom {
+//                self.config.scrollProxy?.scrollTo("bottom")
+//                DispatchQueue.main.async {
+//                    self.config.scrollProxy?.scrollTo("bottom")
+//                }
+//            }
+//        }
 //        .onChange(of: items) { val in
 //            guard items.count != val.count else { return }
 //            if firstToList {
