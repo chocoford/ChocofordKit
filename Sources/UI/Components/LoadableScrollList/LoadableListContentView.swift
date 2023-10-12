@@ -79,7 +79,7 @@ public struct LoadableListContentView<
     @State private var stopGoing = false
     
     public var body: some View {
-        Color.clear.frame(height: self.config.anchorHeight).id("top")
+        Color.clear.frame(height: self.config.anchorTopHeight).id("top")
             .apply(listRowStyle)
             .onAppear {
                 Task {
@@ -114,7 +114,7 @@ public struct LoadableListContentView<
 //                stopGoing = true
             }
         
-        Color.clear.frame(height: self.config.anchorHeight).id("bottom")
+        Color.clear.frame(height: self.config.anchorBottomHeight).id("bottom")
             .apply(listRowStyle)
             .onAppear {
                 Task {
@@ -293,7 +293,8 @@ extension LoadableListContentView {
         var loadingIndicator: AnyView = AnyView(Center(.horizontal) {ProgressView().controlSize(.small)})
         var loadMoreActivator: (_ action: @escaping () async throws -> Void) -> AnyView = { _ in AnyView(EmptyView()) }
         
-        var anchorHeight: CGFloat = 20
+        var anchorTopHeight: CGFloat = 1
+        var anchorBottomHeight: CGFloat = 1
     }
     
     public func scrollProxy(_ proxy: ScrollViewProxy?) -> LoadableListContentView {
@@ -346,8 +347,15 @@ extension LoadableListContentView {
     
     
     /// Set the height of top/bottom anchor, default is `20`.
-    public func anchorHeight(_ height: CGFloat) -> LoadableListContentView {
-        self.config.anchorHeight = height
+    public func anchorHeight(anchor: UnitPoint, _ height: CGFloat) -> LoadableListContentView {
+        switch anchor {
+            case .top:
+                self.config.anchorTopHeight = height
+            case .bottom:
+                self.config.anchorBottomHeight = height
+            default:
+                break
+        }
         return self
     }
 }
