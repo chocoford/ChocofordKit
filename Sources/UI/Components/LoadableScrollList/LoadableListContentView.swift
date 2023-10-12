@@ -25,9 +25,6 @@ import SwiftUI
 
 public struct LoadableListContentView<
     Content: View,
-    P: View,
-    A: View,
-    E: View,
     Items: RandomAccessCollection,
     ID: Hashable,
     VID: Hashable
@@ -38,50 +35,34 @@ public struct LoadableListContentView<
     var id: KeyPath<Items.Element, ID>
     
     var content: (Items.Element) -> Content
-    
-    var loadingPlaceholder: () -> P
-    var loadingActivator: (_ action: @escaping () -> Void) -> A
-    var emptyPlaceholder: () -> E
-    
+
     public init(
         viewID: VID = "",
         items: Items,
         id: KeyPath<Items.Element, ID>,
-        @ViewBuilder content: @escaping (Items.Element) -> Content,
-        @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView().size(20) },
-        @ViewBuilder loadingActivator: @escaping (_: @escaping () -> Void) -> A = { _ in EmptyView() },
-        @ViewBuilder emptyPlaceholder: @escaping () -> E = { EmptyView() }
+        @ViewBuilder content: @escaping (Items.Element) -> Content
     ) {
         self.viewID = viewID
         self.items = items
         self.id = id
         self.content = content
-        self.loadingPlaceholder = loadingPlaceholder
-        self.loadingActivator = loadingActivator
-        self.emptyPlaceholder = emptyPlaceholder
     }
     
     public init(
         viewID: VID = "",
         items: Items,
-        @ViewBuilder content: @escaping (Items.Element) -> Content,
-        @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView().size(20) },
-        @ViewBuilder loadingActivator: @escaping (_: @escaping () -> Void) -> A = { _ in EmptyView() },
-        @ViewBuilder emptyPlaceholder: @escaping () -> E = { EmptyView() }
+        @ViewBuilder content: @escaping (Items.Element) -> Content
     ) where Items.Element: Identifiable, ID == Items.Element.ID {
         self.init(
             viewID: viewID,
             items: items,
             id: \.id,
-            content: content,
-            loadingPlaceholder: loadingPlaceholder,
-            loadingActivator: loadingActivator,
-            emptyPlaceholder: emptyPlaceholder
+            content: content
         )
     }
     
     
-    @ObservedObject var config = Config()
+    var config = Config()
     
     @State private var readyToLoadAbove: Bool = false
     @State private var readyToLoadBelow: Bool = false
@@ -141,10 +122,8 @@ public struct LoadableListContentView<
     private func contentView() -> some View {
         if config.hasAbove || isLoadingAbove {
             if readyToLoadAbove || !config.manuallyLoad {
-                Group {
-                    loadingPlaceholder()
-                }
-                .onAppear(perform: onLoadingAbove)
+                self.config.loadingIndicator
+                    .onAppear(perform: onLoadingAbove)
                 /// will be cancelled when use with SplitView
                 //                    .task(onLoadingAbove)
             } else {
@@ -176,15 +155,13 @@ public struct LoadableListContentView<
                     }
             }
         } else if !isLoadingAbove && !isLoadingBelow {
-            emptyPlaceholder()
+            self.config.placeholder
         }
         
         if config.hasBelow || isLoadingBelow {
             if readyToLoadBelow || !config.manuallyLoad {
-                Group {
-                    loadingPlaceholder()
-                }
-                .onAppear(perform: onLoadingBelow)
+                self.config.loadingIndicator
+                    .onAppear(perform: onLoadingBelow)
             } else {
                 loadTrigger(makeReadyBelow)
             }
@@ -192,8 +169,8 @@ public struct LoadableListContentView<
     }
     
     @ViewBuilder
-    private func loadTrigger(_ action: @escaping () -> Void) -> some View {
-        loadingActivator(action)
+    private func loadTrigger(_ action: @escaping () async throws -> Void) -> some View {
+        self.config.loadMoreActivator(action)
     }
     
     @ViewBuilder
@@ -295,6 +272,11 @@ extension LoadableListContentView {
         var manuallyLoad: Bool = false
                 
         var onEvents: (_ event: LoadableListEvent) async -> Void = {_ in return}
+        
+        var placeholder: AnyView = AnyView(EmptyView())
+        var loadingIndicator: AnyView = AnyView(ProgressView().controlSize(.small))
+        var loadMoreActivator: (_ action: @escaping () async throws -> Void) -> AnyView = { _ in AnyView(EmptyView()) }
+
     }
     
     public func scrollProxy(_ proxy: ScrollViewProxy?) -> LoadableListContentView {
@@ -317,15 +299,31 @@ extension LoadableListContentView {
         return self
     }
     
-    public func manullyLoad(_ flag: Bool = true) -> LoadableListContentView {
-        self.config.manuallyLoad = flag
-        return self
-    }
-    
     public func onEvents(
         _ callback: @escaping (_ event: LoadableListEvent) async -> Void
     ) -> LoadableListContentView {
         self.config.onEvents = callback
+        return self
+    }
+    
+    public func loadingIndicator<Indicator: View>(@ViewBuilder placeholder: () -> Indicator) -> LoadableListContentView {
+        self.config.loadingIndicator = AnyView(placeholder())
+        return self
+    }
+    
+    public func manullyLoad<Activator: View>(
+        _ flag: Bool = true,
+        @ViewBuilder activator: @escaping (_ action: @escaping () async throws -> Void) -> Activator
+    ) -> LoadableListContentView {
+        self.config.manuallyLoad = flag
+        self.config.loadMoreActivator = { action in
+            AnyView(activator(action))
+        }
+        return self
+    }
+    
+    public func placeholder<P: View>(@ViewBuilder placeholder: () -> P) -> LoadableListContentView {
+        self.config.placeholder = AnyView(placeholder())
         return self
     }
 }

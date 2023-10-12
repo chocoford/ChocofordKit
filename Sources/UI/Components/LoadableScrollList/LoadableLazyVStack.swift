@@ -50,7 +50,7 @@ public struct LoadableLazyVStack<
                 isLoadingBelow: Bool = false,
                 @ViewBuilder content: @escaping (Items.Element) -> Content,
                 @ViewBuilder loadingActivator: @escaping (_ action: @escaping () -> Void) -> A = { _ in EmptyView() },
-                @ViewBuilder loadingPlaceholder: @escaping () -> P = { CircularProgressView().size(20) },
+                @ViewBuilder loadingPlaceholder: @escaping () -> P = { ProgressView().controlSize(.small) },
                 @ViewBuilder emptyPlaceholder: @escaping () -> E = { EmptyView() },
                 @ViewBuilder header: @escaping () -> Header = { EmptyView() },
                 @ViewBuilder footer: @escaping () -> Footer = { EmptyView() }) {
