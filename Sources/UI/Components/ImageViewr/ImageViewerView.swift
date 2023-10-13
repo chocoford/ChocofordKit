@@ -40,13 +40,12 @@ public struct ImageViewerView: View {
         imageRenderer: ImageRenderer = .animatableCached
     ) {
         self.url = url
-//        self.placeholder = AnyView(placeholder())
+        self.thumbnailURL = thumbnailURL
         self.image = nil
         self.imageRenderer = imageRenderer
     }
     
     init(image: Image) {
-//        self.placeholder = AnyView(EmptyView())
         self.image = image
         self.imageRenderer = .cached
         self.url = nil
