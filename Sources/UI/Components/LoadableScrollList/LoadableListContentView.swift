@@ -104,9 +104,11 @@ public struct LoadableListContentView<
                         self.config.scrollProxy?.scrollTo("bottom")
                     }
                 }
-                DispatchQueue.main.async {
-                    makeReadyAbove()
-                    makeReadyBelow()
+                if !self.config.manuallyLoad {
+                    DispatchQueue.main.async {
+                        makeReadyAbove()
+                        makeReadyBelow()
+                    }
                 }
             }
             .onDisappear {
@@ -170,7 +172,7 @@ public struct LoadableListContentView<
         }
         
         if config.hasBelow || isLoadingBelow {
-            if readyToLoadBelow || !config.manuallyLoad {
+            if readyToLoadBelow {
                 self.config.loadingIndicator
                     .onAppear(perform: onLoadingBelow)
             } else {
@@ -261,6 +263,12 @@ internal extension LoadableListContentView {
                     self.config.scrollProxy?.scrollTo(top[keyPath: id], anchor: .bottom)
                 }
                 isLoadingAbove = false
+                self.readyToLoadAbove = false
+                if !self.config.manuallyLoad {
+                    DispatchQueue.main.async {
+                        self.readyToLoadAbove = true
+                    }
+                }
             }
         }
     }
@@ -271,7 +279,13 @@ internal extension LoadableListContentView {
             isLoadingBelow = true
             Task {
                 await config.onEvents(.onLoadingBelow)
-                isLoadingBelow = false
+                self.isLoadingBelow = false
+                self.readyToLoadBelow = false
+                if !self.config.manuallyLoad {
+                    DispatchQueue.main.async {
+                        self.readyToLoadBelow = true
+                    }
+                }
             }
         }
     }
