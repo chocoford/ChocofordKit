@@ -47,12 +47,14 @@ public struct ImageViewer<Content: View>: View {
         self.imageRenderer = imageRenderer
     }
 
-    public init(isPresent: Binding<Bool>? = nil, image: Image, imageSize: CGSize? = nil,
+    public init(isPresent: Binding<Bool>? = nil, 
+                image: Image, imageSize: CGSize? = nil,
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content) {
         self.isPresent = isPresent
         self.image = image
         self.url = nil
+        self.thumbnailURL = nil
         self.content = content
         self.imageSize = imageSize
         self.imageRenderer = imageRenderer
@@ -66,13 +68,21 @@ public struct ImageViewer<Content: View>: View {
                 if self.isPresent != nil { return }
                 openViewer()
             }
-            .onReceive(self.isPresent.publisher) { val in
-                if val.wrappedValue {
+            .onChange(of: self.isPresent?.wrappedValue) { val in
+                guard let val = val else { return }
+                if val {
                     openViewer()
                 } else {
                     closeViewer()
                 }
             }
+//            .onReceive(self.isPresent.publisher) { val in
+//                if val.wrappedValue {
+//                    openViewer()
+//                } else {
+//                    closeViewer()
+//                }
+//            }
             .apply(imageViewerOverlay)
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
                 if let window = notification.object as? NSWindow,
