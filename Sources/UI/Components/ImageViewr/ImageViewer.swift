@@ -151,21 +151,22 @@ extension ImageViewer {
     func openViewer() {
 #if os(macOS)
         if let window = imageViewerWindow {
-            NSApp.activate(ignoringOtherApps: true)
-            window.makeKeyAndOrderFront(nil)
-        } else {
-            let window = NSWindow(
-                contentRect: .init(origin: .zero, size: .init(width: 800, height: 500)),
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                backing: .buffered,
-                defer: true
-            )
-            window.animationBehavior = .documentWindow
-            imageViewerWindow = window
+            closeViewer()
         }
+          
+        guard let screen = NSScreen.current else { return }
+        
+        let window = NSWindow(
+            contentRect: .init(origin: .zero, size: .zero),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: true, 
+            screen: screen
+        )
+        window.animationBehavior = .documentWindow
+        imageViewerWindow = window
         
         guard let window = imageViewerWindow else { return }
-        
         
         let view: ImageViewerView 
         
@@ -182,10 +183,16 @@ extension ImageViewer {
         window.backgroundColor = .black
         window.titleVisibility = .hidden
         
-        if let screen = window.screen,
-           let imageSize = self.imageSize {
-            window.animator().setContentSize(.init(width: min(imageSize.width, screen.frame.width * 0.9),
-                                                   height: min(imageSize.height, screen.frame.height * 0.9)))
+        if let imageSize = self.imageSize {
+            window.animator().setContentSize(
+                .init(width: min(imageSize.width, screen.frame.width * 0.9),
+                      height: min(imageSize.height, screen.frame.height * 0.9))
+            )
+        } else {
+            window.animator().setContentSize(
+                .init(width: screen.frame.width,
+                      height: screen.frame.height)
+            )
         }
         
         NSApp.activate(ignoringOtherApps: true)

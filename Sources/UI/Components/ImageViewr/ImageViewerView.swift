@@ -51,26 +51,30 @@ public struct ImageViewerView: View {
     }
     
     @State private var imageSize: CGSize = .zero
+#if os(macOS)
+    @State private var window: NSWindow? = nil
+#endif
     
     public var body: some View {
-        ZoomableScrollView(size: imageSize) {
-            Group {
-                if let image = image {
-                    imageView(image: image)
-                } else {
-                    asyncImageView()
-                }
+        ZStack {
+            GeometryReader { geometry in
+                Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
+                    .watchImmediately(of: geometry.size) { newValue in
+                        self.imageSize = newValue
+                    }
             }
-#if os(macOS)
-        .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
-#endif
-            .background {
-                GeometryReader { geometry in
-                    Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
-                        .watchImmediately(of: geometry.size) { newValue in
-                            self.imageSize = newValue
-                        }
+            
+            ZoomableScrollView(size: imageSize) {
+                Group {
+                    if let image = image {
+                        imageView(image: image)
+                    } else {
+                        asyncImageView()
+                    }
                 }
+#if os(macOS)
+                .offset(x: imageSize.width / 2, y: -1 * imageSize.height / 2)
+#endif
             }
         }
         .ignoresSafeArea()
@@ -166,10 +170,10 @@ public struct ImageViewerView: View {
                         .onSuccess(perform: { _, _, _ in
                             isLoading = false
                         })
-#if os(iOS)
                         .resizable()
-#endif
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
+                        .frame(width: imageSize == .zero ? nil : imageSize.width,
+                               height: imageSize == .zero ? nil : imageSize.height)
             }
         }
     }
@@ -231,20 +235,21 @@ public struct ImageViewerView: View {
                     .onSuccess(perform: { _, _, _ in
                         isLoading = false
                     })
-#if os(iOS)
                     .resizable()
-#endif
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
+                    .frame(width: imageSize == .zero ? nil : imageSize.width,
+                           height: imageSize == .zero ? nil : imageSize.height)
+
         }
     }
     
     @ViewBuilder
     private func imageView(image: Image) -> some View {
         image
-#if os(iOS)
             .resizable()
-#endif
-            .aspectRatio(contentMode: .fit)
+            .scaledToFit()
+            .frame(width: imageSize == .zero ? nil : imageSize.width,
+                   height: imageSize == .zero ? nil : imageSize.height)
     }
 }
 

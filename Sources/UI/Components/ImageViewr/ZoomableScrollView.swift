@@ -39,6 +39,7 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
 
   func makeNSView(context: Context) -> NSScrollView {
       let scrollView = NSScrollView()
+      print("makeNSView", self.size)
       scrollView.contentView = CenteredClipView()
       scrollView.maxMagnification = 20
       scrollView.minMagnification = 0.1
@@ -59,39 +60,21 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
   }
 
   func updateNSView(_ scrollView: NSScrollView, context: Context) {
-//      print("updateNSView", scrollView.documentVisibleRect, size)
-    // update the hosting controller's SwiftUI content
-//    context.coordinator.hostingController.rootView = self.content
-//    assert(context.coordinator.hostingController.view.superview == uiView)
-//      nsView.documentView?.setBoundsSize(size)
-//      print(size)
       let view = NSView(frame: .init(origin: .zero, size: size))
       let imageView = NSHostingView(rootView: content())
       view.addSubview(imageView)
       scrollView.documentView = view
 
-      if previousSize != size {
-          let initialScale = min(scrollView.documentVisibleRect.size.width / size.width, scrollView.documentVisibleRect.size.height / size.height)
+      if .zero != size && scrollView.documentVisibleRect.size != .zero {
+          let initialScale = min(
+            scrollView.documentVisibleRect.size.width / size.width,
+            scrollView.documentVisibleRect.size.height / size.height
+          )
           scrollView.setMagnification(initialScale,
                                       centeredAt: .init(x: 0, y: 0))
           scrollView.maxMagnification = max(10, initialScale * 50)
           scrollView.minMagnification = min(0.01, initialScale * 0.01)
       }
-      DispatchQueue.main.async {
-          previousSize = size
-    }
-      
-      
-//      if let url = url,
-//         let image = NSImage(contentsOf: url) {
-//          print("image loadeed.", image)
-//          let view = NSView(frame: .init(origin: .zero, size: .init(width: 1000, height: 2000)))
-//          view.addSubview(NSImageView(image: image))
-//          view.layout()
-//          let imageView = NSImageView(image: image)
-//          imageView.image = image
-//          scrollView.documentView = view
-//      }
   }
 }
 #elseif os(iOS)
