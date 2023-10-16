@@ -24,7 +24,7 @@ public struct ImageViewer<Content: View>: View {
     var content: () -> Content
     
 #if os(macOS)
-    @State private var currentWindow: NSWindow? = nil
+//    @State private var currentWindow: NSWindow? = nil
 #elseif os(iOS)
     @State private var showViewer = false
     @State var dragOffset: CGSize = CGSize.zero
@@ -76,21 +76,17 @@ public struct ImageViewer<Content: View>: View {
                     closeViewer()
                 }
             }
-//            .onReceive(self.isPresent.publisher) { val in
-//                if val.wrappedValue {
-//                    openViewer()
-//                } else {
-//                    closeViewer()
-//                }
-//            }
             .apply(imageViewerOverlay)
+#if os(macOS)
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
                 if let window = notification.object as? NSWindow,
-                   window == self.currentWindow {
-                    self.currentWindow?.close()
+                   window == imageViewerWindow
+                   /*window == self.currentWindow*/ {
+                    imageViewerWindow?.close()
                     self.isPresent?.wrappedValue = false
                 }
             }
+#endif
     }
     
     @ViewBuilder
@@ -102,31 +98,37 @@ public struct ImageViewer<Content: View>: View {
                 Color.windowBackgroundColor
                     .ignoresSafeArea()
                     .overlay {
-                        ImageViewerView(url: url, image: image)
-                            .offset(x: self.dragOffset.width, y: self.dragOffset.height)
-                            .simultaneousGesture(
-                                DragGesture()
-                                    .onChanged { value in
-                                        self.dragOffset = value.translation
-                                        self.dragOffsetPredicted = value.predictedEndTranslation
-                                        backgroundOpacity = 1 - Double((abs(self.dragOffset.height) + abs(self.dragOffset.width)) / dismissThreshold)
-                                    }
-                                    .onEnded { value in
-                                        if (abs(self.dragOffset.height) + abs(self.dragOffset.width) > dismissThreshold) ||
-                                            ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) ||
-                                            ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3 {
-                                            withAnimation(.spring()) {
-                                                self.dragOffset = self.dragOffsetPredicted
-                                            }
-                                            self.showViewer = false
-                                            return
+                        Group {
+                            if let image = image {
+                                ImageViewerView(image: image)
+                            } else {
+                                ImageViewerView(url: url, thumbnailURL: thumbnailURL)
+                            }
+                        }
+                        .offset(x: self.dragOffset.width, y: self.dragOffset.height)
+                        .simultaneousGesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    self.dragOffset = value.translation
+                                    self.dragOffsetPredicted = value.predictedEndTranslation
+                                    backgroundOpacity = 1 - Double((abs(self.dragOffset.height) + abs(self.dragOffset.width)) / dismissThreshold)
+                                }
+                                .onEnded { value in
+                                    if (abs(self.dragOffset.height) + abs(self.dragOffset.width) > dismissThreshold) ||
+                                        ((abs(self.dragOffsetPredicted.height)) / (abs(self.dragOffset.height)) > 3) ||
+                                        ((abs(self.dragOffsetPredicted.width)) / (abs(self.dragOffset.width))) > 3 {
+                                        withAnimation(.spring()) {
+                                            self.dragOffset = self.dragOffsetPredicted
                                         }
-                                        withAnimation(.interactiveSpring()) {
-                                            self.dragOffset = .zero
-                                            backgroundOpacity = 1
-                                        }
+                                        self.showViewer = false
+                                        return
                                     }
-                            )
+                                    withAnimation(.interactiveSpring()) {
+                                        self.dragOffset = .zero
+                                        backgroundOpacity = 1
+                                    }
+                                }
+                        )
                     }
                     .background(BackgroundBlurView())
                     .opacity(backgroundOpacity)
@@ -139,42 +141,16 @@ public struct ImageViewer<Content: View>: View {
             }
 #endif
     }
-        
-
 }
 
-//final class ImageViewerInjection: ObservableObject {
-//    @Published var isPresent: Bool = false
-//    @Published var url: URL? = nil
-//}
-//
-//public struct ImageViewerHolder: ViewModifier {
-//    @StateObject var imageViewer: ImageViewerInjection = .init()
-//    
-//    public func body(content: Content) -> some View {
-//        content
-//            .imageViewer(isPresent: $imageViewer.isPresent, url: imageViewer.url)
-//    }
-//}
-//
-//public struct ImageViewerModifier: ViewModifier {
-//    @EnvironmentObject var imageViewer: ImageViewerInjection
-//    
-//    var url: URL?
-//    
-//    public func body(content: Content) -> some View {
-//        content
-//            .environmentObject(imageViewer)
-//            .onChange(of: url) { val in
-//                imageViewer.url = val
-//            }
-//    }
-//}
+#if os(macOS)
+internal var imageViewerWindow: NSWindow? = nil
+#endif
 
 extension ImageViewer {
     func openViewer() {
 #if os(macOS)
-        if let window = currentWindow {
+        if let window = imageViewerWindow {
             NSApp.activate(ignoringOtherApps: true)
             window.makeKeyAndOrderFront(nil)
         } else {
@@ -185,10 +161,10 @@ extension ImageViewer {
                 defer: true
             )
             window.animationBehavior = .documentWindow
-            self.currentWindow = window
+            imageViewerWindow = window
         }
         
-        guard let window = self.currentWindow else { return }
+        guard let window = imageViewerWindow else { return }
         
         
         let view: ImageViewerView 
@@ -216,7 +192,7 @@ extension ImageViewer {
         window.animator().makeKeyAndOrderFront(nil)
         window.animator().center()
         
-        currentWindow = window
+        imageViewerWindow = window
 #elseif os(iOS)
         withAnimation {
             showViewer = true
@@ -227,7 +203,7 @@ extension ImageViewer {
     
     func closeViewer() {
 #if os(macOS)
-        self.currentWindow?.close()
+        imageViewerWindow?.close()
 #elseif os(iOS)
         withAnimation {
             showViewer = false
@@ -291,7 +267,10 @@ struct ImageViewer_Previews: PreviewProvider {
     static var previews: some View {
         ScrollView {
             LazyVStack {
-                ImageViewer(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageSize: .init(width: 896, height: 1344)) {
+                ImageViewer(
+                    url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"),
+                    imageSize: .init(width: 896, height: 1344)
+                ) {
                     CachedAsyncImage(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large")) {
                         $0
                             .resizable()
@@ -300,9 +279,22 @@ struct ImageViewer_Previews: PreviewProvider {
                         Rectangle()
                     }
                     .frame(width: 200, height: 200)
-                    
                 }
-                Rectangle().frame(height: 800)
+                
+                ImageViewer(
+                    url: URL(string: "https://pbs.twimg.com/media/F8Q7Z1aW0AAXGHc?format=jpg&name=medium"),
+                    imageSize: .init(width: 896, height: 1344)
+                ) {
+                    CachedAsyncImage(url: URL(string: "https://pbs.twimg.com/media/F8Q7Z1aW0AAXGHc?format=jpg&name=small")) {
+                        $0
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } placeholder: {
+                        Rectangle()
+                    }
+                    .frame(width: 200, height: 200)
+                }
+
             }
         }
     }

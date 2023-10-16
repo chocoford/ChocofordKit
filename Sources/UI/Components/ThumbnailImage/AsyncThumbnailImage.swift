@@ -22,7 +22,7 @@ public struct AsyncThumbnailImage: View {
 #if canImport(AppKit)
     var placeholder: AnyView = AnyView(SwiftUI.Image(nsImage: Image()))
 #elseif canImport(UIKit)
-    var placeholder: AnyView = AnyView(SwiftUI.Image(nsImage: Image()))
+    var placeholder: AnyView = AnyView(SwiftUI.Image(uiImage: Image()))
 #endif
 
     
@@ -51,10 +51,16 @@ public struct AsyncThumbnailImage: View {
         guard let url = url else {
             return
         }
-        
+#if canImport(AppKit)
         guard let image = NSImage(contentsOf: url) else {
             return
         }
+#elseif canImport(UIKit)
+        guard let image = UIImage(contentsOf: url) else {
+            return
+        }
+#endif
+
         Task { @MainActor in
             if let size = self.config.preferThumbnailSize {
                 self.image = await image.byPreparingThumbnail(ofSize: size)

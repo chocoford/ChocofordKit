@@ -46,7 +46,7 @@ extension Image {
         let image = NSImage(cgImage: cgImage, size: size)
         self.init(nsImage: image)
 #elseif canImport(UIKit)
-        let image = UIImage(cgImage: cgImage, size: size)
+        let image = UIImage(cgImage: cgImage)
         self.init(uiImage: image)
 #endif
     }

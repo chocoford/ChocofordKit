@@ -5,7 +5,7 @@
 //  Created by Dove Zachary on 2023/10/7.
 //
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && os(macOS)
 import SwiftUI
 
 public struct SettingsButton<Label: View>: View {

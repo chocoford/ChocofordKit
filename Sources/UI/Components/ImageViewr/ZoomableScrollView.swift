@@ -97,8 +97,8 @@ struct ZoomableScrollView<Content: View>: NSViewRepresentable {
 #elseif os(iOS)
 class CenteredZoomingScrollView: UIScrollView {
     override func setContentOffset(_ contentOffset: CGPoint, animated: Bool) {
-        var contentSize = self.contentSize
-        var scrollViewSize = self.bounds.size
+        let contentSize = self.contentSize
+        let scrollViewSize = self.bounds.size
         var contentOffset = contentOffset
         
         if (contentSize.width < scrollViewSize.width) {
@@ -118,7 +118,7 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
     private var content: () -> Content
     private var size: CGSize
     
-    init(url: URL?, size: CGSize, @ViewBuilder content: @escaping () -> Content) {
+    init(size: CGSize, @ViewBuilder content: @escaping () -> Content) {
         self.content = content
         self.size = size
     }

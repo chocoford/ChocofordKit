@@ -22,9 +22,7 @@ public struct ImageViewerView: View {
     let url: URL?
     var thumbnailURL: URL?
     let image: Image?
-    
-//    var placeholder: AnyView
-    
+        
     public enum ImageRenderer {
         case animatableCached
         case cached
