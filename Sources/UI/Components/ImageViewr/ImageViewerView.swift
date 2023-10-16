@@ -41,7 +41,6 @@ public struct ImageViewerView: View {
         self.thumbnailURL = thumbnailURL
         self.image = nil
         self.imageRenderer = imageRenderer
-        self.isLoading = true
     }
     
     init(image: Image) {
@@ -49,7 +48,6 @@ public struct ImageViewerView: View {
         self.imageRenderer = .cached
         self.url = nil
         self.thumbnailURL = nil
-        self.isLoading = true
     }
     
     @State private var imageSize: CGSize = .zero
@@ -69,7 +67,7 @@ public struct ImageViewerView: View {
             .background {
                 GeometryReader { geometry in
                     Color.clear.preference(key: ImageSizeKey.self, value: geometry.size)
-                        .onChange(of: geometry.size) { newValue in
+                        .watchImmediately(of: geometry.size) { newValue in
                             self.imageSize = newValue
                         }
                 }
@@ -80,6 +78,7 @@ public struct ImageViewerView: View {
             self.imageSize = $0
         }
         .onAppear {
+            /// will be called every time view appears.
             isLoading = true
         }
         .overlay {
@@ -131,7 +130,6 @@ public struct ImageViewerView: View {
                         switch phase {
                             case .success(let image):
                                 imageView(image: image)
-                                    .aspectRatio(contentMode: .fit)
                                     .onAppear {
                                         DispatchQueue.main.async {
                                             isLoading = false
@@ -209,7 +207,6 @@ public struct ImageViewerView: View {
                     switch phase {
                         case .success(let image):
                             imageView(image: image)
-                                .aspectRatio(contentMode: .fit)
                                 .onAppear {
                                     DispatchQueue.main.async {
                                         isLoading = false
@@ -227,7 +224,6 @@ public struct ImageViewerView: View {
                             
                         default:
                             EmptyView()
-                            
                     }
                 }
             case .animatableCached:
