@@ -15,6 +15,7 @@ extension NSApplication {
     public func setAccessoryPolicyIfNecessary() {
         if NSApp.windows.filter({ $0.identifier != nil && $0.canBecomeKey && $0.isVisible }).isEmpty {
             NSApp.setActivationPolicy(.accessory)
+            print("NSApp.setActivationPolicy(.accessory)")
         }
     }
 }

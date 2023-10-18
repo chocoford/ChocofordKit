@@ -18,6 +18,7 @@ struct AutoActivationPolicyModifer: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
+//                print("[AutoActivationPolicyModifer] onAppear")
                 activateApp()
                 self.window?.makeKeyAndOrderFront(nil)
             }
@@ -27,9 +28,13 @@ struct AutoActivationPolicyModifer: ViewModifier {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { output in
+//                print("[AutoActivationPolicyModifer] NSWindow.didBecomeKeyNotification \(output.object ?? "")")
                 guard let window = output.object as? NSWindow else { return }
-                if window == self.window {
-                    NSApp.setActivationPolicy(.regular)
+                DispatchQueue.main.async {
+                    if window == self.window {
+                        NSApp.setActivationPolicy(.regular)
+//                        print("[AutoActivationPolicyModifer] NSApp.setActivationPolicy(.regular)")
+                    }
                 }
             }
             .onReceive(
@@ -39,9 +44,12 @@ struct AutoActivationPolicyModifer: ViewModifier {
                 )
             ) { _ in
                 DispatchQueue.main.async {
-                    print(NSApp.windows.map{($0.identifier, $0.title, $0.frame, $0.isVisible)})
                     if NSApp.windows.filter({ $0.identifier != nil && $0.canBecomeKey && $0.isVisible }).isEmpty {
                         NSApp.setActivationPolicy(.accessory)
+//                        print("[AutoActivationPolicyModifer] NSApp.setActivationPolicy(.accessory)")
+//                        DispatchQueue.main.async {
+//                            print("[AutoActivationPolicyModifer]", String(describing: NSApp.activationPolicy()), NSApp.activationPolicy().rawValue)
+//                        }
                     }
                 }
             }
