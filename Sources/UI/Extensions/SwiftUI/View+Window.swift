@@ -18,9 +18,8 @@ struct AutoActivationPolicyModifer: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
-                NSApp.setActivationPolicy(.regular)
                 activateApp()
-                self.window?.orderFrontRegardless()
+                self.window?.makeKeyAndOrderFront(nil)
             }
             .introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
                 DispatchQueue.main.async {
@@ -40,6 +39,7 @@ struct AutoActivationPolicyModifer: ViewModifier {
                 )
             ) { _ in
                 DispatchQueue.main.async {
+                    print(NSApp.windows.map{($0.identifier, $0.title, $0.frame, $0.isVisible)})
                     if NSApp.windows.filter({ $0.identifier != nil && $0.canBecomeKey && $0.isVisible }).isEmpty {
                         NSApp.setActivationPolicy(.accessory)
                     }

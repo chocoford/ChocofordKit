@@ -39,6 +39,18 @@ public struct AsyncButton<Label: View, Loading: View>: View {
         self.loadingLabel = loadingLabel
     }
     
+    public init<S>(
+        _ title: S,
+        role: ButtonRole? = nil,
+        action: @escaping () async throws -> Void,
+        @ViewBuilder loadingLabel: @escaping () -> Loading = {  ProgressView().controlSize(.small) }
+    ) where S : StringProtocol, Label == Text {
+        self.role = role
+        self.action = action
+        self.label = { Text(title) }
+        self.loadingLabel = loadingLabel
+    }
+    
     @State private var isRunning: Bool = false
     
     public var body: some View {
