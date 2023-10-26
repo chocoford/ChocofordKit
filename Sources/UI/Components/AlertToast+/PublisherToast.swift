@@ -10,7 +10,7 @@ import Combine
 import AlertToast
 import ChocofordEssentials
 
-internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.Output == Optional<Error>, P.Failure == Never {
+internal struct ErrorPublisherToastModifier<P: Publisher, E: Error>: ViewModifier where P.Output == Optional<E>, P.Failure == Never {
     var publisher: P
     var duration: TimeInterval
     var tapToDismiss: Bool
@@ -38,7 +38,7 @@ internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.
     }
 
     
-    @State private var error: Error? = nil
+    @State private var error: P.Output = nil
     
     var isPresent: Binding<Bool> {
         Binding {
@@ -76,7 +76,7 @@ extension AlertToast {
 
 extension View {
     @ViewBuilder
-    public func toast<P: Publisher>(
+    public func toast<P: Publisher, E: Error>(
         publisher: P,
         duration: TimeInterval = 2,
         tapToDismiss: Bool = true,
@@ -84,7 +84,7 @@ extension View {
         alert: @escaping (P.Output) -> AlertToast,
         onTap: @escaping (P.Output) -> Void = { _ in },
         onComplete: @escaping (P.Output) -> Void = { _ in }
-    ) -> some View where P.Output == Optional<Error>, P.Failure == Never  {
+    ) -> some View where P.Output == Optional<E>, P.Failure == Never {
         modifier(
             ErrorPublisherToastModifier(
                 publisher: publisher,
@@ -98,3 +98,26 @@ extension View {
         )
     }
 }
+
+#if DEBUG
+
+enum ErrorPublisherToastError: LocalizedError {
+    
+}
+
+class ErrorPublisherToastTestModel: ObservableObject {
+    @Published var error: ErrorPublisherToastError?
+}
+
+struct ErrorPublisherToast_PreviewView: View {
+    @StateObject var viewModel = ErrorPublisherToastTestModel()
+    
+    var body: some View {
+        Text("Hello world")
+            .toast(publisher: viewModel.$error) { error in
+                AlertToast(displayMode: .hud, type: .error(.red))
+            }
+    }
+}
+
+#endif
