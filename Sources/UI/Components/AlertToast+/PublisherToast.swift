@@ -10,7 +10,7 @@ import Combine
 import AlertToast
 import ChocofordEssentials
 
-internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.Output == Error, P.Failure == Never  {
+internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.Output == Optional<Error>, P.Failure == Never {
     var publisher: P
     var duration: TimeInterval
     var tapToDismiss: Bool
@@ -24,9 +24,9 @@ internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.
         duration: TimeInterval = 2,
         tapToDismiss: Bool = true,
         offsetY: CGFloat = 0,
-        alert: @escaping (P.Output) -> AlertToast,
-        onTap: @escaping (P.Output) -> Void = { _ in },
-        onComplete: @escaping (P.Output) -> Void = { _ in }
+        alert: @escaping (P.Output?) -> AlertToast,
+        onTap: @escaping (P.Output?) -> Void = { _ in },
+        onComplete: @escaping (P.Output?) -> Void = { _ in }
     ) {
         self.publisher = publisher
         self.duration = duration
@@ -61,21 +61,17 @@ internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.
                 tapToDismiss: tapToDismiss,
                 offsetY: offsetY
             ) {
-                if let error = self.error {
-                    return self.alert(error)
-                } else {
-                    return AlertToast(displayMode: .hud, type: .error(.red), title: "Unexpected")
-                }
+                return self.alert(error)
             } onTap: {
-                if let error = self.error {
-                    return self.onTap(error)
-                }
+                return self.onTap(error)
             } completion: {
-                if let error = self.error {
-                    return self.onComplete(error)
-                }
+                return self.onComplete(error)
             }
     }
+}
+
+extension AlertToast {
+    
 }
 
 extension View {
@@ -85,10 +81,10 @@ extension View {
         duration: TimeInterval = 2,
         tapToDismiss: Bool = true,
         offsetY: CGFloat = 0,
-        alert: @escaping (P.Output) -> AlertToast,
-        onTap: @escaping (P.Output) -> Void = { _ in },
-        onComplete: @escaping (P.Output) -> Void = { _ in }
-    ) -> some View where P.Output == Error, P.Failure == Never  {
+        alert: @escaping (P.Output?) -> AlertToast,
+        onTap: @escaping (P.Output?) -> Void = { _ in },
+        onComplete: @escaping (P.Output?) -> Void = { _ in }
+    ) -> some View where P.Output == Optional<Error>, P.Failure == Never  {
         modifier(
             ErrorPublisherToastModifier(
                 publisher: publisher,
