@@ -8,26 +8,27 @@
 import SwiftUI
 import Combine
 import AlertToast
+import ChocofordEssentials
 
-internal struct PublisherToastModifier: ViewModifier {
-    var publisher: AnyPublisher<Error, Never>
+internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.Output == Error, P.Failure == Never  {
+    var publisher: P
     var duration: TimeInterval
     var tapToDismiss: Bool
     var offsetY: CGFloat
-    var alert: () -> AlertToast
-    var onTap: () -> Void
-    var onComplete: () -> Void
+    var alert: (P.Output) -> AlertToast
+    var onTap: (P.Output) -> Void
+    var onComplete: (P.Output) -> Void
     
-    internal init<P: Publisher>(
+    internal init(
         publisher: P,
         duration: TimeInterval = 2,
         tapToDismiss: Bool = true,
         offsetY: CGFloat = 0,
-        alert: @escaping () -> AlertToast,
-        onTap: @escaping () -> Void = {},
-        onComplete: @escaping () -> Void = {}
-    ) where P.Output == Error, P.Failure == Never {
-        self.publisher = AnyPublisher(publisher)
+        alert: @escaping (P.Output) -> AlertToast,
+        onTap: @escaping (P.Output) -> Void = { _ in },
+        onComplete: @escaping (P.Output) -> Void = { _ in }
+    ) {
+        self.publisher = publisher
         self.duration = duration
         self.tapToDismiss = tapToDismiss
         self.offsetY = offsetY
@@ -48,7 +49,7 @@ internal struct PublisherToastModifier: ViewModifier {
             }
         }
     }
-    
+        
     func body(content: Content) -> some View {
         content
             .onReceive(self.publisher) { error in
@@ -58,11 +59,22 @@ internal struct PublisherToastModifier: ViewModifier {
                 isPresenting: isPresent,
                 duration: duration,
                 tapToDismiss: tapToDismiss,
-                offsetY: offsetY,
-                alert: alert,
-                onTap: onTap,
-                completion: onComplete
-            )
+                offsetY: offsetY
+            ) {
+                if let error = self.error {
+                    return self.alert(error)
+                } else {
+                    return AlertToast(displayMode: .hud, type: .error(.red), title: "Unexpected")
+                }
+            } onTap: {
+                if let error = self.error {
+                    return self.onTap(error)
+                }
+            } completion: {
+                if let error = self.error {
+                    return self.onComplete(error)
+                }
+            }
     }
 }
 
@@ -73,12 +85,12 @@ extension View {
         duration: TimeInterval = 2,
         tapToDismiss: Bool = true,
         offsetY: CGFloat = 0,
-        alert: @escaping () -> AlertToast,
-        onTap: @escaping () -> Void = {},
-        onComplete: @escaping () -> Void = {}
+        alert: @escaping (P.Output) -> AlertToast,
+        onTap: @escaping (P.Output) -> Void = { _ in },
+        onComplete: @escaping (P.Output) -> Void = { _ in }
     ) -> some View where P.Output == Error, P.Failure == Never  {
         modifier(
-            PublisherToastModifier(
+            ErrorPublisherToastModifier(
                 publisher: publisher,
                 duration: duration,
                 tapToDismiss: tapToDismiss,
