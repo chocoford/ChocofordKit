@@ -24,9 +24,9 @@ internal struct ErrorPublisherToastModifier<P: Publisher>: ViewModifier where P.
         duration: TimeInterval = 2,
         tapToDismiss: Bool = true,
         offsetY: CGFloat = 0,
-        alert: @escaping (P.Output?) -> AlertToast,
-        onTap: @escaping (P.Output?) -> Void = { _ in },
-        onComplete: @escaping (P.Output?) -> Void = { _ in }
+        alert: @escaping (P.Output) -> AlertToast,
+        onTap: @escaping (P.Output) -> Void = { _ in },
+        onComplete: @escaping (P.Output) -> Void = { _ in }
     ) {
         self.publisher = publisher
         self.duration = duration
@@ -81,9 +81,9 @@ extension View {
         duration: TimeInterval = 2,
         tapToDismiss: Bool = true,
         offsetY: CGFloat = 0,
-        alert: @escaping (P.Output?) -> AlertToast,
-        onTap: @escaping (P.Output?) -> Void = { _ in },
-        onComplete: @escaping (P.Output?) -> Void = { _ in }
+        alert: @escaping (P.Output) -> AlertToast,
+        onTap: @escaping (P.Output) -> Void = { _ in },
+        onComplete: @escaping (P.Output) -> Void = { _ in }
     ) -> some View where P.Output == Optional<Error>, P.Failure == Never  {
         modifier(
             ErrorPublisherToastModifier(
