@@ -83,7 +83,9 @@ public struct ImageViewerView: View {
         }
         .onAppear {
             /// will be called every time view appears.
-            isLoading = true
+            if self.image == nil {
+                isLoading = true
+            }
         }
         .overlay {
             Center {

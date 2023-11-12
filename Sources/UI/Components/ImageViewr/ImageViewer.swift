@@ -14,7 +14,7 @@ public struct ImageViewer<Content: View>: View {
     
     var isPresent: Binding<Bool>?
     
-    var image: Image?
+    var image: Binding<Image?>
     var url: URL?
     var thumbnailURL: URL?
     var imageSize: CGSize?
@@ -39,7 +39,7 @@ public struct ImageViewer<Content: View>: View {
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content) {
         self.isPresent = isPresent
-        self.image = nil
+        self.image = .constant(nil)
         self.url = url
         self.thumbnailURL = thumbnailURL
         self.imageSize = imageSize
@@ -52,6 +52,24 @@ public struct ImageViewer<Content: View>: View {
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content) {
         self.isPresent = isPresent
+        self.image = .constant(image)
+        self.url = nil
+        self.thumbnailURL = nil
+        self.content = content
+        self.imageSize = imageSize
+        self.imageRenderer = imageRenderer
+    }
+    
+    
+    public init(image: Binding<Image?>,
+                imageSize: CGSize? = nil,
+                imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
+                @ViewBuilder content: @escaping () -> Content) {
+        self.isPresent = Binding(get: {
+            image.wrappedValue != nil
+        }, set: { val in
+            image.wrappedValue = nil
+        })
         self.image = image
         self.url = nil
         self.thumbnailURL = nil
@@ -68,9 +86,8 @@ public struct ImageViewer<Content: View>: View {
                 if self.isPresent != nil { return }
                 openViewer()
             }
-            .onChange(of: self.isPresent?.wrappedValue) { val in
-                guard let val = val else { return }
-                if val {
+            .onChange(of: self.image.wrappedValue) { val in
+                if val != nil {
                     openViewer()
                 } else {
                     closeViewer()
@@ -84,6 +101,7 @@ public struct ImageViewer<Content: View>: View {
                    /*window == self.currentWindow*/ {
                     imageViewerWindow?.close()
                     self.isPresent?.wrappedValue = false
+                    self.image.wrappedValue = nil
                 }
             }
 #endif
@@ -170,7 +188,7 @@ extension ImageViewer {
         
         let view: ImageViewerView 
         
-        if let image = self.image {
+        if let image = self.image.wrappedValue {
             view = ImageViewerView(image: image)
         } else {
             view = ImageViewerView(url: url, thumbnailURL: thumbnailURL, imageRenderer: imageRenderer)
@@ -229,6 +247,17 @@ extension View {
         imageRenderer: ImageViewerView.ImageRenderer = .animatableCached
     ) -> some View {
         ImageViewer(isPresent: isPresent, image: image, imageSize: imageSize, imageRenderer: imageRenderer) {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    public func imageViewer(
+        image: Binding<Image?>,
+        imageSize: CGSize? = nil,
+        imageRenderer: ImageViewerView.ImageRenderer = .animatableCached
+    ) -> some View {
+        ImageViewer(image: image, imageSize: imageSize, imageRenderer: imageRenderer) {
             self
         }
     }

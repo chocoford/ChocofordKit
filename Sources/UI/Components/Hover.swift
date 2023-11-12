@@ -8,12 +8,22 @@
 import SwiftUI
 
 public struct Hover<Content: View>: View {
-    var animation: Animation?
+    var animationIn: Animation?
+    var animationOut: Animation?
     var content: (_ isHover: Bool) -> Content
     
     public init(animation: Animation? = nil,
                 @ViewBuilder content: @escaping (_ isHover: Bool) -> Content) {
-        self.animation = animation
+        self.animationIn = animation
+        self.animationOut = animation
+        self.content = content
+    }
+    
+    public init(animationIn: Animation? = nil,
+                animationOut: Animation? = nil,
+                @ViewBuilder content: @escaping (_ isHover: Bool) -> Content) {
+        self.animationIn = animationIn
+        self.animationOut = animationOut
         self.content = content
     }
     
@@ -22,8 +32,14 @@ public struct Hover<Content: View>: View {
     public var body: some View {
         content(isHover)
             .onHover { hover in
-                withAnimation(animation) {
-                    self.isHover = hover
+                if hover {
+                    withAnimation(animationIn) {
+                        self.isHover = hover
+                    }
+                } else {
+                    withAnimation(animationOut) {
+                        self.isHover = hover
+                    }
                 }
             }
     }

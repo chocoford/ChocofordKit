@@ -14,7 +14,7 @@ internal struct ErrorHandledFileImporter: ViewModifier {
     @Binding var isPresented: Bool
     var allowedContentTypes: [UTType]
     var allowsMultipleSelection: Bool
-    var onCompletion: ([URL]) throws -> Void
+    var onCompletion: ([URL]) async throws -> Void
     var onCancellation: (() -> Void)? = nil
     
     @State private var error: Error? = nil
@@ -40,14 +40,16 @@ internal struct ErrorHandledFileImporter: ViewModifier {
                         allowedContentTypes: allowedContentTypes,
                         allowsMultipleSelection: allowsMultipleSelection
                     ) { result in
-                        do {
-                            let urls: [URL] = try result.get()
-                            try onCompletion(urls)
-                        } catch {
+                        Task {
+                            do {
+                                let urls: [URL] = try result.get()
+                                try await onCompletion(urls)
+                            } catch {
 #if DEBUG
-                            dump(error)
+                                dump(error)
 #endif
-                            self.error = error
+                                self.error = error
+                            }
                         }
                     } onCancellation: {
                         onCancellation()
@@ -59,14 +61,16 @@ internal struct ErrorHandledFileImporter: ViewModifier {
                         allowedContentTypes: allowedContentTypes,
                         allowsMultipleSelection: allowsMultipleSelection
                     ) { result in
-                        do {
-                            let urls: [URL] = try result.get()
-                            try onCompletion(urls)
-                        } catch {
+                        Task {
+                            do {
+                                let urls: [URL] = try result.get()
+                                try await onCompletion(urls)
+                            } catch {
 #if DEBUG
-                            dump(error)
+                                dump(error)
 #endif
-                            self.error = error
+                                self.error = error
+                            }
                         }
                     }
             }
@@ -93,7 +97,7 @@ extension View {
         isPresented: Binding<Bool>,
         allowedContentTypes: [UTType],
         allowsMultipleSelection: Bool,
-        onCompletion: @escaping ([URL]) throws -> Void
+        onCompletion: @escaping ([URL]) async throws -> Void
     ) -> some View {
         modifier(ErrorHandledFileImporter(
             isPresented: isPresented,
@@ -109,7 +113,7 @@ extension View {
         isPresented: Binding<Bool>,
         allowedContentTypes: [UTType],
         allowsMultipleSelection: Bool,
-        onCompletion: @escaping ([URL]) throws -> Void,
+        onCompletion: @escaping ([URL]) async throws -> Void,
         onCancellation: @escaping () -> Void
     ) -> some View {
         modifier(ErrorHandledFileImporter(
