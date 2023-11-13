@@ -25,15 +25,7 @@ extension NSImage {
         let originalSize = self.size
         let aspectRatio = self.size.height / self.size.width
         let newHeight = newWidth * aspectRatio
-        let fromRect = NSMakeRect(0, 0, originalSize.width, originalSize.height)
-        let smallerImage = NSImage(
-            size: CGSize(width: newWidth, height: newHeight),
-            flipped: false
-        ) { rect in
-            self.draw(in: rect, from: fromRect, operation: .copy, fraction: 1)
-            return true
-        }
-        return smallerImage
+        return await byPreparingThumbnail(ofSize: CGSize(width: newWidth, height: newHeight))
     }
     
     @MainActor
@@ -41,15 +33,7 @@ extension NSImage {
         let originalSize = self.size
         let aspectRatio = self.size.height / self.size.width
         let newWidth = newHeight / aspectRatio
-        let fromRect = NSMakeRect(0, 0, originalSize.width, originalSize.height)
-        let smallerImage = NSImage(
-            size: CGSize(width: newWidth, height: newHeight),
-            flipped: false)
-        { rect in
-            self.draw(in: rect, from: fromRect, operation: .copy, fraction: 1)
-            return true
-        }
-        return smallerImage
+        return await byPreparingThumbnail(ofSize: CGSize(width: newWidth, height: newHeight))
     }
     
     public var pngData: Data? {
