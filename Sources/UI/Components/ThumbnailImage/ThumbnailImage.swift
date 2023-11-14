@@ -7,20 +7,20 @@
 
 import SwiftUI
 
-var thumbnailImagesCache: [ThumbnailImage.ThumbnailImage : ThumbnailImage.ThumbnailImage] = [:]
+var thumbnailImagesCache: [ThumbnailImage.PlatformImage : ThumbnailImage.PlatformImage] = [:]
 
 public struct ThumbnailImageWrapper<P: View>: ViewModifier {
 #if canImport(AppKit)
-    public typealias ThumbnailImage = NSImage
+    public typealias PlatformImage = NSImage
 #elseif canImport(UIKit)
-    public typealias ThumbnailImage = UIImage
+    public typealias PlatformImage = UIImage
 #endif
     
-    var sourceImage: ThumbnailImage
+    var sourceImage: PlatformImage
     var thumbnailSize: CGSize
     var placeholder: () -> P
     
-    public init(_ sourceImage: ThumbnailImage,
+    public init(_ sourceImage: PlatformImage,
                 thumbnailSize: CGSize,
                 @ViewBuilder placeholder: @escaping () -> P = {
         Center { ProgressView().controlSize(.small) }
@@ -30,7 +30,7 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
         self.placeholder = placeholder
     }
     
-    @State private var thumbnail: ThumbnailImage? = nil
+    @State private var thumbnail: PlatformImage? = nil
     
     public func body(content: Content) -> some View {
         if let thumbnail = thumbnail {
@@ -65,51 +65,110 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
     }
 }
 
-public struct ThumbnailImage<P: View>: View {
+public typealias ThumbnailImageCache = NSCache<NSString, NSImage>
+public var deafultThumbnailImageCache: ThumbnailImageCache = {
+    let cache = ThumbnailImageCache()
+    cache.name = "ThumbnailImageCache"
+    return cache
+}()
+
+public struct ThumbnailImage<I: View>: View {
 #if canImport(AppKit)
-    public typealias ThumbnailImage = NSImage
+    public typealias PlatformImage = NSImage
 #elseif canImport(UIKit)
-    public typealias ThumbnailImage = UIImage
+    public typealias PlatformImage = UIImage
 #endif
     
-    var srouceImage: ThumbnailImage
-    var thumbnailSize: CGSize
-    var placeholder: () -> P
+    private var sourceImage: PlatformImage?
+    private var cacheID: String?
+    private var thumbnailSize: CGSize
+    private var cache: ThumbnailImageCache?
+    private var image: (Image) -> I
+    private var placeholder: AnyView
     
-    public init(_ srouceImage: ThumbnailImage,
-                thumbnailSize: CGSize,
-                @ViewBuilder placeholder: @escaping () -> P = {
-        Center { ProgressView().controlSize(.small) }
-    }) {
-        self.srouceImage = srouceImage
-        self.thumbnailSize = thumbnailSize
-        self.placeholder = placeholder
+    public init(
+        _ sourceImage: PlatformImage?,
+        width: CGFloat,
+        cacheID: String? = nil,
+        cache: ThumbnailImageCache = deafultThumbnailImageCache,
+        @ViewBuilder image: @escaping (Image) -> I,
+        @ViewBuilder placeholder: () -> some View = {
+            Center { ProgressView().controlSize(.small) }
+        }
+    ) {
+        let size: CGSize
+        if let sourceImage = sourceImage {
+            size = CGSize(width: width, height: width * sourceImage.size.height / sourceImage.size.width)
+        } else {
+            size = CGSize(width: width, height: width)
+        }
+        self.init(sourceImage, size: size, cacheID: cacheID, cache: cache, image: image, placeholder: placeholder)
     }
     
-    @State private var thumbnail: ThumbnailImage? = nil
+    public init(
+        _ sourceImage: PlatformImage?,
+        height: CGFloat,
+        cacheID: String? = nil,
+        cache: ThumbnailImageCache = deafultThumbnailImageCache,
+        @ViewBuilder image: @escaping (Image) -> I,
+        @ViewBuilder placeholder: () -> some View = {
+            Center { ProgressView().controlSize(.small) }
+        }
+    ) {
+        let size: CGSize
+        
+        if let sourceImage = sourceImage {
+            size = CGSize(width:  height * sourceImage.size.width / sourceImage.size.height, height: height)
+        } else {
+            size = CGSize(width: height, height: height)
+        }
+        self.init(sourceImage, size: size, cacheID: cacheID, cache: cache, image: image, placeholder: placeholder)
+    }
+    
+    
+    public init(
+        _ sourceImage: PlatformImage?,
+        size thumbnailSize: CGSize,
+        cacheID: String? = nil,
+        cache: ThumbnailImageCache = deafultThumbnailImageCache,
+        @ViewBuilder image: @escaping (Image) -> I,
+        @ViewBuilder placeholder: () -> some View = {
+            Center { ProgressView().controlSize(.small) }
+        }
+    ) {
+        self.sourceImage = sourceImage
+        self.thumbnailSize = thumbnailSize
+        if let cacheID = cacheID {
+            self.cacheID = cacheID
+            self.cache = cache
+        }
+        self.image = image
+        self.placeholder = AnyView(placeholder())
+    }
+    
+    @State private var thumbnail: PlatformImage? = nil
     
     public var body: some View {
         if let thumbnail = thumbnail {
 #if canImport(AppKit)
-            Image(nsImage: thumbnail)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
+            image(Image(nsImage: thumbnail))
 #elseif canImport(UIKit)
-            Image(uiImage: thumbnail)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
+            image(Image(uiImage: thumbnail))
 #endif
         } else {
-            placeholder()
-                .onAppear {
-                    loadThumbnail()
+            placeholder
+                .task {
+                    await loadThumbnail()
                 }
         }
     }
     
-    func loadThumbnail() {
-        Task { @MainActor in
-            self.thumbnail = await self.srouceImage.byPreparingThumbnail(ofSize: thumbnailSize)
+    @MainActor
+    func loadThumbnail() async {
+        if let cacheID = cacheID, let thumbnail = self.cache?.object(forKey: NSString(string: "\(cacheID)-\(Int(thumbnailSize.width))x\(Int(thumbnailSize.height))")) {
+            self.thumbnail = thumbnail
+        } else {
+            self.thumbnail = await self.sourceImage?.byPreparingThumbnail(ofSize: thumbnailSize)
         }
     }
 }
@@ -117,7 +176,7 @@ public struct ThumbnailImage<P: View>: View {
 extension Image {
     @ViewBuilder
     public func thumbnail<P: View>(
-        _ srouceImage: ThumbnailImageWrapper.ThumbnailImage,
+        _ srouceImage: ThumbnailImageWrapper.PlatformImage,
         thumbnailSize: CGSize,
         @ViewBuilder placeholder: @escaping () -> P = {
             Center { ProgressView().controlSize(.small) }

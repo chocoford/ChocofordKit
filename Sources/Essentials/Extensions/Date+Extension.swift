@@ -73,4 +73,32 @@ public extension Date {
         
         return formatter.string(from: self)
     }
+    
+    
+    /// Past days seperated by 00:00
+    static func pastDays(duration: Int = 7) -> [Date] {
+        let calendar = Calendar.current
+        var today = calendar.date(byAdding: .day, value: -1 * duration, to: Date())!
+        let dateEnding: Date = .now
+
+        var matchingDates = [Date]()
+        // Finding matching dates at midnight - adjust as needed
+        let components = DateComponents(hour: 0, minute: 0, second: 0) // midnight
+        var days: [Date] = []
+        calendar.enumerateDates(startingAfter: today,
+                                matching: components,
+                                matchingPolicy: .nextTime) { (date, strict, stop) in
+            if let date = date {
+                if date <= dateEnding {
+                    days.append(date)
+                } else {
+                    stop = true
+                }
+            }
+        }
+        
+        return days
+    }
 }
+
+
