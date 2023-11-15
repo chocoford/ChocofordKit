@@ -74,10 +74,14 @@ struct ScrollGallery<Content: View>: View {
     }
 }
 
+
+
 /// Arrange items row by row.
 /// Each item has same height, and their width are flexible
 @available(macOS 13.0, iOS 16.0, macCatalyst 16.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *)
 public struct GalleryLayout: Layout {
+    var subviewsFrame: Binding<[CGRect]>?
+    
     var spacing: CGFloat = 10
     var rowSpacing: CGFloat = 10
     var rowHeight: RowHeight
@@ -188,6 +192,10 @@ public struct GalleryLayout: Layout {
                 anchor: .topLeading,
                 proposal: .init(width: newWidth, height: newHeight)
             )
+            
+            // update subviewsFrame
+//            self.subviewsFrame.
+            
             point.x += newWidth + self.spacing
             previousHeight = newHeight
         }

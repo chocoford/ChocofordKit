@@ -52,34 +52,7 @@ struct FilesTraverseViewModifier: ViewModifier {
                 Center {
                     Group {
                         if isTraversing {
-                            VStack {
-                                Text("Indexing...")
-                                    .font(.title)
-                                
-                                ProgressView(value: doneCount, total: totalCount)
-                                    .frame(maxWidth: 300)
-                                
-                                if let url = self.currentURL {
-                                    let path: String = {
-                                        if #available(macOS 13.0, iOS 16.0, *) {
-                                            url.path(percentEncoded: false)
-                                        } else {
-                                            url.path
-                                        }
-                                    }()
-                                    
-                                    Text(path)
-                                        .lineLimit(1)
-                                        .truncationMode(.middle)
-                                }
-                                
-                                Button(role: .cancel) {
-                                    showSheet = false
-                                } label: {
-                                    Text("Cancel...")
-                                }
-                                .disabled(true)
-                            }
+                            indexingView()
                         } else if let error = error {
                             if failedURLs.isEmpty {
                                 VStack {
@@ -173,6 +146,38 @@ struct FilesTraverseViewModifier: ViewModifier {
         }
     }
     
+    @ViewBuilder
+    func indexingView() -> some View {
+        VStack {
+            Text("Indexing...")
+                .font(.title)
+            
+            ProgressView(value: doneCount, total: totalCount)
+                .frame(maxWidth: 300)
+            
+            if let url = self.currentURL {
+                let path: String = {
+                    if #available(macOS 13.0, iOS 16.0, *) {
+                        url.path(percentEncoded: false)
+                    } else {
+                        url.path
+                    }
+                }()
+                
+                Text(path)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            
+            Button(role: .cancel) {
+                showSheet = false
+            } label: {
+                Text("Cancel...")
+            }
+            .disabled(true)
+        }
+    }
+    
     private func onURLsChanged() {
         guard !isTraversing else { return }
         withAnimation {
@@ -188,6 +193,7 @@ struct FilesTraverseViewModifier: ViewModifier {
         prepareURLs()
         for url in allItems {
             do {
+                self.currentURL = url
                 let resourceValues = try url.resourceValues(forKeys: Set(resourceKeys))
                 try await action(url, resourceValues)
             } catch {
@@ -212,8 +218,6 @@ struct FilesTraverseViewModifier: ViewModifier {
         let fileManager = FileManager.default
         let resourceKeys: [URLResourceKey] = [.nameKey]
         for url in self.urls {
-//            _ = url.startAccessingSecurityScopedResource()
-//            defer { url.stopAccessingSecurityScopedResource() }
             var isDirectory = ObjCBool(false)
             let path: String = {
                 if #available(macOS 13.0, iOS 16.0, *) {
@@ -260,6 +264,7 @@ struct FilesTraverseViewModifier: ViewModifier {
 
 extension View {
     @ViewBuilder
+    /// Don't forget to `startAccessingSecurityScopedResource`
     public func filesTraverseSheet(
         urls: Binding<[URL]>,
         resourceKeys: [URLResourceKey] = [],
