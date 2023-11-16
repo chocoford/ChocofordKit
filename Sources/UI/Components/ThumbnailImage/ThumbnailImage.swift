@@ -165,8 +165,16 @@ public struct ThumbnailImage<I: View>: View {
     
     @MainActor
     func loadThumbnail() async {
-        if let cacheID = cacheID, let thumbnail = self.cache?.object(forKey: NSString(string: "\(cacheID)-\(Int(thumbnailSize.width))x\(Int(thumbnailSize.height))")) {
-            self.thumbnail = thumbnail
+        if let cacheID = cacheID {
+            let key = NSString(string: "\(cacheID)-\(Int(thumbnailSize.width))x\(Int(thumbnailSize.height))")
+            if let thumbnail = self.cache?.object(forKey: key) {
+                self.thumbnail = thumbnail
+            } else {
+                if let thumbnail = await self.sourceImage?.byPreparingThumbnail(ofSize: thumbnailSize) {
+                    self.thumbnail = thumbnail
+                    self.cache?.setObject(thumbnail, forKey: key)
+                }
+            }
         } else {
             self.thumbnail = await self.sourceImage?.byPreparingThumbnail(ofSize: thumbnailSize)
         }

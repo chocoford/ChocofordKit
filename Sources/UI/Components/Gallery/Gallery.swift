@@ -16,6 +16,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
     var spacing: CGFloat
     var rowSpacing: CGFloat
     var rowHeight: GalleryLayout.RowHeight
+    var padding: CGFloat
     var itemView: (Item) -> Content
     
     var config = Config()
@@ -26,6 +27,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
         spacing: CGFloat = 10,
         rowSpacing: CGFloat = 10,
         rowHeight: CGFloat,
+        padding: CGFloat,
         @ViewBuilder itemView: @escaping (Item) -> Content
     ) {
         self.init(selection: selection,
@@ -33,6 +35,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
                   spacing: spacing,
                   rowSpacing: rowSpacing,
                   rowHeight: .fixed(rowHeight),
+                  padding: padding,
                   itemView: itemView)
     }
     
@@ -42,6 +45,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
         spacing: CGFloat = 10,
         rowSpacing: CGFloat = 10,
         rowHeight: GalleryLayout.RowHeight,
+        padding: CGFloat,
         @ViewBuilder itemView: @escaping (Item) -> Content
     ) {
         self.selection = selection
@@ -49,6 +53,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
         self.spacing = spacing
         self.rowSpacing = rowSpacing
         self.rowHeight = rowHeight
+        self.padding = padding
         self.itemView = itemView
     }
     
@@ -61,7 +66,8 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
         GalleryLayout(
             rowHeight: rowHeight,
             spacing: spacing,
-            rowSpacing: rowSpacing
+            rowSpacing: rowSpacing,
+            padding: padding
         ) {
             ForEach(Array(items.enumerated()), id: \.element) { i, item in
                 itemView(item)

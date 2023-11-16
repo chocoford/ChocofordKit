@@ -138,7 +138,7 @@ public struct Popover<Content: View, Label: View>: View {
 
 struct SimplePopoverModifier<V: View>: ViewModifier {
     var arrowEdge: Edge = .top
-    var popoverContent: () -> V
+    var popoverContent: (_ dismiss: @escaping () -> Void) -> V
     
     @State private var showPopover: Bool = false
     
@@ -150,7 +150,9 @@ struct SimplePopoverModifier<V: View>: ViewModifier {
         }
         .buttonStyle(.borderless)
         .popover(isPresented: $showPopover, arrowEdge: arrowEdge) {
-            popoverContent()
+            popoverContent {
+                showPopover = false
+            }
         }
     }
 }
@@ -158,7 +160,7 @@ struct SimplePopoverModifier<V: View>: ViewModifier {
 public extension View {
     @ViewBuilder
     func popover<V: View>(arrowEdge: Edge = .top,
-                          @ViewBuilder content: @escaping () -> V) -> some View {
+                          @ViewBuilder content: @escaping (_ dismiss: @escaping () -> Void) -> V) -> some View {
         self
             .modifier(SimplePopoverModifier(arrowEdge: arrowEdge, popoverContent: content))
     }

@@ -360,7 +360,7 @@ extension PhotoUploaderStatusWrapperable {
                             .frame(height: 20)
                             .foregroundColor(.red)
                             .background(Color.white.clipShape(Circle()).padding(2))
-                            .popover {
+                            .popover { _ in
                                 VStack {
                                     Text(String(describing: error))
                                         .lineLimit(nil)
