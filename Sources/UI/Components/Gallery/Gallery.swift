@@ -10,9 +10,10 @@ import SwiftUI
 import ChocofordEssentials
 
 @available(macOS 13.0, iOS 16.0, macCatalyst 16.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *)
-public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
-    var selection: Binding<Set<Item.ID>>?
+public struct Gallery<Item: Hashable, ID: Hashable, Content: View>: View {
+    var selection: Binding<Set<ID>>?
     var items: [Item]
+    var idKey: KeyPath<Item, ID>
     var spacing: CGFloat
     var rowSpacing: CGFloat
     var rowHeight: GalleryLayout.RowHeight
@@ -22,16 +23,17 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
     var config = Config()
     
     public init(
-        selection: Binding<Set<Item.ID>>? = nil,
+        selection: Binding<Set<ID>>? = nil,
         items: [Item],
         spacing: CGFloat = 10,
         rowSpacing: CGFloat = 10,
         rowHeight: CGFloat,
         padding: CGFloat,
         @ViewBuilder itemView: @escaping (Item) -> Content
-    ) {
+    ) where ID == Item {
         self.init(selection: selection,
                   items: items,
+                  id: \.self,
                   spacing: spacing,
                   rowSpacing: rowSpacing,
                   rowHeight: .fixed(rowHeight),
@@ -40,8 +42,28 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
     }
     
     public init(
-        selection: Binding<Set<Item.ID>>? = nil,
+        selection: Binding<Set<ID>>? = nil,
         items: [Item],
+        spacing: CGFloat = 10,
+        rowSpacing: CGFloat = 10,
+        rowHeight: CGFloat,
+        padding: CGFloat,
+        @ViewBuilder itemView: @escaping (Item) -> Content
+    ) where Item: Identifiable, ID == Item.ID {
+        self.init(selection: selection,
+                  items: items,
+                  id: \.id,
+                  spacing: spacing,
+                  rowSpacing: rowSpacing,
+                  rowHeight: .fixed(rowHeight),
+                  padding: padding,
+                  itemView: itemView)
+    }
+    
+    public init(
+        selection: Binding<Set<ID>>? = nil,
+        items: [Item],
+        id: KeyPath<Item, ID>,
         spacing: CGFloat = 10,
         rowSpacing: CGFloat = 10,
         rowHeight: GalleryLayout.RowHeight,
@@ -50,6 +72,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
     ) {
         self.selection = selection
         self.items = items
+        self.idKey = id
         self.spacing = spacing
         self.rowSpacing = rowSpacing
         self.rowHeight = rowHeight
@@ -63,51 +86,54 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
     @State private var selectRect: CGRect? = nil
 
     public var body: some View {
-        GalleryLayout(
-            rowHeight: rowHeight,
-            spacing: spacing,
-            rowSpacing: rowSpacing,
-            padding: padding
-        ) {
-            ForEach(Array(items.enumerated()), id: \.element) { i, item in
-                itemView(item)
+        VStack {
+            GalleryLayout(
+                rowHeight: rowHeight,
+                spacing: spacing,
+                rowSpacing: rowSpacing,
+                padding: padding
+            ) {
+                ForEach(Array(items.enumerated()), id: \.element) { i, item in
+                    itemView(item)
                     //MARK: Otherwise it will be delay
-                    .simultaneousGesture(TapGesture().onEnded {
-                        guard self.selection != nil else { return }
-                        if NSEvent.modifierFlags.contains(.command) {
-                            self.selection?.wrappedValue.insertOrRemove(item.id)
-                            //                            } else if NSEvent.modifierFlags.contains(.shift) {
-                            //                                galleryStore.selectedItemIDs = [clipItem.id]
-                        } else {
-                            selection?.wrappedValue = [item.id]
-                        }
-                    })
-                    .background {
-                        GeometryReader { proxy in
-                            let frame = proxy.frame(in: .named(coordinateSpaceName))
-                            Color.clear
-                                .watchImmediately(of: frame) { newValue in
-                                    if self.frames.count != items.count {
-                                        self.frames = .init(repeating: .zero, count: items.count)
+                        .simultaneousGesture(TapGesture().onEnded {
+                            guard self.selection != nil else { return }
+                            if NSEvent.modifierFlags.contains(.command) {
+                                self.selection?.wrappedValue.insertOrRemove(item[keyPath: idKey])
+                                //                            } else if NSEvent.modifierFlags.contains(.shift) {
+                                //                                galleryStore.selectedItemIDs = [clipItem.id]
+                            } else {
+                                selection?.wrappedValue = [item[keyPath: idKey]]
+                            }
+                        })
+                        .background {
+                            GeometryReader { proxy in
+                                let frame = proxy.frame(in: .named(coordinateSpaceName))
+                                Color.clear
+                                    .watchImmediately(of: frame) { newValue in
+                                        if self.frames.count != items.count {
+                                            self.frames = .init(repeating: .zero, count: items.count)
+                                        }
+                                        self.frames[i] = newValue
                                     }
-                                    self.frames[i] = newValue
-                                }
+                            }
+                        }
+                }
+            }
+            .background {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if NSEvent.modifierFlags.contains(.command) {
+                            
+                        } else {
+                            selection?.wrappedValue.removeAll()
                         }
                     }
             }
+            .apply(coordinateSpace)
         }
-        .background {
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if NSEvent.modifierFlags.contains(.command) {
-                        
-                    } else {
-                        selection?.wrappedValue.removeAll()
-                    }
-                }
-        }
-        .apply(coordinateSpace)
+        .frame(minHeight: self.config.minHeight, alignment: .top)
         .apply(dragSelectGesture, isActive: self.selection != nil)
     }
     
@@ -138,6 +164,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
                 }
                 .allowsHitTesting(false)
             }
+            .contentShape(Rectangle())
             .gesture(
                 DragGesture()
                     .onChanged({ value in
@@ -168,7 +195,7 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
         for i in 0 ..< items.count {
 //            print(frames[i], selectRect)
             if CGRectIntersectsRect(frames[i], selectRect) {
-                selection?.wrappedValue.insert(items[i].id)
+                selection?.wrappedValue.insert(items[i][keyPath: idKey])
             }
         }
 //        print("calculateDragSelection", selection)
@@ -179,6 +206,12 @@ public struct Gallery<Item: Identifiable & Hashable, Content: View>: View {
 extension Gallery {
     class Config {
         var seletable = false
+        var minHeight: CGFloat? = nil
+    }
+    
+    public func minHeight(_ height: CGFloat?) -> some View {
+        self.config.minHeight = height
+        return self
     }
     
 //    public func seletable(_ enabled: Bool = true) -> some View {

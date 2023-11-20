@@ -14,17 +14,21 @@ public protocol CarouselItem: Hashable, Identifiable {
     typealias Image = UIImage
     #endif
     var id: ID { get }
+    var idString: String { get }
     /// image for detail (open viewer)
     var image: Image? { get }
-    /// image for current carousel large
-    var previewImage: Image? { get }
-    /// image for carousel navigation items
-    var thumbnail: Image? { get }
 }
 
-extension CarouselItem {
-    var previewImage: Image? { nil }
-    var thumbnail: Image? { nil }
+extension CarouselItem where ID == UUID {
+    var idString: String {
+        self.id.uuidString
+    }
+}
+
+extension CarouselItem where ID == String {
+    var idString: String {
+        self.id
+    }
 }
  
 public struct Carousel<I>: View where I: CarouselItem {
@@ -41,10 +45,16 @@ public struct Carousel<I>: View where I: CarouselItem {
             ScrollViewReader { proxy in
                 VStack {
                     Center(.horizontal) {
-                        if let image = images[currentIndex].previewImage ?? images[currentIndex].image {
-                            Image(nsImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
+                        if let image = images[currentIndex].image {
+                            ThumbnailImage(
+                                image,
+                                height: 200,
+                                cacheID: images[currentIndex].idString
+                            ) { image in
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                            }
                         } else {
                             RoundedRectangle(cornerRadius: 8)
                                 .shimmering()
@@ -89,8 +99,11 @@ public struct Carousel<I>: View where I: CarouselItem {
                         .opacity(self.images.count > 1 ? 1 : 0)
                     }
                     
-                    navigator(proxy, itemSize: geometry.size.height * 0.2)
-                        .frame(maxWidth: geometry.size.width / 3 * 2)
+                    navigator(
+                        proxy,
+                        itemSize: min(geometry.size.width / 6, geometry.size.height * 0.2)
+                    )
+                    .frame(maxWidth: geometry.size.width / 3 * 2)
                 }
             }
         }
@@ -129,40 +142,34 @@ public struct Carousel<I>: View where I: CarouselItem {
             }
             .frame(width: Double(count) * itemSize + max(0, Double(count)) * spacing)
         }
-//        .overlay {
-//            Button {
-//                <#code#>
-//            } label: {
-//                Image
-//            }
-//
-//        }
     }
         
     
     @ViewBuilder
     func navigatorItems(_ proxy: ScrollViewProxy, size: CGFloat) -> some View {
         ForEach(Array(images.enumerated()), id: \.element) { i, item in
-            if let image = item.thumbnail ?? item.previewImage ?? item.image {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .id(item.id)
-                    .frame(width: max(0, size-2), height: max(0, size-2))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-                    .overlay {
-                        if currentIndex == i {
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.accentColor, lineWidth: 2)
+            if let image = item.image {
+                ThumbnailImage(image, height: 40, cacheID: item.idString) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .id(item.id)
+                        .frame(width: max(0, size-2), height: max(0, size-2))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .overlay {
+                            if currentIndex == i {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color.accentColor, lineWidth: 2)
+                            }
                         }
-                    }
-                    .padding(2)
-                    .onTapGesture {
-                        currentIndex = i
-                        withAnimation(.easeInOut(duration: 2)) {
-                            proxy.scrollTo(images[i].id, anchor: .center)
+                        .padding(2)
+                        .onTapGesture {
+                            currentIndex = i
+                            withAnimation(.easeInOut(duration: 2)) {
+                                proxy.scrollTo(images[i].id, anchor: .center)
+                            }
                         }
-                    }
+                }
             } else {
                 RoundedRectangle(cornerRadius: 4)
                     .id(item.id)

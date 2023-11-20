@@ -60,13 +60,11 @@ public struct AsyncThumbnailImage: View {
             return
         }
 #endif
-
-        Task { @MainActor in
-            if let size = self.config.preferThumbnailSize {
-                self.image = await image.byPreparingThumbnail(ofSize: size)
-            } else {
-                self.image = image
-            }
+        
+        if let size = self.config.preferThumbnailSize {
+            self.image = image.preparingThumbnail(of: size)
+        } else {
+            self.image = image
         }
     }
 }

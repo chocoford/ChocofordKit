@@ -46,13 +46,13 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
         } else {
             placeholder()
                 .task {
-                    await loadThumbnail()
+                    loadThumbnail()
                 }
         }
     }
     
     @MainActor
-    func loadThumbnail() async {
+    func loadThumbnail() {
         if thumbnailImagesCache.count > 20 {
             _ = thumbnailImagesCache.dropFirst(10)
         }
@@ -60,7 +60,7 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
             self.thumbnail = thumbnail
             return
         }
-        self.thumbnail = await self.sourceImage.byPreparingThumbnail(ofSize: thumbnailSize)
+        self.thumbnail = self.sourceImage.preparingThumbnail(of: thumbnailSize)
         thumbnailImagesCache[self.sourceImage] = self.thumbnail
     }
 }
@@ -79,6 +79,7 @@ public struct ThumbnailImage<I: View>: View {
     public typealias PlatformImage = UIImage
 #endif
     
+    private var url: URL?
     private var sourceImage: PlatformImage?
     private var cacheID: String?
     private var thumbnailSize: CGSize
@@ -146,6 +147,26 @@ public struct ThumbnailImage<I: View>: View {
         self.placeholder = AnyView(placeholder())
     }
     
+    public init(
+        _ url: URL?,
+        height: CGFloat,
+        cacheID: String? = nil,
+        cache: ThumbnailImageCache = deafultThumbnailImageCache,
+        @ViewBuilder image: @escaping (Image) -> I,
+        @ViewBuilder placeholder: () -> some View = {
+            Center { ProgressView().controlSize(.small) }
+        }
+    ) {
+        self.url = url
+        self.thumbnailSize = .init(width: height, height: height)
+        if let cacheID = cacheID {
+            self.cacheID = cacheID
+            self.cache = cache
+        }
+        self.image = image
+        self.placeholder = AnyView(placeholder())
+    }
+    
     @State private var thumbnail: PlatformImage? = nil
     
     public var body: some View {
@@ -158,25 +179,60 @@ public struct ThumbnailImage<I: View>: View {
         } else {
             placeholder
                 .task {
-                    await loadThumbnail()
+                    loadThumbnail()
+                    loadThumbnailV2()
                 }
         }
     }
     
-    @MainActor
-    func loadThumbnail() async {
+    func loadThumbnail() {
+        guard let sourceImage = self.sourceImage else { return }
         if let cacheID = cacheID {
             let key = NSString(string: "\(cacheID)-\(Int(thumbnailSize.width))x\(Int(thumbnailSize.height))")
             if let thumbnail = self.cache?.object(forKey: key) {
                 self.thumbnail = thumbnail
+            } else if let thumbnail = sourceImage.preparingThumbnail(of: thumbnailSize) {
+//            } else {
+//                let thumbnail = sourceImage.byPreparingThumbnail(of: thumbnailSize)
+                self.thumbnail = thumbnail
+                self.cache?.setObject(thumbnail, forKey: key)
             } else {
-                if let thumbnail = await self.sourceImage?.byPreparingThumbnail(ofSize: thumbnailSize) {
-                    self.thumbnail = thumbnail
-                    self.cache?.setObject(thumbnail, forKey: key)
-                }
+                self.thumbnail = sourceImage
             }
         } else {
-            self.thumbnail = await self.sourceImage?.byPreparingThumbnail(ofSize: thumbnailSize)
+            self.thumbnail = sourceImage.preparingThumbnail(of: thumbnailSize)
+        }
+    }
+    
+    func loadThumbnailV2() {
+        guard let url = self.url else { return }
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let cacheID = cacheID {
+                let key = NSString(string: "\(cacheID)-\(Int(thumbnailSize.width))x\(Int(thumbnailSize.height))")
+                if let thumbnail = self.cache?.object(forKey: key) {
+                    DispatchQueue.main.async {
+                        withAnimation {
+                            self.thumbnail = thumbnail
+                        }
+                    }
+                } else if let thumbnail = NSImage.byPreparingThumbnail(
+                    from: url, 
+                    height: max(thumbnailSize.width, thumbnailSize.height)
+                ) {
+                    DispatchQueue.main.async {
+                        withAnimation {
+                            self.thumbnail = thumbnail
+                        }
+                    }
+                    self.cache?.setObject(thumbnail, forKey: key)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    withAnimation {
+                        self.thumbnail = NSImage.byPreparingThumbnail(from: url, height: max(thumbnailSize.width, thumbnailSize.height))
+                    }
+                }
+            }
         }
     }
 }

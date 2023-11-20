@@ -7,11 +7,6 @@
 
 import SwiftUI
 
-public enum FilesTraverseErrorHandleScheme {
-    case skip
-    case abort
-}
-
 struct FilesTraverseViewModifier: ViewModifier {
     @Binding var urls: [URL]
     var resourceKeys: [URLResourceKey]
@@ -261,6 +256,8 @@ struct FilesTraverseViewModifier: ViewModifier {
         self.urls = []
     }
 }
+
+
 
 extension View {
     @ViewBuilder
