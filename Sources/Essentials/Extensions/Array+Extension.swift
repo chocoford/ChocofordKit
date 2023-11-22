@@ -9,7 +9,7 @@ import Foundation
 
 public extension Array {
     func value(at index: Array.Index) -> Self.Element? {
-        if self.count > index {
+        if index >= 0 && self.count > index {
             return self[index]
         } else {
             return nil
