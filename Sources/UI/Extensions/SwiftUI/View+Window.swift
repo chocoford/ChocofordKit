@@ -103,6 +103,22 @@ extension View {
             }
         }
     }
+#elseif os(iOS)
+    @ViewBuilder
+    public func window(perform action: @escaping (UIWindow) -> Void) -> some View {
+        introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17)) { window in
+            action(window)
+        }
+    }
+    
+    @ViewBuilder
+    public func bindWindow(_ windowBinding: Binding<UIWindow?>) -> some View {
+        introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17)) { window in
+            DispatchQueue.main.async {
+                windowBinding.wrappedValue = window
+            }
+        }
+    }
 #endif
 }
 

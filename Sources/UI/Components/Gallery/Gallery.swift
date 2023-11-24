@@ -98,6 +98,7 @@ public struct Gallery<Item: Hashable, ID: Hashable, Content: View>: View {
                     //MARK: Otherwise it will be delay
                         .simultaneousGesture(TapGesture().onEnded {
                             guard self.selection != nil else { return }
+#if os(macOS)
                             if NSEvent.modifierFlags.contains(.command) {
                                 self.selection?.wrappedValue.insertOrRemove(item[keyPath: idKey])
                                 //                            } else if NSEvent.modifierFlags.contains(.shift) {
@@ -105,6 +106,7 @@ public struct Gallery<Item: Hashable, ID: Hashable, Content: View>: View {
                             } else {
                                 selection?.wrappedValue = [item[keyPath: idKey]]
                             }
+#endif
                         })
                         .background {
                             GeometryReader { proxy in
@@ -124,11 +126,13 @@ public struct Gallery<Item: Hashable, ID: Hashable, Content: View>: View {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
+#if os(macOS)
                         if NSEvent.modifierFlags.contains(.command) {
                             
                         } else {
                             selection?.wrappedValue.removeAll()
                         }
+#endif
                     }
             }
             .apply(coordinateSpace)
@@ -139,7 +143,7 @@ public struct Gallery<Item: Hashable, ID: Hashable, Content: View>: View {
     
     @ViewBuilder
     func coordinateSpace<C: View>(content: C) -> some View {
-        if #available(macOS 14.0, *) {
+        if #available(macOS 14.0, iOS 17.0, *) {
             content
                 .coordinateSpace(.named(coordinateSpaceName))
         } else {
@@ -183,7 +187,7 @@ public struct Gallery<Item: Hashable, ID: Hashable, Content: View>: View {
     
     func calculateDragSelection() {
         guard let selectRect = selectRect else { return }
-        
+#if os(macOS)
         if NSEvent.modifierFlags.contains(.command) {
 //            self.selection?.wrappedValue.insertOrRemove(item.id)
         } else if NSEvent.modifierFlags.contains(.shift) {
@@ -191,7 +195,7 @@ public struct Gallery<Item: Hashable, ID: Hashable, Content: View>: View {
         } else {
             selection?.wrappedValue = []
         }
-        
+#endif
         for i in 0 ..< items.count {
 //            print(frames[i], selectRect)
             if CGRectIntersectsRect(frames[i], selectRect) {

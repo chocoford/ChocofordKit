@@ -64,8 +64,11 @@ public struct ThumbnailImageWrapper<P: View>: ViewModifier {
         thumbnailImagesCache[self.sourceImage] = self.thumbnail
     }
 }
-
+#if os(macOS)
 public typealias ThumbnailImageCache = NSCache<NSString, NSImage>
+#elseif os(iOS)
+public typealias ThumbnailImageCache = NSCache<NSString, UIImage>
+#endif
 public var deafultThumbnailImageCache: ThumbnailImageCache = {
     let cache = ThumbnailImageCache()
     cache.name = "ThumbnailImageCache"
@@ -206,6 +209,7 @@ public struct ThumbnailImage<I: View>: View {
     
     func loadThumbnailV2() {
         guard let url = self.url else { return }
+        #if os(macOS)
         DispatchQueue.global(qos: .userInitiated).async {
             if let cacheID = cacheID {
                 let key = NSString(string: "\(cacheID)-\(Int(thumbnailSize.width))x\(Int(thumbnailSize.height))")
@@ -234,6 +238,33 @@ public struct ThumbnailImage<I: View>: View {
                 }
             }
         }
+#elseif os(iOS)
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let cacheID = cacheID {
+                let key = NSString(string: "\(cacheID)-\(Int(thumbnailSize.width))x\(Int(thumbnailSize.height))")
+                if let thumbnail = self.cache?.object(forKey: key) {
+                    DispatchQueue.main.async {
+                        withAnimation {
+                            self.thumbnail = thumbnail
+                        }
+                    }
+                } else if let thumbnail = UIImage(contentsOfFile: url.path)?.preparingThumbnail(of: thumbnailSize) {
+                    DispatchQueue.main.async {
+                        withAnimation {
+                            self.thumbnail = thumbnail
+                        }
+                    }
+                    self.cache?.setObject(thumbnail, forKey: key)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    withAnimation {
+                        self.thumbnail = UIImage(contentsOfFile: url.path)?.preparingThumbnail(of: thumbnailSize)
+                    }
+                }
+            }
+        }
+#endif
     }
 }
 

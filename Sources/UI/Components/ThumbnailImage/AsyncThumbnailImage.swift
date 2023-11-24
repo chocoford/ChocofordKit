@@ -56,7 +56,7 @@ public struct AsyncThumbnailImage: View {
             return
         }
 #elseif canImport(UIKit)
-        guard let image = UIImage(contentsOf: url) else {
+        guard let image = UIImage(contentsOfFile: url.path) else {
             return
         }
 #endif

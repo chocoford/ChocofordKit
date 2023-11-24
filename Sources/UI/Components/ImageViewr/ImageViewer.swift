@@ -117,7 +117,7 @@ public struct ImageViewer<Content: View>: View {
                     .ignoresSafeArea()
                     .overlay {
                         Group {
-                            if let image = image {
+                            if let image = image.wrappedValue {
                                 ImageViewerView(image: image)
                             } else {
                                 ImageViewerView(url: url, thumbnailURL: thumbnailURL)

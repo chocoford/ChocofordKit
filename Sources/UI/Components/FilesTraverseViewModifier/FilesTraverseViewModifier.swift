@@ -87,6 +87,7 @@ struct FilesTraverseViewModifier: ViewModifier {
                                                             }
                                                         }()
                                                         Text(path)
+#if os(macOS)
                                                         if isHover {
                                                             Button {
                                                                 NSWorkspace.shared.selectFile(
@@ -98,7 +99,9 @@ struct FilesTraverseViewModifier: ViewModifier {
                                                             }
                                                             .buttonStyle(.borderless)
                                                             .controlSize(.small)
+                                                            
                                                         }
+#endif
                                                         Spacer(minLength: 0)
                                                     }
                                                     .lineLimit(1)

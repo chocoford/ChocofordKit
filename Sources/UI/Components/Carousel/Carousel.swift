@@ -182,17 +182,23 @@ public struct Carousel<I>: View where I: CarouselItem {
 
 #if DEBUG
 struct CarouselImage: CarouselItem {
+    #if os(macOS)
+    typealias PlatformImage = NSImage
+    #elseif os(iOS)
+    typealias PlatformImage = UIImage
+    #endif
+    
     static var preview: [CarouselImage] {
         [
-            .init(id: UUID(), image: NSImage(named: "testimg0")),
-            .init(id: UUID(), image: NSImage(named: "testimg1"))
+            .init(id: UUID(), image: PlatformImage(named: "testimg0")),
+            .init(id: UUID(), image: PlatformImage(named: "testimg1"))
         ]
     }
     
     var id: UUID
-    var image: NSImage?
+    var image: PlatformImage?
     
-    init(id: UUID, image: NSImage?) {
+    init(id: UUID, image: PlatformImage?) {
         self.id = id
         self.image = image
     }

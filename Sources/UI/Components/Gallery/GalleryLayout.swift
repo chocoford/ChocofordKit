@@ -224,7 +224,7 @@ struct ScrollGallery<Content: View>: View {
 #Preview {
     GeometryReader { geometry in
         ScrollView {
-            if #available(macOS 13.0, *)  {
+            if #available(macOS 13.0, iOS 16.0, *)  {
                 GalleryLayout(rowHeight: .fixed(150), padding: 16) {
                     ForEach(0..<20, id: \.self) { i in
                         Image("testimg\(i % 10)")

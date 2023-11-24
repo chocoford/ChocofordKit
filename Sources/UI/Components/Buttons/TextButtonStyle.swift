@@ -9,8 +9,10 @@ import SwiftUI
 import ShapeBuilder
 
 public struct TextButtonStyle: PrimitiveButtonStyle {
+    @Environment(\.isEnabled) var isEnabled
+    
     var size: ButtonSize
-    var color: Color
+//    var color: Color
     var block: Bool
     var loading: Bool
     var square: Bool
@@ -18,14 +20,14 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
     
     public init(
         size: ButtonSize = .normal,
-        color: Color = .primary,
+//        color: Color = .primary,
         block: Bool = false,
         loading: Bool = false,
         square: Bool = false,
         shape: ButtonShape = .automatic
     ) {
         self.size = size
-        self.color = color
+//        self.color = color
         self.block = block
         self.loading = loading
         self.square = square
@@ -39,7 +41,7 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
         var isPressed: Bool
         
         var size: ButtonSize = .normal
-        var color: Color = Color.primary
+//        var color: Color = Color.primary
         var block = false
         var square: Bool
         var shape: ButtonShape
@@ -52,7 +54,8 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
                     Spacer(minLength: 0)
                 }
                 content()
-                    .foregroundColor(self.color)
+                    .foregroundColor(isEnabled ? nil : .secondary)
+                
                 if block {
                     Spacer(minLength: 0)
                 }
@@ -60,7 +63,7 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
             .buttonSized(size, square: self.square)
             .background {
                 buttonShape(shape)
-                    .fill(self.color)
+                    .fill(.foreground)
                     .opacity(!self.isEnabled ? 0 : self.isPressed ? 0.1 : self.hovering ? 0.15 : 0)
             }
             .animation(.easeOut(duration: 0.2), value: hovering)
@@ -91,7 +94,7 @@ public struct TextButtonStyle: PrimitiveButtonStyle {
         } content: { isPressed in
             TextButtonStyleView(isPressed: isPressed, 
                                 size: size,
-                                color: self.color,
+//                                color: self.color,
                                 block: block,
                                 square: square, 
                                 shape: shape) {
@@ -110,7 +113,7 @@ extension PrimitiveButtonStyle where Self == TextButtonStyle {
     
     public static func text(
         size: ButtonSize = .normal,
-        color: Color = .primary,
+//        color: Color = .primary,
         block: Bool = false,
         loading: Bool = false,
         square: Bool = false,
@@ -118,7 +121,7 @@ extension PrimitiveButtonStyle where Self == TextButtonStyle {
     ) -> TextButtonStyle {
         TextButtonStyle(
             size: size,
-            color: color,
+//            color: color,
             block: block,
             loading: loading,
             square: square,
