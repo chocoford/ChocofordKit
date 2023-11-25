@@ -32,7 +32,8 @@ struct GalleryCollectionView<Content: View, Section: GalleryCollectionSection>: 
     func makeUIView(context: Context) -> UICollectionView {
         let collectionView = context.coordinator.collectionView
 //        collectionView.collectionViewLayout = flowLayout
-        
+        collectionView.register(GalleryCell.self, forCellWithReuseIdentifier: "GalleryCell")
+
         collectionView.delegate = context.coordinator
         collectionView.dataSource = context.coordinator
         
@@ -87,7 +88,7 @@ extension GalleryCollectionView {
         
     }
     
-    class MyItem: UICollectionViewCell {
+    class GalleryCell: UICollectionViewCell {
         var hostingView: UIHostingController<AnyView>?
       
         func setSwiftUIView(_ view: AnyView) {
