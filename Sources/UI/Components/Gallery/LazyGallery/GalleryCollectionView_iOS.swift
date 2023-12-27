@@ -34,14 +34,30 @@ struct GalleryCollectionView<Content: View, Section: GalleryCollectionSection>: 
 //        collectionView.collectionViewLayout = flowLayout
         collectionView.register(GalleryCell.self, forCellWithReuseIdentifier: "GalleryCell")
 
+        collectionView.isScrollEnabled = true
+        
         collectionView.delegate = context.coordinator
         collectionView.dataSource = context.coordinator
+                
+        context.coordinator.oldSections = self.sections
         
         return collectionView
     }
     
-    func updateUIView(_ uiView: UICollectionView, context: Context) {
+    func updateUIView(_ collectionView: UICollectionView, context: Context) {
+        context.coordinator.parent = self
+        let changes = self.calculateChanges(oldSections: context.coordinator.oldSections)
+        print(changes)
+        context.coordinator.collectionView.performBatchUpdates {
+            context.coordinator.collectionView.insertItems(at: Array(changes.inserts))
+            context.coordinator.collectionView.reloadItems(at: Array(changes.reloads))
+            context.coordinator.collectionView.deleteItems(at: Array(changes.deletes))
+        }
         
+        DispatchQueue.main.async {
+
+            context.coordinator.oldSections = self.sections
+        }
     }
     
     func makeCoordinator() -> Coordinator {
@@ -61,6 +77,9 @@ extension GalleryCollectionView {
             return flowLayout
         }()
         lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout)
+        
+        var oldSections: [Section] = []
+        
         
         init(parent: GalleryCollectionView) {
             self.parent = parent

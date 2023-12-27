@@ -23,12 +23,6 @@ public struct AsyncButton<Label: View, Loading: View>: View {
     internal var label: () -> Label
     internal var loadingLabel: () -> Loading
     
-    
-    @State private var showAlert = false
-    @State private var error: Error? = nil
-    
-    @State private var labelWidth: CGFloat = .zero
-    
     public init(role: ButtonRole? = nil,
                 action: @escaping () async throws -> Void,
                 @ViewBuilder label: @escaping () -> Label,
@@ -51,6 +45,20 @@ public struct AsyncButton<Label: View, Loading: View>: View {
         self.loadingLabel = loadingLabel
     }
     
+    private var showAlert: Binding<Bool> {
+        Binding {
+            self.error != nil
+        } set: { val in
+            if !val {
+                self.error = nil
+            }
+        }
+
+    }
+    @State private var error: (any Error)? = nil
+    
+    @State private var labelWidth: CGFloat = .zero
+    
     @State private var isRunning: Bool = false
     
     public var body: some View {
@@ -61,33 +69,53 @@ public struct AsyncButton<Label: View, Loading: View>: View {
                 do {
                     try await action()
                 } catch {
+//                    if let err = error as? LocalizedError {
+//                        print("LocalizedError!", err)
+//                    }
                     self.error = error
                 }
                 isRunning = false
             }
         } label: {
-            ViewSizeReader { size in
+            ZStack {
                 if isRunning {
                     loadingLabel()
-                        .frame(width: labelWidth)
                 } else {
                     label()
-                        .onChange(of: size.width) { width in
-                            labelWidth = width
-                        }
                 }
             }
+            .fixedSize()
+//            ViewSizeReader { size in
+//                if isRunning {
+//                    loadingLabel()
+//                        .frame(width: labelWidth)
+//                } else {
+//                    label()
+//                        .onChange(of: size.width) { width in
+//                            labelWidth = width
+//                        }
+//                }
+//            }
         }
         .disabled(isRunning)
-        .alert("Error occured!", isPresented: $showAlert) {
+        .alert("Error occured!", isPresented: showAlert) {
             Button {
-                showAlert.toggle()
+                showAlert.wrappedValue.toggle()
             } label: {
                 Text("OK")
             }
         } message: {
-            if let error = self.error {
-                Text(String(describing: error))
+            if let error = self.error as? LocalizedError {
+                Text(
+"""
+Error: \(error.errorDescription ?? "Unknown")
+Reason: \(error.failureReason ?? "Unknown")
+Suggestion: \(error.recoverySuggestion ?? "Unknown")
+"""
+                )
+            } else if let error = self.error {
+                let _ = dump(error)
+                Text(error.localizedDescription)
             } else {
                 Text("Unexpected error.")
             }

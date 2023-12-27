@@ -35,7 +35,7 @@ extension VNImageRequestHandler {
             if #available(macOS 13.0, iOS 16.0, *) {
                 request.automaticallyDetectsLanguage = true
             } else {
-                request.recognitionLanguages = ["zh-Hans", "zh-Hant", "en-US", "fr-FR", "it-IT", "de-DE", "es-ES", "pt-BR"]
+                request.recognitionLanguages = ["zh-Hans", "zh-Hant", "en-US", "en-GB", "fr-FR", "it-IT", "de-DE", "es-ES", "pt-BR"]
             }
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true

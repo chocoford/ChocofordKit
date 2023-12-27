@@ -41,11 +41,11 @@ struct LazyGallery: View {
                     .padding(.vertical)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
             }
-            .frame(width: size, height: size)
+//            .frame(width: size, height: size)
             //            .animation(.bouncy, value: geometry.size)
             //        }
         }
-        .frame(width: 800, height: 800)
+//        .frame(width: 800, height: 800)
         .overlay(alignment: .bottomTrailing) {
             HStack {
                 Button {
@@ -63,7 +63,7 @@ struct LazyGallery: View {
                 }
                 
                 Button {
-                    items.append(Item(text: "\(items.count+1)"))
+                    items.insert(Item(text: "\(items.count+1)"), at: 0)
                 } label: {
                     Image(systemSymbol: .plus)
                 }
@@ -86,17 +86,5 @@ struct DefaultGalleryCollectionSection<Item: Hashable & Identifiable>: GalleryCo
 #if DEBUG
 #Preview {
     LazyGallery()
-//    LazyVGrid(columns: [GridItem(.adaptive(minimum: 20, maximum: 200))], spacing: 10) {
-//        ForEach(0..<5) { i in
-////            Rectangle()
-////                .frame(width: 200, height: 200)
-////            Color.red
-//            GeometryReader { geometry in
-//                Color.red
-//            }
-//            .frame(height: 100)
-//        }
-//    }
-//    .frame(width: 500, height: 500)
 }
 #endif

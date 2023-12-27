@@ -97,7 +97,14 @@ extension View {
             )
         )
     }
+    
+    @ViewBuilder
+    public func toastBus() -> some View {
+        
+    }
 }
+
+
 
 #if DEBUG
 

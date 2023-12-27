@@ -9,12 +9,12 @@ import SwiftUI
 
 @available(macOS 14.0, iOS 17.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *)
 @Observable
-public class FileTraverser {
+public class FileTraverser<T> {
     public var urls: [URL]
     public var resourceKeys: [URLResourceKey]
     public var enumerateOptions: FileManager.DirectoryEnumerationOptions
     public var errorHandleScheme: FilesTraverseErrorHandleScheme
-    public var action: (URL, URLResourceValues) async throws -> Void
+    public var action: (URL, URLResourceValues) async throws -> T
     public var onCompletion: (Error?) -> Void
     
 
@@ -23,7 +23,7 @@ public class FileTraverser {
         resourceKeys: [URLResourceKey] = [],
         enumerateOptions: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles, .skipsPackageDescendants],
         errorHandleScheme: FilesTraverseErrorHandleScheme = .skip,
-        action: @escaping (URL, URLResourceValues) async throws -> Void,
+        action: @escaping (URL, URLResourceValues) async throws -> T,
         onCompletion: @escaping (Error?) -> Void = { _ in }
     ) {
         self.urls = urls
@@ -33,6 +33,22 @@ public class FileTraverser {
         self.action = action
         self.onCompletion = onCompletion
     }
+    
+//    public init(
+//        urls: [URL],
+//        resourceKeys: [URLResourceKey] = [],
+//        enumerateOptions: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles, .skipsPackageDescendants],
+//        errorHandleScheme: FilesTraverseErrorHandleScheme = .skip,
+//        action: @escaping (URL, URLResourceValues) async throws -> T,
+//        onCompletion: @escaping (Error?) -> Void = { _ in }
+//    ) {
+//        self.urls = urls
+//        self.resourceKeys = resourceKeys
+//        self.enumerateOptions = enumerateOptions
+//        self.errorHandleScheme = errorHandleScheme
+//        self.action = action
+//        self.onCompletion = onCompletion
+//    }
     
     public var state: State = .ready
     
@@ -44,9 +60,12 @@ public class FileTraverser {
     public var failedItems: [URL] = []
     public var error: Error? = nil
     
-
+    public private(set) var results: [T] = []
+    
     public func start() async {
+        results = []
         guard state != .inProgress else { return }
+        // FIXME: 第二次Change search directory会卡死，断点只能到这里
         state = .inProgress
         await performTraverse()
     }
@@ -56,28 +75,33 @@ public class FileTraverser {
     }
     
     private func performTraverse() async {
+        self.urls.forEach({_ = $0.startAccessingSecurityScopedResource()})
+        defer {
+            self.urls.forEach({$0.stopAccessingSecurityScopedResource()})
+        }
+        
         prepareURLs()
         
         for url in self.allItems {
-                do {
-                    self.currentTraversingURL = url
-                    let resourceValues = try url.resourceValues(forKeys: Set(resourceKeys))
-                    try await action(url, resourceValues)
-                } catch {
-                    dump(error)
-                    self.error = error
-                    if case .abort = self.errorHandleScheme {
-                        state = .error
-                        break
-                    } else {
-                        failedItems.append(url)
-                    }
+            do {
+                self.currentTraversingURL = url
+                let resourceValues = try url.resourceValues(forKeys: Set(resourceKeys))
+                results.append(try await action(url, resourceValues))
+            } catch {
+                dump(error)
+                self.error = error
+                if case .abort = self.errorHandleScheme {
+                    state = .failed
+                    break
+                } else {
+                    failedItems.append(url)
                 }
-                self.progress.doneCount += 1
             }
+            self.progress.doneCount += 1
+        }
         
         onCompletion(self.error)
-        if self.state != .error {
+        if self.state != .failed {
             state = .finished
         }
     }
@@ -87,13 +111,7 @@ public class FileTraverser {
         let resourceKeys: [URLResourceKey] = [.nameKey]
         for url in self.urls {
             var isDirectory = ObjCBool(false)
-            let path: String = {
-//                if #available(macOS 13.0, iOS 16.0, *) {
-                    url.absoluteURL.path(percentEncoded: false)
-//                } else {
-//                    url.absoluteURL.path
-//                }
-            }()
+            let path: String = url.filePath
             guard fileManager.fileExists(atPath: path, isDirectory: &isDirectory) else { continue }
             
             if !isDirectory.boolValue {
@@ -134,6 +152,8 @@ extension FileTraverser {
         case inProgress
         case finished
         case cancelled
-        case error
+        case failed
+        
+        
     }
 }
