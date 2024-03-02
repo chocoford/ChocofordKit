@@ -12,7 +12,12 @@ public func load<T: Decodable>(_ filename: String, type: T.Type) -> T {
     return load(filename)
 }
 
-public func load<T: Decodable>(_ filename: String) -> T {
+public func load<T: Decodable>(
+    _ filename: String,
+    decoderConfig: (inout JSONDecoder) -> Void = {
+        $0.dateDecodingStrategy = .secondsSince1970
+    }
+) -> T {
     let data: Data
     
     guard let file = Bundle.main.url(forResource: filename, withExtension: nil)
@@ -27,8 +32,8 @@ public func load<T: Decodable>(_ filename: String) -> T {
     }
     
     do {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
+        var decoder = JSONDecoder()
+        decoderConfig(&decoder)
         return try decoder.decode(T.self, from: data)
     } catch {
         fatalError("Couldn't parse \(filename) as \(T.self):\n\(error)")

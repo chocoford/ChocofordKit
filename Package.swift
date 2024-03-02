@@ -16,6 +16,9 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
+//        .package(url: "https://github.com/chocoford/SwiftyAlert.git", from: "1.0.0"),
+        .package(url: "https://github.com/chocoford/SwiftyAlert.git", branch: "dev"),
+//        .package(path: "../SwiftyAlert"),
         .package(
             url: "https://github.com/ohitsdaniel/ShapeBuilder.git",
             from: "0.1.0"
@@ -37,6 +40,7 @@ let package = Package(
             name: "ChocofordUI",
             dependencies: [
                 "ChocofordEssentials",
+                "SwiftyAlert",
                 "ShapeBuilder",
                 .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
                 .product(name: "SwiftUIIntrospect", package: "SwiftUI-Introspect"),

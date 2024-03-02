@@ -6,6 +6,12 @@
 //
 
 import SwiftUI
+#if canImport(SwiftyAlert)
+import SwiftyAlert
+#if canImport(AlertToast)
+import AlertToast
+#endif
+#endif
 
 public struct AsyncButtonError: LocalizedError {
 //    var error: Error?
@@ -14,20 +20,38 @@ public struct AsyncButtonError: LocalizedError {
 //        return "Unexpected error: \(error?.localizedDescription ?? "")"
 //    }
 }
+public enum AsyncButtonErrorHandler {
+#if canImport(SwiftyAlert)
+    case alert
+#if canImport(AlertToast)
+    case alertToast
+#endif
+#endif
+    case print
+}
 
 /// A button that allow perform async throw action, with alert.
 public struct AsyncButton<Label: View, Loading: View>: View {
-    
+#if canImport(SwiftyAlert)
+    @Environment(\.alert) var alert
+#if canImport(AlertToast)
+    @Environment(\.alertToast) var alertToast
+#endif
+#endif
     internal var role: ButtonRole?
+    internal var errorHandler: AsyncButtonErrorHandler
     internal var action: () async throws -> Void
     internal var label: () -> Label
     internal var loadingLabel: () -> Loading
     
+    
     public init(role: ButtonRole? = nil,
+                errorHandler: AsyncButtonErrorHandler = .alert,
                 action: @escaping () async throws -> Void,
                 @ViewBuilder label: @escaping () -> Label,
                 @ViewBuilder loadingLabel: @escaping () -> Loading = {  ProgressView().controlSize(.small) }) {
         self.role = role
+        self.errorHandler = errorHandler
         self.action = action
         self.label = label
         self.loadingLabel = loadingLabel
@@ -36,10 +60,12 @@ public struct AsyncButton<Label: View, Loading: View>: View {
     public init<S>(
         _ title: S,
         role: ButtonRole? = nil,
+        errorHandler: AsyncButtonErrorHandler = .alert,
         action: @escaping () async throws -> Void,
         @ViewBuilder loadingLabel: @escaping () -> Loading = {  ProgressView().controlSize(.small) }
     ) where S : StringProtocol, Label == Text {
         self.role = role
+        self.errorHandler = errorHandler
         self.action = action
         self.label = { Text(title) }
         self.loadingLabel = loadingLabel
@@ -69,10 +95,19 @@ public struct AsyncButton<Label: View, Loading: View>: View {
                 do {
                     try await action()
                 } catch {
-//                    if let err = error as? LocalizedError {
-//                        print("LocalizedError!", err)
-//                    }
-                    self.error = error
+                    switch errorHandler {
+#if canImport(SwiftyAlert)
+                        case .alert:
+                            alert(error: error)
+#if canImport(AlertToast)
+                        case .alertToast:
+                            alertToast(.init(error: error))
+#endif
+#endif
+                        case .print:
+                            print(error)
+                    }
+
                 }
                 isRunning = false
             }
@@ -80,11 +115,12 @@ public struct AsyncButton<Label: View, Loading: View>: View {
             ZStack {
                 if isRunning {
                     loadingLabel()
+                        .fixedSize()
                 } else {
                     label()
                 }
             }
-            .fixedSize()
+            
 //            ViewSizeReader { size in
 //                if isRunning {
 //                    loadingLabel()

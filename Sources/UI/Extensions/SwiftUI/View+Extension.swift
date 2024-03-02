@@ -56,10 +56,33 @@ extension View {
     }
 
     public func border(_ edges: [Edge], width: CGFloat = 1, color: Color) -> some View {
-        overlay(EdgeBorder(width: width, edges: edges).foregroundColor(color))
+        overlay(
+            EdgeBorder(
+                width: width,
+                edges: edges
+            )
+            .foregroundColor(color)
+        )
     }
+    
     public func border(_ edge: Edge, width: CGFloat = 1, color: Color) -> some View {
         border([edge], width: width, color: color)
+    }
+    
+    public func border<S: ShapeStyle>(_ edges: [Edge], width: CGFloat = 1, style: S) -> some View {
+        overlay(
+            EdgeBorder(
+                width: width,
+                edges: edges
+            )
+            .foregroundStyle(style)
+        )
+    }
+    
+    public func border<S: ShapeStyle>(
+        _ edge: Edge, width: CGFloat = 1, style: S
+    ) -> some View {
+        border([edge], width: width, style: style)
     }
     
     @ViewBuilder
@@ -190,10 +213,11 @@ extension View {
 public extension View {
     @ViewBuilder
     func chipStyle() -> some View {
-        padding(.vertical, 2)
+        self
+            .padding(.vertical, 2)
             .padding(.horizontal, 8)
-            .foregroundColor(.accentColor)
-            .background(Capsule().fill(Color.accentColor.opacity(0.2)))
+            .foregroundStyle(.tint)
+            .background(Capsule().fill(.tint.opacity(0.2)))
     }
     
     @ViewBuilder

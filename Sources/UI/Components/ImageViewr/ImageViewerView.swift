@@ -32,7 +32,7 @@ public struct ImageViewerView: View {
     
     @State private var isLoading = false
 
-    init(
+    public init(
         url: URL?,
         thumbnailURL: URL? = nil,
         imageRenderer: ImageRenderer = .animatableCached
@@ -43,7 +43,7 @@ public struct ImageViewerView: View {
         self.imageRenderer = imageRenderer
     }
     
-    init(image: Image) {
+    public init(image: Image) {
         self.image = image
         self.imageRenderer = .cached
         self.url = nil

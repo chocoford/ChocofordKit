@@ -48,7 +48,8 @@ public struct ImageViewer<Content: View>: View {
     }
 
     public init(isPresent: Binding<Bool>? = nil, 
-                image: Image, imageSize: CGSize? = nil,
+                image: Image,
+                imageSize: CGSize? = nil,
                 imageRenderer: ImageViewerView.ImageRenderer = .animatableCached,
                 @ViewBuilder content: @escaping () -> Content) {
         self.isPresent = isPresent
