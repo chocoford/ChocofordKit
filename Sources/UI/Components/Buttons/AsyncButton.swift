@@ -62,7 +62,12 @@ public struct AsyncButton<Label: View, Loading: View>: View {
         role: ButtonRole? = nil,
         errorHandler: AsyncButtonErrorHandler = .alert,
         action: @escaping () async throws -> Void,
-        @ViewBuilder loadingLabel: @escaping () -> Loading = {  ProgressView().controlSize(.small) }
+        @ViewBuilder loadingLabel: @escaping () -> Loading = {
+            ProgressView()
+#if canImport(AppKit)
+                .controlSize(.small)
+#endif
+        }
     ) where S : StringProtocol, Label == Text {
         self.role = role
         self.errorHandler = errorHandler
