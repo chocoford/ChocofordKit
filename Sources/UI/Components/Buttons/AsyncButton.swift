@@ -113,12 +113,22 @@ public struct AsyncButton<Label: View, Loading: View>: View {
             }
         } label: {
             ZStack {
+#if canImport(AppKit)
                 if isRunning {
                     loadingLabel()
                         .fixedSize()
                 } else {
                     label()
                 }
+#elseif canImport(UIKit)
+                label()
+                    .opacity(isRunning ? 0 : 1)
+                    .overlay {
+                        loadingLabel()
+                            .fixedSize()
+                            .opacity(isRunning ? 1 : 0)
+                    }
+#endif
             }
             
 //            ViewSizeReader { size in
