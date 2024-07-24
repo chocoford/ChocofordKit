@@ -24,7 +24,7 @@ let package = Package(
             from: "0.1.0"
         ),
         .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", .upToNextMajor(from: "1.0.0")),
-        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "0.12.0"),
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.3.0"),
         .package(url: "https://github.com/elai950/AlertToast.git", branch: "master"),
         .package(url: "https://github.com/stevengharris/SplitView.git", from: "3.0.0"),
         .package(url: "https://github.com/fatbobman/SwiftUIOverlayContainer.git", from: "2.0.0"),
