@@ -92,6 +92,34 @@ extension Color {
         return (r, s, b, o)
     }
     
+    public var hexString: String {
+        #if canImport(UIKit)
+        // 将SwiftUI的Color转换为UIColor
+        let platformColor = UIColor(self)
+        #elseif canImport(AppKit)
+        let nsColor = NSColor(self)
+        guard let platformColor = nsColor.usingColorSpace(.sRGB) else {
+            return "#000000"  // 默认值，以防颜色空间转换失败
+        }
+//        #else
+//        let platformColor = UIColor(self)
+        #endif
+        
+        // 获取颜色的RGBA组件
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        platformColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        // 转换成16进制字符串
+        let redHex = String(format: "%02X", Int(red * 255))
+        let greenHex = String(format: "%02X", Int(green * 255))
+        let blueHex = String(format: "%02X", Int(blue * 255))
+        
+        // 拼接成完整的16进制颜色代码
+        return "#\(redHex)\(greenHex)\(blueHex)"
+    }
 }
 
 

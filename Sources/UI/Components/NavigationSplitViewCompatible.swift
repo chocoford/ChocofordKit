@@ -54,9 +54,11 @@ public struct NavigationSplitViewCompatible<Sidebar: View, Detail: View>: View {
     
     @State private var showMask = true
     
-    public init(columnVisibility: Binding<NavigationSplitViewVisibilityCompatible>? = nil,
-                @ViewBuilder sidebar: @escaping () -> Sidebar,
-                @ViewBuilder detail: @escaping () -> Detail) {
+    public init(
+        columnVisibility: Binding<NavigationSplitViewVisibilityCompatible>? = nil,
+        @ViewBuilder sidebar: @escaping () -> Sidebar,
+        @ViewBuilder detail: @escaping () -> Detail
+    ) {
         self.columnVisibility = columnVisibility
         self.sidebar = sidebar
         self.detail = detail
@@ -131,19 +133,28 @@ public struct NavigationSplitViewCompatible<Sidebar: View, Detail: View>: View {
 
 extension NavigationSplitViewCompatible {
     #if os(macOS)
-    @ViewBuilder public func removeSidebarToggle() -> some View {
-//        if #available(macOS 15.0, *) {
-//            toolbar(removing: .sidebarToggle)
-//        } else {
-        introspect(.navigationSplitView, on: .macOS(.v13, .v14, .v15)) { splitView in
-            let toolbar = splitView.window?.toolbar
-            let toolbarItems = toolbar?.items
-            // "com.apple.SwiftUI.navigationSplitView.toggleSidebar"
-            if let index = toolbarItems?.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
-                toolbar?.removeItem(at: index)
+    @MainActor @ViewBuilder
+    public func removeSidebarToggle() -> some View {
+        if #available(macOS 15.0, *) {
+            self // do nothing
+//                .toolbar(removing: .sidebarToggle)
+//                .introspect(.navigationView(style: .columns), on: .macOS(.v15)) { navigationView in
+//                let toolbar: NSToolbar? = navigationView.window?.toolbar
+//                if let index: Int = toolbar?.items.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
+//                    toolbar?.removeItem(at: index)
+//                }
+//                print(toolbar?.items.map{$0.itemIdentifier.rawValue})
+//            }
+        } else {
+            introspect(.navigationSplitView, on: .macOS(.v13, .v14)) { splitView in
+                let toolbar = splitView.window?.toolbar
+                let toolbarItems = toolbar?.items
+                // "com.apple.SwiftUI.navigationSplitView.toggleSidebar"
+                if let index = toolbarItems?.firstIndex(where: { $0.itemIdentifier.rawValue == "com.apple.SwiftUI.navigationSplitView.toggleSidebar" }) {
+                    toolbar?.removeItem(at: index)
+                }
             }
         }
-//        }
     }
     #endif
 }

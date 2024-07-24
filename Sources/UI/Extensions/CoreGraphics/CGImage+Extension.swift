@@ -5,8 +5,10 @@
 //  Created by Dove Zachary on 2023/9/27.
 //
 
-#if canImport(SwiftUI)
-import SwiftUI
+import Foundation
+#if canImport(CoreImage) && canImport(UniformTypeIdentifiers)
+import CoreImage
+import UniformTypeIdentifiers
 
 extension CGImage {
     public static func createFromData(_ data: Data) -> CGImage? {
@@ -38,12 +40,14 @@ extension CGImage {
     
     public static func createThumbnail(from data: Data, size: CGFloat) -> CGImage? {
         if let cgImageSource = CGImageSourceCreateWithData(data as CFData, nil),
-           let cgImage = CGImageSourceCreateThumbnailAtIndex(cgImageSource,
-                                                             0,
-                                                             [
-                                                                kCGImageSourceCreateThumbnailFromImageIfAbsent : true,
-                                                                kCGImageSourceThumbnailMaxPixelSize: size
-                                                             ] as CFDictionary) {
+           let cgImage = CGImageSourceCreateThumbnailAtIndex(
+            cgImageSource,
+            0,
+            [
+                kCGImageSourceCreateThumbnailFromImageIfAbsent : true,
+                kCGImageSourceThumbnailMaxPixelSize: size
+            ] as CFDictionary
+           ) {
             return cgImage
         }
         return nil
@@ -60,6 +64,32 @@ extension CGImage {
         return nil
     }
     
+    
+    @discardableResult
+    public func saveTo(_ url: URL, properties: [String : Any]? = nil) throws -> Self {
+        guard let destination = CGImageDestinationCreateWithURL(
+            url as CFURL,
+            (UTType(filenameExtension: url.pathExtension) ?? .jpeg).identifier as CFString,
+            1,
+            nil
+        ) else {
+            struct CGImageDestinationCreateFailed: Error {}
+            throw CGImageDestinationCreateFailed()
+        }
+        CGImageDestinationAddImage(
+            destination,
+            self,
+            properties as CFDictionary?
+        )
+        
+        guard CGImageDestinationFinalize(destination) else {
+            struct CGImageDestinationFinalizeFailed: Error {}
+            throw CGImageDestinationFinalizeFailed()
+        }
+        
+        return self
+    }
+
 }
 
 #endif

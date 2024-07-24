@@ -4,7 +4,7 @@
 //
 //  Created by Dove Zachary on 2023/6/4.
 //
-
+/*
 import SwiftUI
 
 #if os(macOS)
@@ -182,3 +182,4 @@ struct ZoomableScrollView_Previews: PreviewProvider {
     }
 }
 #endif
+*/

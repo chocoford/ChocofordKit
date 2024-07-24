@@ -4,7 +4,7 @@
 //
 //  Created by Chocoford on 2023/2/8.
 //
-
+/*
 import SwiftUI
 import Shimmer
 import CachedAsyncImage
@@ -119,7 +119,9 @@ public struct ImageViewer<Content: View>: View {
                     .overlay {
                         Group {
                             if let image = image.wrappedValue {
-                                ImageViewerView(image: image)
+                                ImageViewerView {
+                                    image
+                                }
                             } else {
                                 ImageViewerView(url: url, thumbnailURL: thumbnailURL)
                             }
@@ -337,3 +339,4 @@ struct ImageViewer_Previews: PreviewProvider {
     }
 }
 #endif
+*/

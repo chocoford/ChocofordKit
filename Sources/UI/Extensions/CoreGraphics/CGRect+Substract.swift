@@ -8,11 +8,13 @@
 #if canImport(CoreGraphics)
 import CoreGraphics
 
-public extension CGRect {
-    var areaSize: CGFloat {
-        self.size.areaSize
+extension CGSize {
+    var area: CGFloat {
+        self.areaSize
     }
-    
+}
+
+public extension CGRect {
     /// inidicate it is a valid rect.
     var isValid: Bool {
         self.size.width > 0 && self.size.height > 0
@@ -112,14 +114,16 @@ public extension [CGRect] {
     }
 }
 
-public extension CGSize {
-    var areaSize: CGFloat { width * height }
+extension CGSize {
+    public var distance: CGFloat { sqrt(pow(width, 2) + pow(height, 2)) }
+    public var areaSize: CGFloat { width * height }
     
-    static func / (lhs: CGSize, rhs: CGSize) -> CGFloat {
+    public static func / (lhs: CGSize, rhs: CGSize) -> CGFloat {
         lhs.areaSize / rhs.areaSize
     }
-    static func - (lhs: CGSize, rhs: CGSize) -> CGFloat {
+    public static func - (lhs: CGSize, rhs: CGSize) -> CGFloat {
         lhs.areaSize - rhs.areaSize
     }
+    
 }
 #endif

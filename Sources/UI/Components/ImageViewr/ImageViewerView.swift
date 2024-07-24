@@ -4,7 +4,7 @@
 //
 //  Created by Dove Zachary on 2023/6/4.
 //
-
+/*
 import SwiftUI
 import SDWebImageSwiftUI
 import CachedAsyncImage
@@ -21,7 +21,7 @@ public struct ImageViewerView: View {
     
     let url: URL?
     var thumbnailURL: URL?
-    let image: Image?
+    let image: AnyView?
         
     public enum ImageRenderer {
         case animatableCached
@@ -43,8 +43,8 @@ public struct ImageViewerView: View {
         self.imageRenderer = imageRenderer
     }
     
-    public init(image: Image) {
-        self.image = image
+    public init<I: View>(@ViewBuilder image: () -> I) {
+        self.image = AnyView(image())
         self.imageRenderer = .cached
         self.url = nil
         self.thumbnailURL = nil
@@ -67,7 +67,7 @@ public struct ImageViewerView: View {
             ZoomableScrollView(size: imageSize) {
                 Group {
                     if let image = image {
-                        imageView(image: image)
+                        imageView(imageView: image)
                     } else {
                         asyncImageView()
                     }
@@ -103,7 +103,7 @@ public struct ImageViewerView: View {
                     AsyncImage(url: url) { phase in
                         switch phase {
                             case .success(let image):
-                                imageView(image: image)
+                                imageView(imageView: AnyView(image.resizable()))
                                     .onAppear {
                                         DispatchQueue.main.async {
                                             isLoading = false
@@ -135,7 +135,7 @@ public struct ImageViewerView: View {
                     CachedAsyncImage(url: url) { phase in
                         switch phase {
                             case .success(let image):
-                                imageView(image: image)
+                                imageView(imageView: AnyView(image.resizable()))
                                     .onAppear {
                                         DispatchQueue.main.async {
                                             isLoading = false
@@ -187,7 +187,9 @@ public struct ImageViewerView: View {
                 AsyncImage(url: thumbnailURL) { phase in
                     switch phase {
                         case .success(let image):
-                            imageView(image: image)
+                            imageView(
+                                imageView: AnyView(image.resizable())
+                            )
                                 .onAppear {
                                     DispatchQueue.main.async {
                                         isLoading = false
@@ -212,7 +214,7 @@ public struct ImageViewerView: View {
                 CachedAsyncImage(url: thumbnailURL) { phase in
                     switch phase {
                         case .success(let image):
-                            imageView(image: image)
+                            imageView(imageView: AnyView(image.resizable()))
                                 .onAppear {
                                     DispatchQueue.main.async {
                                         isLoading = false
@@ -246,9 +248,8 @@ public struct ImageViewerView: View {
     }
     
     @ViewBuilder
-    private func imageView(image: Image) -> some View {
-        image
-            .resizable()
+    private func imageView(imageView: AnyView) -> some View {
+        imageView
             .scaledToFit()
             .frame(width: imageSize == .zero ? nil : imageSize.width,
                    height: imageSize == .zero ? nil : imageSize.height)
@@ -260,3 +261,4 @@ struct ImageViewerView_Previews: PreviewProvider {
         ImageViewerView(url: URL(string: "https://pbs.twimg.com/media/Fxl_6mmagAA4ahV?format=jpg&name=large"), imageRenderer: .cached)
     }
 }
+*/

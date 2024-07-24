@@ -72,7 +72,7 @@ public extension View {
 struct ResponsiveModifier: ViewModifier {
     func body(content: Content) -> some View {
 #if os(macOS)
-        SingleAxisGeometryReader(axis: .horizontal) { width in
+        SingleAxisGeometryReader(.horizontal) { width in
             content
                 .environment(\.uiSizeClass, getSizeClass(width))
         }

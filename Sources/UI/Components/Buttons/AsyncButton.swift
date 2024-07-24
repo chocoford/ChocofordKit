@@ -47,7 +47,7 @@ public struct AsyncButton<Label: View, Loading: View>: View {
     
     public init(role: ButtonRole? = nil,
                 errorHandler: AsyncButtonErrorHandler = .alert,
-                action: @escaping () async throws -> Void,
+                action: @escaping @Sendable () async throws -> Void,
                 @ViewBuilder label: @escaping () -> Label,
                 @ViewBuilder loadingLabel: @escaping () -> Loading = {  ProgressView().controlSize(.small) }) {
         self.role = role
@@ -61,7 +61,7 @@ public struct AsyncButton<Label: View, Loading: View>: View {
         _ title: S,
         role: ButtonRole? = nil,
         errorHandler: AsyncButtonErrorHandler = .alert,
-        action: @escaping () async throws -> Void,
+        action: @escaping @Sendable () async throws -> Void,
         @ViewBuilder loadingLabel: @escaping () -> Loading = {
             ProgressView()
 #if canImport(AppKit)

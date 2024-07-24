@@ -7,31 +7,49 @@
 
 import SwiftUI
 
-struct ContainerWidthKey: EnvironmentKey {
-    static var defaultValue: CGFloat = .zero
+struct ContainerSizeKey: EnvironmentKey {
+    static var defaultValue: CGSize = .zero
 }
 
 public extension EnvironmentValues {
-    var containerWidth: CGFloat {
-        get { self[ContainerWidthKey.self] }
-        set { self[ContainerWidthKey.self] = newValue }
+    var containerSize: CGSize {
+        get { self[ContainerSizeKey.self] }
+        set { self[ContainerSizeKey.self] = newValue }
     }
 }
 
 
 public extension View {
     @ViewBuilder
-    func injectContainerWidth() -> some View {
+    func withContainerSize() -> some View {
         self
             .modifier(WidthProxyModifier())
     }
 }
 
 struct WidthProxyModifier: ViewModifier {
+    @State private var size: CGSize = .zero
+    
     func body(content: Content) -> some View {
-        SingleAxisGeometryReader(axis: .horizontal) { width in
-            content
-                .environment(\.containerWidth, width)
-        }
+        content
+            .background {
+                GeometryReader { geometry in
+                    if #available(macOS 14.0, iOS 17.0, *) {
+                        Color.clear
+                            .onChange(of: geometry.size, initial: true) { oldValue, newValue in
+                                size = newValue
+                            }
+                    } else {
+                        Color.clear
+                            .onChange(of: geometry.size) { newValue in
+                                size = newValue
+                            }
+                            .onAppear {
+                                size = geometry.size
+                            }
+                    }
+                }
+            }
+            .environment(\.containerSize, size)
     }
 }

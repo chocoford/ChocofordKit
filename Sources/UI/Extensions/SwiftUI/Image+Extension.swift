@@ -31,6 +31,15 @@ extension Image {
 #endif
     }
     
+    public init(contentsOf url: URL) throws {
+        struct InvalidURLError: Error {}
+        
+        guard let image = Image(data: try Data(contentsOf: url)) else {
+            throw InvalidURLError()
+        }
+        self = image
+    }
+    
 #if canImport(AppKit)
     public init(platformImage: NSImage) {
         self.init(nsImage: platformImage)

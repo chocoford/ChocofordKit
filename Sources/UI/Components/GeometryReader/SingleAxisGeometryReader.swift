@@ -20,8 +20,18 @@ public struct SingleAxisGeometryReader<Content: View>: View {
     var alignment: Alignment = .center
     let content: (CGFloat) -> Content
 
-    public init(axis: Axis = .horizontal, alignment: Alignment = .center,
-                @ViewBuilder content: @escaping (CGFloat) -> Content) {
+//    public init(axis: Axis = .horizontal, alignment: Alignment = .center,
+//                @ViewBuilder content: @escaping (CGFloat) -> Content) {
+//        self.axis = axis
+//        self.alignment = alignment
+//        self.content = content
+//    }
+    
+    public init(
+        _ axis: Axis = .horizontal,
+        alignment: Alignment = .center,
+        @ViewBuilder content: @escaping (CGFloat) -> Content
+    ) {
         self.axis = axis
         self.alignment = alignment
         self.content = content
@@ -31,9 +41,11 @@ public struct SingleAxisGeometryReader<Content: View>: View {
     
     public var body: some View {
         content(size)
-            .frame(maxWidth:  axis == .horizontal ? .infinity : nil,
-                   maxHeight: axis == .vertical   ? .infinity : nil,
-                   alignment: alignment)
+            .frame(
+                maxWidth: axis == .horizontal ? .infinity : nil,
+                maxHeight: axis == .vertical ? .infinity : nil,
+                alignment: alignment
+            )
             .background(GeometryReader {
                 proxy in
                 Color.clear

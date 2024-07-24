@@ -9,16 +9,22 @@ import SwiftUI
 
 public struct ConfirmationDialogButton: View {
     var titleKey: LocalizedStringKey
+    var titleVisibility: Visibility
     var actions: AnyView
+    var message: AnyView
     var label: AnyView
     
-    public init<Label: View, Actions: View>(
+    public init<Label: View, Actions: View, Message: View>(
         titleKey: LocalizedStringKey,
+        titleVisibility: Visibility = .automatic,
         @ViewBuilder actions: () -> Actions,
+        @ViewBuilder message: () -> Message = { EmptyView() },
         @ViewBuilder label: () -> Label
     ) {
         self.titleKey = titleKey
+        self.titleVisibility = titleVisibility
         self.actions = AnyView(actions())
+        self.message = AnyView(message())
         self.label = AnyView(label())
     }
     
@@ -30,8 +36,10 @@ public struct ConfirmationDialogButton: View {
         } label: {
             label
         }
-        .confirmationDialog(titleKey, isPresented: $isPresented) {
+        .confirmationDialog(titleKey, isPresented: $isPresented, titleVisibility: titleVisibility) {
             actions
+        } message: {
+            message
         }
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Shimmer
 
 public protocol CarouselItem: Hashable, Identifiable {
     #if os(macOS)
@@ -152,7 +153,7 @@ public struct Carousel<I>: View where I: CarouselItem {
                 ThumbnailImage(image, height: 40, cacheID: item.idString) { image in
                     image
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
+                        .scaledToFill()
                         .id(item.id)
                         .frame(width: max(0, size-2), height: max(0, size-2))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
