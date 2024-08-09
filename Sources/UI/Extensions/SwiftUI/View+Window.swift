@@ -22,7 +22,7 @@ struct AutoActivationPolicyModifer: ViewModifier {
                 activateApp()
                 self.window?.makeKeyAndOrderFront(nil)
             }
-            .introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
+            .introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
                 DispatchQueue.main.async {
                     self.window = window
                 }
@@ -77,7 +77,7 @@ extension View {
     @available(macOS 10.15, *)
     @ViewBuilder
     public func windowAnimationBehavior(_ behavior: NSWindow.AnimationBehavior) -> some View {
-        introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
+        introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
             window.animationBehavior = behavior
         }
     }
@@ -90,14 +90,14 @@ extension View {
 #if os(macOS)
     @ViewBuilder
     public func window(perform action: @escaping (NSWindow) -> Void) -> some View {
-        introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
+        introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
             action(window)
         }
     }
     
     @ViewBuilder
     public func bindWindow(_ windowBinding: Binding<NSWindow?>) -> some View {
-        introspect(.window, on: .macOS(.v14, .v13, .v12, .v11, .v10_15)) { window in
+        introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
             DispatchQueue.main.async {
                 windowBinding.wrappedValue = window
             }
@@ -106,14 +106,14 @@ extension View {
 #elseif os(iOS)
     @ViewBuilder
     public func window(perform action: @escaping (UIWindow) -> Void) -> some View {
-        introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17)) { window in
+        introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17, .v18)) { window in
             action(window)
         }
     }
     
     @ViewBuilder
     public func bindWindow(_ windowBinding: Binding<UIWindow?>) -> some View {
-        introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17)) { window in
+        introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17, .v18)) { window in
             DispatchQueue.main.async {
                 windowBinding.wrappedValue = window
             }

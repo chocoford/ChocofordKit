@@ -117,6 +117,7 @@ public extension [CGRect] {
 extension CGSize {
     public var distance: CGFloat { sqrt(pow(width, 2) + pow(height, 2)) }
     public var areaSize: CGFloat { width * height }
+    public var aspectRatio: CGFloat { width / height }
     
     public static func / (lhs: CGSize, rhs: CGSize) -> CGFloat {
         lhs.areaSize / rhs.areaSize

@@ -81,7 +81,7 @@ extension CGImage {
             self,
             properties as CFDictionary?
         )
-        
+                
         guard CGImageDestinationFinalize(destination) else {
             struct CGImageDestinationFinalizeFailed: Error {}
             throw CGImageDestinationFinalizeFailed()
