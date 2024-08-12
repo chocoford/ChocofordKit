@@ -106,7 +106,7 @@ extension View {
     
     @ViewBuilder
     public func apply<V: View>(
-        _ modifier: (_ content: Self) -> V,
+        @ViewBuilder _ modifier: (_ content: Self) -> V,
         isActive: Bool = true
     ) -> some View {
         if isActive {
