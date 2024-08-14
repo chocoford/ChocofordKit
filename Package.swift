@@ -28,7 +28,7 @@ let package = Package(
         .package(url: "https://github.com/elai950/AlertToast.git", branch: "master"),
         .package(url: "https://github.com/stevengharris/SplitView.git", from: "3.0.0"),
         .package(url: "https://github.com/fatbobman/SwiftUIOverlayContainer.git", from: "2.0.0"),
-        .package(url: "https://github.com/lucaszischka/BottomSheet", from: "3.1.0"),
+//        .package(url: "https://github.com/lucaszischka/BottomSheet", from: "3.1.0"),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "5.2.0")),
         .package(url: "https://github.com/lorenzofiamingo/swiftui-cached-async-image.git", .upToNextMajor(from: "2.1.1")),
         .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.2.2")
@@ -47,7 +47,7 @@ let package = Package(
                 "AlertToast",
                 "SplitView",
                 "SwiftUIOverlayContainer",
-                "BottomSheet",
+//                "BottomSheet",
                 "SFSafeSymbols",
                 .product(name: "CachedAsyncImage", package: "swiftui-cached-async-image"),
                 "SDWebImageSwiftUI"
