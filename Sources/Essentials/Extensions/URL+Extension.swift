@@ -24,11 +24,13 @@ extension URL {
     }
     
     
+    /// [ChocofordKit]
+    /// Get the file path of the url
     public var filePath: String {
         if #available(macOS 13.0, iOS 16.0, *) {
             path(percentEncoded: false)
         } else {
-            path
+            standardizedFileURL.path
         }
     }
 }
