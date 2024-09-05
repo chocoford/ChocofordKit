@@ -179,9 +179,9 @@ extension View {
         }
     }
     
-    @available(macOS, deprecated: 14.0)
-    @available(iOS, deprecated: 17.0)
-    @available(visionOS, deprecated: 1.0)
+//    @available(macOS, deprecated: 14.0)
+//    @available(iOS, deprecated: 17.0)
+//    @available(visionOS, deprecated: 1.0)
     @ViewBuilder
     public func onChange<V: Equatable>(
         of value: V,
@@ -190,7 +190,12 @@ extension View {
         action: @escaping (_ newVal: V) -> Void
     ) -> some View {
         modifier(
-            DebounceOnChangeModifier(value: value, initial: initial, interval: debounce, action: action)
+            DebounceOnChangeModifier(
+                value: value,
+                initial: initial,
+                interval: debounce,
+                action: action
+            )
         )
     }
     

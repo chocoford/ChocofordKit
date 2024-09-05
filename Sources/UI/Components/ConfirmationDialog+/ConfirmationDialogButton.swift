@@ -7,23 +7,23 @@
 
 import SwiftUI
 
-public struct ConfirmationDialogButton: View {
+public struct ConfirmationDialogButton<Actions: View>: View {
     var titleKey: LocalizedStringKey
     var titleVisibility: Visibility
-    var actions: AnyView
+    var actions: () -> Actions
     var message: AnyView
     var label: AnyView
     
-    public init<Label: View, Actions: View, Message: View>(
+    public init<Label: View, Message: View>(
         titleKey: LocalizedStringKey,
         titleVisibility: Visibility = .automatic,
-        @ViewBuilder actions: () -> Actions,
+        @ViewBuilder actions: @escaping () -> Actions,
         @ViewBuilder message: () -> Message = { EmptyView() },
         @ViewBuilder label: () -> Label
     ) {
         self.titleKey = titleKey
         self.titleVisibility = titleVisibility
-        self.actions = AnyView(actions())
+        self.actions = actions
         self.message = AnyView(message())
         self.label = AnyView(label())
     }
@@ -37,7 +37,7 @@ public struct ConfirmationDialogButton: View {
             label
         }
         .confirmationDialog(titleKey, isPresented: $isPresented, titleVisibility: titleVisibility) {
-            actions
+            actions()
         } message: {
             message
         }

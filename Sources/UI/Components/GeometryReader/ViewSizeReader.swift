@@ -29,13 +29,13 @@ public struct ViewSizeReader<Content: View>: View {
                 GeometryReader { proxy in
                     Color.clear
                         .watchImmediately(of: proxy.size) { size = $0 }
-//                        .onChange(of: proxy.size) { newValue in
-//                            size = newValue
-//                        }
-                        .preference(key: SizeKey.self, value: proxy.size)
+                        .onChange(of: proxy.size) { newValue in
+                            size = newValue
+                        }
+//                        .preference(key: SizeKey.self, value: proxy.size)
                 }
             }
-            .onPreferenceChange(SizeKey.self) { size = $0 }
+//            .onPreferenceChange(SizeKey.self) { size = $0 }
     }
 }
 
