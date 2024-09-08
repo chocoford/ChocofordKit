@@ -44,7 +44,8 @@ let package = Package(
                 .product(name: "CachedAsyncImage", package: "swiftui-cached-async-image"),
                 "SDWebImageSwiftUI"
             ],
-            path: "Sources/UI"
+            path: "Sources/UI",
+            resources: [.process("Resources")]
         ),
         .target(
             name: "ChocofordEssentials",
