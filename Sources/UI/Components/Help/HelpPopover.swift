@@ -38,7 +38,7 @@ struct HelpPopoverModifier: ViewModifier {
         self.helpView = AnyView(
             Text(help)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 2)
+                .padding(.vertical, 4)
         )
     }
     

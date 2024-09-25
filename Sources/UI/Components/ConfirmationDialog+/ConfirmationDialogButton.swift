@@ -14,8 +14,22 @@ public struct ConfirmationDialogButton<Actions: View>: View {
     var message: AnyView
     var label: AnyView
     
+//    public init<Label: View, Message: View>(
+//        titleKey: LocalizedStringKey,
+//        titleVisibility: Visibility = .automatic,
+//        @ViewBuilder actions: @escaping () -> Actions,
+//        @ViewBuilder message: () -> Message = { EmptyView() },
+//        @ViewBuilder label: () -> Label
+//    ) {
+//        self.titleKey = titleKey
+//        self.titleVisibility = titleVisibility
+//        self.actions = actions
+//        self.message = AnyView(message())
+//        self.label = AnyView(label())
+//    }
+    
     public init<Label: View, Message: View>(
-        titleKey: LocalizedStringKey,
+        _ titleKey: LocalizedStringKey,
         titleVisibility: Visibility = .automatic,
         @ViewBuilder actions: @escaping () -> Actions,
         @ViewBuilder message: () -> Message = { EmptyView() },
@@ -45,7 +59,7 @@ public struct ConfirmationDialogButton<Actions: View>: View {
 }
 
 #Preview {
-    ConfirmationDialogButton(titleKey: "ConfirmationDialog") {
+    ConfirmationDialogButton("ConfirmationDialog") {
         Text("1")
         Text("2")
         Text("3")

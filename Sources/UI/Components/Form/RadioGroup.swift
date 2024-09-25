@@ -44,8 +44,23 @@ public struct RadioGroup<O: RadioGroupCase, Content: View>: View {
     
     var content: (_ option: O, _ isOn: Binding<Bool>) -> Content
     
-    public init(selected: Binding<O>,
-         @ViewBuilder content: @escaping (_ option: O, _ isOn: Binding<Bool>) -> Content) {
+    public init<Label: View>(
+        selected: Binding<O>,
+        radioLabelStyle: RadioButton<Label>.Style = .labelLeading,
+        @ViewBuilder label: @escaping (_ option: O) -> Label
+    ) where Content == RadioButton<Label> {
+        self._selected = selected
+        self.content = { option, isOn in
+            RadioButton(isOn: isOn, style: radioLabelStyle) {
+               label(option)
+           }
+        }
+    }
+    
+    public init(
+        selected: Binding<O>,
+        @ViewBuilder content: @escaping (_ option: O, _ isOn: Binding<Bool>) -> Content
+    ) {
         self._selected = selected
         self.content = content
     }

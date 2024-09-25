@@ -85,13 +85,24 @@ extension View {
         border([edge], width: width, style: style)
     }
     
-    @ViewBuilder
-    public func watchImmediately<V : Equatable>(of value: V, perform action: @escaping (V) -> Void) -> some View {
-        onAppear {
-            action(value)
-        }
-        .onChange(of: value) { newValue in
-            action(newValue)
+    @MainActor @ViewBuilder
+    public func watchImmediately<V : Equatable>(
+        of value: V,
+        perform action: @escaping (V) -> Void
+    ) -> some View {
+        if #available(macOS 14.0, *) {
+            self
+                .onChange(of: value, initial: true) { _, newValue in
+                    action(newValue)
+                }
+        } else {
+            self
+                .onAppear {
+                    action(value)
+                }
+                .onChange(of: value) { newValue in
+                    action(newValue)
+                }
         }
     }
     

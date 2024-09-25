@@ -88,32 +88,55 @@ extension SystemRadioButton {
 #endif
 
 public struct RadioButton<L: View>: View {
+    public enum Style {
+        case labelLeading
+        case labelTop
+    }
+    
     var label: () -> L
     var spacing: CGFloat
+    var style: Style
     @Binding var isOn: Bool
     
-    public init(isOn: Binding<Bool>,spacing: CGFloat = 4, @ViewBuilder label: @escaping (() -> L) = {EmptyView()}) {
+    public init(
+        isOn: Binding<Bool>,
+        spacing: CGFloat = 4,
+        style: Style = .labelLeading,
+        @ViewBuilder label: @escaping (() -> L) = {EmptyView()}
+    ) {
         self._isOn = isOn
         self.label = label
         self.spacing = spacing
+        self.style = style
     }
     
     public var body: some View {
-        HStack(spacing: spacing) {
-            label()
-                .onTapGesture {
-                    self.isOn = true
-                }
-#if os(iOS)
-            FakeRadioButton(isOn: $isOn)
-#elseif os(macOS)
-            SystemRadioButton(isOn: $isOn)
-                .fixedSize()
-#endif
+        if style == .labelLeading {
+            HStack(spacing: spacing) {
+                content()
+            }
+        } else if style == .labelTop {
+            VStack(spacing: spacing) {
+                content()
+            }
         }
 //        .onChange(of: isOn) { newValue in
 //            print("on change \(newValue)")
 //        }
+    }
+    
+    @MainActor @ViewBuilder
+    private func content() -> some View {
+        label()
+            .onTapGesture {
+                self.isOn = true
+            }
+#if os(iOS)
+        FakeRadioButton(isOn: $isOn)
+#elseif os(macOS)
+        SystemRadioButton(isOn: $isOn)
+            .fixedSize()
+#endif
     }
 }
 

@@ -98,8 +98,10 @@ extension View {
     @ViewBuilder
     public func bindWindow(_ windowBinding: Binding<NSWindow?>) -> some View {
         introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
-            DispatchQueue.main.async {
-                windowBinding.wrappedValue = window
+            if windowBinding.wrappedValue != window {
+                DispatchQueue.main.async {
+                    windowBinding.wrappedValue = window
+                }
             }
         }
     }
