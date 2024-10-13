@@ -95,6 +95,7 @@ extension Data {
         }
     }
     
+    @available(*, deprecated, message: "Use .formatted(.byteCount(...)) instead")
     public func getSize(allowedUnits: ByteCountFormatter.Units = .useAll) -> String {
         let bcf = ByteCountFormatter()
         bcf.allowedUnits = allowedUnits

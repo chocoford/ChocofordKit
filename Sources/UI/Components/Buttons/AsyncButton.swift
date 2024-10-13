@@ -89,6 +89,7 @@ public struct AsyncButton<Label: View, Loading: View>: View {
     @State private var error: (any Error)? = nil
     
     @State private var labelWidth: CGFloat = .zero
+    @State private var labelSize: CGSize = .zero
     
     @State private var isRunning: Bool = false
     
@@ -121,7 +122,7 @@ public struct AsyncButton<Label: View, Loading: View>: View {
 #if canImport(AppKit)
                 if isRunning {
                     loadingLabel()
-                        .fixedSize()
+                        .frame(width: labelSize.width, height: labelSize.height)
                 } else {
                     label()
                 }
@@ -135,6 +136,13 @@ public struct AsyncButton<Label: View, Loading: View>: View {
                     }
 #endif
             }
+            .readSize(Binding {
+                labelSize
+            } set: {
+                if !isRunning {
+                    labelSize = $0
+                }
+            })
             
 //            ViewSizeReader { size in
 //                if isRunning {

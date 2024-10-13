@@ -90,7 +90,7 @@ extension View {
         of value: V,
         perform action: @escaping (V) -> Void
     ) -> some View {
-        if #available(macOS 14.0, *) {
+        if #available(macOS 14.0, iOS 17.0, *) {
             self
                 .onChange(of: value, initial: true) { _, newValue in
                     action(newValue)

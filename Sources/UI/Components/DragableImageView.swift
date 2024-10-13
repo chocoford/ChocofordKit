@@ -37,9 +37,6 @@ public class DragableNSImageView: NSImageView, NSFilePromiseProviderDelegate {
         }
         // Create the dragging item for the drag operation
         let draggingItem = NSDraggingItem(pasteboardWriter: fileUrl as NSURL)
-//        let draggingFrame: NSRect = .init(origin: .init(x: self.bounds.origin.x + (self.bounds.size.width - image.size.width) / 2,
-//                                                        y: self.bounds.origin.y + (self.bounds.size.height - image.size.height) / 2),
-//                                          size: image.size)
         let draggingFrame: NSRect = self.bounds
         draggingItem.setDraggingFrame(draggingFrame, contents: image)
         
