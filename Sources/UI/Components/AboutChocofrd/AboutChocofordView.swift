@@ -12,9 +12,17 @@ import SwiftyAlert
 
 public struct AboutChocofordView: View {
     var isAppStore: Bool
+//    var privacyPolicy: URL?
+//    var termsOfUse: URL?
     
-    public init(isAppStore: Bool) {
+    public init(
+        isAppStore: Bool//,
+//        privacyPolicy: URL?,
+//        termsOfUse: URL? = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")
+    ) {
         self.isAppStore = isAppStore
+//        self.privacyPolicy = privacyPolicy
+//        self.termsOfUse = termsOfUse
     }
     
     @State private var isSupportSheetPresented = false
@@ -73,7 +81,11 @@ public struct AboutChocofordView: View {
             }
         }
         .sheet(isPresented: $isSupportSheetPresented) {
-            SupportChocofordView(isAppStore: isAppStore)
+            SupportChocofordView(
+                isAppStore: isAppStore//,
+//                privacyPolicy: privacyPolicy,
+//                termsOfUse: termsOfUse
+            )
                 .frame(width: 560)
                 .swiftyAlert()
         }
@@ -220,7 +232,10 @@ fileprivate struct GithubLogo: Shape {
 #Preview {
     if #available(macOS 13.0, iOS 16.0, *) {
         Form {
-            AboutChocofordView(isAppStore: true)
+            AboutChocofordView(
+                isAppStore: true//,
+//                privacyPolicy: URL(string: "https://excalidrawz.chocoford.com/privacy/")
+            )
                 .padding()
         }
         .formStyle(.grouped)

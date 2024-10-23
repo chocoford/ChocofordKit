@@ -13,6 +13,8 @@ struct SupportChocofordView: View {
     @Environment(\.alertToast) var alertToast
     
     var isAppStore: Bool
+//    var privacyPolicy: URL?
+//    var termsOfUse: URL?
     
     @State private var isSupportHistoryPresented = false
     @State private var purchaseHistory: [StoreKit.Transaction] = []
@@ -161,7 +163,13 @@ struct SupportChocofordView: View {
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text(membership.displayName)
-                                    Text(membership.displayPrice)
+                                    Group {
+                                        Text(membership.displayPrice)
+                                        +
+                                        Text(" / ")
+                                        +
+                                        Text(membership.subscription?.subscriptionPeriod.unit == .month ? "month" : "year")
+                                    }
                                         .font(.callout)
                                 }
                                 Spacer()
@@ -180,6 +188,7 @@ struct SupportChocofordView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .padding(12)
+                .frame(maxWidth: .infinity)
                 .background {
                     ZStack {
                         roundedRectangle.fill(.regularMaterial)
