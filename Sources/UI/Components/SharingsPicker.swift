@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-#if os(macOS)
+#if canImport(AppKit)
 public struct SharingsPicker: NSViewRepresentable {
     @Binding var isPresented: Bool
     var sharingItems: [Any] = []
@@ -57,6 +57,26 @@ public struct SharingsPicker: NSViewRepresentable {
             sharingServicePicker.delegate = nil   // << cleanup
             self.owner.isPresented = false        // << dismiss
         }
+    }
+}
+
+#elseif canImport(UIKit)
+public struct SharingsPicker: UIViewRepresentable {
+    @Binding var isPresented: Bool
+    var sharingItems: [Any] = []
+    
+    public init(isPresented: Binding<Bool>, sharingItems: [Any]) {
+        self._isPresented = isPresented
+        self.sharingItems = sharingItems
+    }
+    
+    public func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        return view
+    }
+    
+    public func updateUIView(_ uiView: UIView, context: Context) {
+        
     }
 }
 #endif

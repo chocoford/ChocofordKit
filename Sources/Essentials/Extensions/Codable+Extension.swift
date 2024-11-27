@@ -36,6 +36,25 @@ extension Encodable {
     }
 }
 
+extension Array where Element: Encodable {
+    public func jsonStringified(percentEncoding: Bool = false, options: JSONSerialization.WritingOptions? = nil) throws -> String {
+        var data = try JSONEncoder().encode(self)
+        if let options = options {
+            let obj = try JSONSerialization.jsonObject(with: data)
+            data = try JSONSerialization.data(withJSONObject: obj, options: options)
+        }
+        
+        let stringified = String(data: data, encoding: String.Encoding.utf8) ?? ""
+        if !percentEncoding {
+            return stringified
+        }
+        if let encoded = stringified.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            return encoded
+        }
+        return ""
+    }
+}
+
 
 
 //extension JSONDecoder.DateDecodingStrategy {

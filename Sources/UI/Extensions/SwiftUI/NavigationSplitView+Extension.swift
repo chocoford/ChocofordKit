@@ -9,7 +9,7 @@ import SwiftUI
 
 #if os(macOS)
 
-@available(macOS 13.0, *)
+@available(macOS 13.0, iOS 16.0, *)
 extension NavigationSplitView {
     /// Copied and modified from [Swiftcord](https://github.com/SwiftcordApp/Swiftcord)
     /// Remove the side bar toogle in macos Settings view.

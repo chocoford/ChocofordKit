@@ -25,7 +25,7 @@ public struct PrimitiveButtonWrapper<Content: View>: View {
     
     public var body: some View {
         content(isPressed)
-            .gesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
+            .simultaneousGesture(DragGesture(minimumDistance: 0.0, coordinateSpace: .local)
                 .onChanged { _ in
                     isPressed = true
                 }

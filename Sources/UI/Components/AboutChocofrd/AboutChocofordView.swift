@@ -11,6 +11,8 @@ import SwiftyAlert
 
 
 public struct AboutChocofordView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    
     var isAppStore: Bool
 //    var privacyPolicy: URL?
 //    var termsOfUse: URL?
@@ -29,37 +31,16 @@ public struct AboutChocofordView: View {
     
     public var body: some View {
         VStack {
-            let height: CGFloat = 80
-            HStack(spacing: 20) {
-                if let image = avatar() {
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: height - 10, height: height - 10)
-                        .clipShape(Circle())
+            if #available(iOS 16.0, macOS 13.0, *) {
+                ViewThatFits(in: .horizontal) {
+                    regularProfile()
+                    compactProfile()
                 }
-                
-                VStack(alignment: .leading) {
-                    Text("Chocoford")
-                        .font(.largeTitle)
-                    Spacer()
-                    HStack {
-                        myLinks()
-                    }
-                }
-                
-                Spacer()
-                Button {
-                    isSupportSheetPresented.toggle()
-                } label: {
-                    Text("Support Me")
-                }
-                .controlSize(.large)
-                .buttonStyle(.borderedProminent)
-                .containerShape(Capsule())
+            } else if horizontalSizeClass == .compact {
+                compactProfile()
+            } else {
+                regularProfile()
             }
-            .padding(.vertical, 10)
-            .frame(height: height)
             
             Divider()
             
@@ -82,12 +63,10 @@ public struct AboutChocofordView: View {
         }
         .sheet(isPresented: $isSupportSheetPresented) {
             SupportChocofordView(
-                isAppStore: isAppStore//,
-//                privacyPolicy: privacyPolicy,
-//                termsOfUse: termsOfUse
+                isAppStore: isAppStore
             )
-                .frame(width: 560)
-                .swiftyAlert()
+            .frame(width: horizontalSizeClass == .regular ? 560 : nil)
+            .swiftyAlert()
         }
     }
     
@@ -127,6 +106,78 @@ public struct AboutChocofordView: View {
                     .font(.footnote)
             }
         }
+    }
+    
+    @MainActor @ViewBuilder
+    private func regularProfile() -> some View {
+        let height: CGFloat = 80
+
+        HStack(spacing: 20) {
+            if let image = avatar() {
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: height - 10, height: height - 10)
+                    .clipShape(Circle())
+            }
+            
+            VStack(alignment: .leading) {
+                Text("Chocoford")
+                    .font(.largeTitle)
+                Spacer()
+                HStack {
+                    myLinks()
+                }
+            }
+            
+            Spacer()
+            Button {
+                isSupportSheetPresented.toggle()
+            } label: {
+                Text("Support Me")
+            }
+            .controlSize(.large)
+            .buttonStyle(.borderedProminent)
+            .containerShape(Capsule())
+        }
+        .padding(.vertical, 10)
+        .frame(height: height)
+    }
+    
+    @MainActor @ViewBuilder
+    private func compactProfile() -> some View {
+        let height: CGFloat = 80
+
+        VStack(spacing: 10) {
+            HStack(spacing: 20) {
+                if let image = avatar() {
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: height - 10, height: height - 10)
+                        .clipShape(Circle())
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Chocoford")
+                        .font(.title)
+                    HStack {
+                        myLinks()
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Button {
+                isSupportSheetPresented.toggle()
+            } label: {
+                Text("Support Me")
+                    .frame(maxWidth: .infinity)
+            }
+            .controlSize(.regular)
+            .buttonStyle(.borderedProminent)
+            .containerShape(Capsule())
+        }
+        .padding(.vertical, 10)
     }
     
     @MainActor @ViewBuilder

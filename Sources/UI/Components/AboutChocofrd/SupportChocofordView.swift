@@ -9,6 +9,7 @@ import SwiftUI
 import StoreKit
 
 struct SupportChocofordView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dismiss) var dismiss
     @Environment(\.alertToast) var alertToast
     
@@ -123,17 +124,40 @@ struct SupportChocofordView: View {
         VStack(spacing: 20) {
             VStack(alignment: .leading) {
                 Text("Support")
-                HStack(spacing: 12) {
-                    ForEach(suppoprts) { product in
-                        AsyncButton {
-                            try await self.purchaseProduct(product)
-                        } label: {
-                            Text(product.displayPrice)
+                ZStack {
+                    if #available(iOS 16.0, macOS 13.0, *) {
+                        FlexStack(horizontalSpacing: 12) {
+                            ForEach(suppoprts) { product in
+                                AsyncButton {
+                                    try await self.purchaseProduct(product)
+                                } label: {
+                                    Text(product.displayPrice)
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        HStack {
+                            ForEach(suppoprts[0..<3]) { product in
+                                AsyncButton {
+                                    try await self.purchaseProduct(product)
+                                } label: {
+                                    Text(product.displayPrice)
+                                }
+                            }
+                        }
+                        HStack {
+                            ForEach(suppoprts[3...]) { product in
+                                AsyncButton {
+                                    try await self.purchaseProduct(product)
+                                } label: {
+                                    Text(product.displayPrice)
+                                }
+                            }
                         }
                     }
-                    .buttonStyle(.fill)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .buttonStyle(.fill)
                 .padding(12)
                 .background {
                     ZStack {
@@ -149,41 +173,26 @@ struct SupportChocofordView: View {
             
             VStack(alignment: .leading) {
                 Text("Membership")
-                
-                HStack(spacing: 10) {
-                    ForEach(self.memberships) { membership in
-                        let hasPurchased = activeTransactions.first(where: {$0.productID == membership.id})?.isUpgraded == false
-                        AsyncButton {
-                            if hasPurchased {
-                                
-                            } else {
-                                try await self.purchaseProduct(membership)
+                ZStack {
+                    if #available(iOS 16.0, macOS 13.0, *) {
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 10) {
+                                membershipsView()
                             }
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(membership.displayName)
-                                    Group {
-                                        Text(membership.displayPrice)
-                                        +
-                                        Text(" / ")
-                                        +
-                                        Text(membership.subscription?.subscriptionPeriod.unit == .month ? "month" : "year")
-                                    }
-                                        .font(.callout)
-                                }
-                                Spacer()
-                                if hasPurchased {
-                                    Image(systemSymbol: .checkmarkCircle)
-                                        .foregroundStyle(.green)
-                                }
+                            VStack(spacing: 10) {
+                                membershipsView()
                             }
                         }
-                        .buttonStyle(
-                            .fill(
-                                style: hasPurchased ? AnyShapeStyle(Color(hexString: "#177E19")) : AnyShapeStyle(Color.accentColor)
-                            )
-                        )
+                    } else {
+                        if horizontalSizeClass == .compact {
+                            VStack(spacing: 10) {
+                                membershipsView()
+                            }
+                        } else {
+                            HStack(spacing: 10) {
+                                membershipsView()
+                            }
+                        }
                     }
                 }
                 .buttonStyle(.borderedProminent)
@@ -234,6 +243,44 @@ struct SupportChocofordView: View {
                     }
                 }
             }
+        }
+    }
+    
+    @MainActor @ViewBuilder
+    private func membershipsView() -> some View {
+        ForEach(self.memberships) { membership in
+            let hasPurchased = activeTransactions.first(where: {$0.productID == membership.id})?.isUpgraded == false
+            AsyncButton {
+                if hasPurchased {
+                    
+                } else {
+                    try await self.purchaseProduct(membership)
+                }
+            } label: {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(membership.displayName)
+                        Group {
+                            Text(membership.displayPrice)
+                            +
+                            Text(" / ")
+                            +
+                            Text(membership.subscription?.subscriptionPeriod.unit == .month ? "month" : "year")
+                        }
+                            .font(.callout)
+                    }
+                    Spacer()
+                    if hasPurchased {
+                        Image(systemSymbol: .checkmarkCircle)
+                            .foregroundStyle(.green)
+                    }
+                }
+            }
+            .buttonStyle(
+                .fill(
+                    style: hasPurchased ? AnyShapeStyle(Color(hexString: "#177E19")) : AnyShapeStyle(Color.accentColor)
+                )
+            )
         }
     }
     

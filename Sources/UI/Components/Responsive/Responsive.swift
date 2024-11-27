@@ -25,7 +25,7 @@ public struct ResponsiveRule {
     }
 }
 
-internal func getSizeClass(_ width: CGFloat, with rule: ResponsiveRule = .default) -> UISizeClass {
+internal func getSizeClass(_ width: CGFloat, with rule: ResponsiveRule = .default) -> UserInterfaceSizeClass {
     switch width {
         case 0..<rule.compact:
             return .compact
@@ -36,25 +36,17 @@ internal func getSizeClass(_ width: CGFloat, with rule: ResponsiveRule = .defaul
     }
 }
 
-public enum UISizeClass: String, CaseIterable, Identifiable, Hashable {
-    case compact
-    case regular
-    
-    public var id: String {
-        self.rawValue
-    }
-}
 // MARK: - Envrionment Key
 struct UISizeClassKey: EnvironmentKey {
   #if os(macOS)
-    static var defaultValue: UISizeClass = .compact
+    static var defaultValue: UserInterfaceSizeClass = .regular
   #else
-    static var defaultValue: UISizeClass = .compact
+    static var defaultValue: UserInterfaceSizeClass = .regular
   #endif
 }
 
 public extension EnvironmentValues {
-    var uiSizeClass: UISizeClass {
+    var uiSizeClass: UserInterfaceSizeClass {
         get { self[UISizeClassKey.self] }
         set { self[UISizeClassKey.self] = newValue }
     }
@@ -87,7 +79,7 @@ struct ResponsiveModifier: ViewModifier {
 #if os(iOS)
 struct GetSizeClassModifier: ViewModifier {
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @State var currentSizeClass: UISizeClass = .compact
+    @State var currentSizeClass: UserInterfaceSizeClass = .compact
     func body(content: Content) -> some View {
         content
             .task(id: sizeClass) {
@@ -112,9 +104,9 @@ struct GetSizeClassModifier: ViewModifier {
 internal struct ResponsiveView<Content: View>: View {
     @Environment(\.uiSizeClass) private var uiSize
 
-    var content: (_ breakpoint: UISizeClass) -> Content
+    var content: (_ breakpoint: UserInterfaceSizeClass) -> Content
     
-    public init(@ViewBuilder content: @escaping (_ breakpoint: UISizeClass) -> Content) {
+    public init(@ViewBuilder content: @escaping (_ breakpoint: UserInterfaceSizeClass) -> Content) {
         self.content = content
     }
     
@@ -124,8 +116,8 @@ internal struct ResponsiveView<Content: View>: View {
 }
 
 public struct Responsive<Content: View>: View {
-    var content: (_ breakpoint: UISizeClass) -> Content
-    public init(@ViewBuilder content: @escaping (_ breakpoint: UISizeClass) -> Content) {
+    var content: (_ breakpoint: UserInterfaceSizeClass) -> Content
+    public init(@ViewBuilder content: @escaping (_ breakpoint: UserInterfaceSizeClass) -> Content) {
         self.content = content
     }
     public var body: some View {
@@ -157,7 +149,7 @@ public struct ResponsiveHStack: Layout {
         cache: inout CacheData
     ) -> CGSize {
         // Calculate and return the size of the layout container.
-        let sizeClass: UISizeClass = getSizeClass(proposal.width ?? 0, with: rule)
+        let sizeClass: UserInterfaceSizeClass = getSizeClass(proposal.width ?? 0, with: rule)
 //        switch sizeClass {
 //            case .compact:
 //            case .regular:

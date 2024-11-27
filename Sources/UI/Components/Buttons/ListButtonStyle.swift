@@ -28,7 +28,7 @@ public struct ListButtonStyle: PrimitiveButtonStyle {
         var body: some View {
             HStack {
                 content()
-                Spacer()
+                Spacer(minLength: 0)
 #if os(iOS)
                 if showIndicator {
                     Image(systemName: "chevron.right")
@@ -41,7 +41,7 @@ public struct ListButtonStyle: PrimitiveButtonStyle {
             .padding(.vertical, 4)
             .background(
                 RoundedRectangle(cornerRadius: 4)
-                    .foregroundColor(selected ? .accentColor.opacity(0.2) : .gray.opacity(0.2))
+                    .foregroundStyle(selected ? Color.accentColor.opacity(0.2) : Color.gray.opacity(0.2))
                     .opacity(isHover || selected ? 1 : 0)
             )
             .containerShape(RoundedRectangle(cornerRadius: 8))
@@ -54,9 +54,11 @@ public struct ListButtonStyle: PrimitiveButtonStyle {
         PrimitiveButtonWrapper {
             configuration.trigger()
         } content: { isPressed in
-            ListButtonStyleView(isPressed: isPressed,
-                                showIndicator: showIndicator,
-                                selected: selected) {
+            ListButtonStyleView(
+                isPressed: isPressed,
+                showIndicator: showIndicator,
+                selected: selected
+            ) {
                 configuration.label
             }
         }
