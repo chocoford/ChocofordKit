@@ -50,7 +50,9 @@ public struct AboutChocofordView: View {
                         myApps()
                     }
                 } else {
-                    
+                    LazyVGrid(columns: [GridItem(.fixed(80)), GridItem(.fixed(80)), GridItem(.fixed(80)), GridItem(.fixed(80))]) {
+                        myApps()
+                    }
                 }
             } header: {
                 HStack {
@@ -96,13 +98,21 @@ public struct AboutChocofordView: View {
                     .font(.footnote)
             }
         }
-        
         fastLinkChip(url: URL(string: "https://github.com/chocoford")!) {
             HStack(spacing: 4) {
                 GithubLogo()
                     .scaledToFit()
                     .frame(height: 12)
                 Text("Chocoford")
+                    .font(.footnote)
+            }
+        }
+        fastLinkChip(url: URL(string: "https://discord.gg/VMJBD6rFA7")!) {
+            HStack(spacing: 4) {
+                DiscordLogo()
+                    .scaledToFit()
+                    .frame(height: 12)
+                Text("Chocoford's Server")
                     .font(.footnote)
             }
         }
@@ -182,9 +192,7 @@ public struct AboutChocofordView: View {
     
     @MainActor @ViewBuilder
     private func myApps() -> some View {
-        Button {
-            
-        } label: {
+        Link(destination: URL(string: "https://excalidrawz.chocoford.com")!) {
             Image("ExcalidrawZ")
                 .resizable()
                 .scaledToFit()
@@ -275,6 +283,35 @@ fileprivate struct GithubLogo: Shape {
         path.addCurve(to: CGPoint(x: 0.65533*width, y: 0.99904*height), control1: CGPoint(x: 0.62149*width, y: 0.988*height), control2: CGPoint(x: 0.63057*width, y: 1.00414*height))
         path.addCurve(to: CGPoint(x: 0.99619*width, y: 0.51268*height), control1: CGPoint(x: 0.85341*width, y: 0.93113*height), control2: CGPoint(x: 0.99619*width, y: 0.7393*height))
         path.addCurve(to: CGPoint(x: 0.49851*width, y: 0), control1: CGPoint(x: 0.99701*width, y: 0.22917*height), control2: CGPoint(x: 0.77335*width, y: 0))
+        path.closeSubpath()
+        return path
+    }
+}
+
+fileprivate struct DiscordLogo: Shape {
+    nonisolated func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        path.move(to: CGPoint(x: 0.8471*width, y: 0.08375*height))
+        path.addCurve(to: CGPoint(x: 0.00425*width, y: 0.8324*height), control1: CGPoint(x: 0.02194*width, y: 0.33883*height), control2: CGPoint(x: -0.01345*width, y: 0.58738*height))
+        path.addLine(to: CGPoint(x: 0.00425*width, y: 0.8324*height))
+        path.addCurve(to: CGPoint(x: 0.24705*width, y: 0.81019*height), control1: CGPoint(x: 0.23329*width, y: 0.8241*height), control2: CGPoint(x: 0.24029*width, y: 0.81704*height))
+        path.addCurve(to: CGPoint(x: 0.77387*width, y: 0.83095*height), control1: CGPoint(x: 0.75979*width, y: 0.81756*height), control2: CGPoint(x: 0.76679*width, y: 0.82462*height))
+        path.addLine(to: CGPoint(x: 0.99575*width, y: 0))
+        path.addCurve(to: CGPoint(x: 0.8471*width, y: 0.08375*height), control1: CGPoint(x: 1.01652*width, y: 0.54836*height), control2: CGPoint(x: 0.96028*width, y: 0.3021*height))
+        path.closeSubpath()
+        path.move(to: CGPoint(x: 0.33388*width, y: 0.68171*height))
+        path.addCurve(to: CGPoint(x: 0.24383*width, y: 0.55002*height), control1: CGPoint(x: 0.28457*width, y: 0.68171*height), control2: CGPoint(x: 0.24383*width, y: 0.62267*height))
+        path.addCurve(to: CGPoint(x: 0.33373*width, y: 0.41781*height), control1: CGPoint(x: 0.24383*width, y: 0.47738*height), control2: CGPoint(x: 0.28315*width, y: 0.41781*height))
+        path.addCurve(to: CGPoint(x: 0.42386*width, y: 0.55002*height), control1: CGPoint(x: 0.3843*width, y: 0.41781*height), control2: CGPoint(x: 0.42473*width, y: 0.47738*height))
+        path.addCurve(to: CGPoint(x: 0.33388*width, y: 0.68171*height), control1: CGPoint(x: 0.423*width, y: 0.62267*height), control2: CGPoint(x: 0.38414*width, y: 0.68171*height))
+        path.closeSubpath()
+        path.move(to: CGPoint(x: 0.66612*width, y: 0.68171*height))
+        path.addCurve(to: CGPoint(x: 0.57614*width, y: 0.55002*height), control1: CGPoint(x: 0.61672*width, y: 0.68171*height), control2: CGPoint(x: 0.57614*width, y: 0.62267*height))
+        path.addCurve(to: CGPoint(x: 0.66612*width, y: 0.41781*height), control1: CGPoint(x: 0.57614*width, y: 0.47738*height), control2: CGPoint(x: 0.61546*width, y: 0.41781*height))
+        path.addCurve(to: CGPoint(x: 0.75602*width, y: 0.55002*height), control1: CGPoint(x: 0.71677*width, y: 0.41781*height), control2: CGPoint(x: 0.75688*width, y: 0.47738*height))
+        path.addCurve(to: CGPoint(x: 0.66612*width, y: 0.68171*height), control1: CGPoint(x: 0.75515*width, y: 0.62267*height), control2: CGPoint(x: 0.71638*width, y: 0.68171*height))
         path.closeSubpath()
         return path
     }
