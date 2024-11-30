@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "ChocofordKit",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v15), .watchOS(.v6), .macOS(.v12), .visionOS(.v1)
     ],

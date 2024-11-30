@@ -181,7 +181,7 @@ public struct AboutChocofordView: View {
                 VStack(alignment: .leading) {
                     Text("Chocoford")
                         .font(.title)
-                    HStack {
+                    VStack {
                         myLinks()
                     }
                 }

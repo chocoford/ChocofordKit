@@ -140,12 +140,12 @@ public struct PhotoUploader<V: View>: View {
                 Button {
                     showPhotosPicker.toggle()
                 } label: {
-                    Label("chose from library", systemImage: "photo.stack")
+                    Label("Chose from library", systemImage: "photo.stack")
                 }
                 Button {
                     showFileImporter.toggle()
                 } label: {
-                    Label("choose from disk", systemImage: "opticaldiscdrive")
+                    Label("Choose from disk", systemImage: "opticaldiscdrive")
                 }
             } else if case .loading(let progress) = phase {
                 Button(role: .destructive) {
@@ -166,12 +166,12 @@ public struct PhotoUploader<V: View>: View {
                 Button {
                     showPhotosPicker.toggle()
                 } label: {
-                    Label("chose from library", systemImage: "photo.stack")
+                    Label("Chose from library", systemImage: "photo.stack")
                 }
                 Button {
                     showFileImporter.toggle()
                 } label: {
-                    Label("choose from disk", systemImage: "opticaldiscdrive")
+                    Label("Choose from disk", systemImage: "opticaldiscdrive")
                 }
                 Button(role: .destructive) {
                     let backupItem = selectedItem
