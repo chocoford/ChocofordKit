@@ -40,6 +40,13 @@ struct SupportChocofordView: View {
                             } label: {
                                 Text("Support history")
                             }
+                            
+                            AsyncButton {
+                                try await AppStore.sync()
+                            } label: {
+                                Text("Restore purchase")
+                            }
+                            .buttonStyle(.borderless)
                         }
                         Spacer()
                         Button {

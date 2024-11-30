@@ -41,9 +41,9 @@ public struct AboutChocofordView: View {
             } else {
                 regularProfile()
             }
-            
+
             Divider()
-            
+
             Section {
                 if #available(macOS 13.0, iOS 16.0, *) {
                     FlexStack {
