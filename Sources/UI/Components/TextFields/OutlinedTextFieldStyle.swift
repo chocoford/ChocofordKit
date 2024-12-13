@@ -16,15 +16,15 @@ public enum PaddingOption: Hashable {
     case trailing(CGFloat)
 }
 
-struct PaddingValue {
-    var leading: CGFloat?
-    var trailing: CGFloat?
-    var top: CGFloat?
-    var bottom: CGFloat?
+public struct PaddingValue {
+    public var leading: CGFloat?
+    public var trailing: CGFloat?
+    public var top: CGFloat?
+    public var bottom: CGFloat?
 }
 
 extension Array<PaddingOption> {
-    func getPaddingValue() -> PaddingValue {
+    public func getPaddingValue() -> PaddingValue {
         self.reduce(PaddingValue()) { partialResult, option in
             switch option {
                 case .all(let all):

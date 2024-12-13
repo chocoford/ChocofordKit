@@ -112,17 +112,6 @@
         }
       }
     },
-    "choose from disk" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从磁盘中选取"
-          }
-        }
-      }
-    },
     "Choose from disk" : {
       "localizations" : {
         "zh-Hans" : {
@@ -323,10 +312,24 @@
 
     },
     "Restore purchase" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买"
+          }
+        }
+      }
     },
     "Retry" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
+      }
     },
     "Side view" : {
 

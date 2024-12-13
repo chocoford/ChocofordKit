@@ -18,20 +18,20 @@ extension Color {
         let hex = hexString.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int = UInt64()
         Scanner(string: hex).scanHexInt64(&int)
-        let red, green, blue: UInt64
+        let red, green, blue, alpha : UInt64
         switch hex.count {
             case 3: // RGB (12-bit)
-                (red, green, blue) = ((int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+                (red, green, blue, alpha) = ((int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17, 255)
             case 6: // RGB (24-bit)
-                (red, green, blue) = (int >> 16, int >> 8 & 0xFF, int & 0xFF)
+                (red, green, blue, alpha) = (int >> 16, int >> 8 & 0xFF, int & 0xFF, 255)
             case 8: // ARGB (32-bit)
                 // FIXME: I think we need an an alpha value on this one. See link below.
                 // https://stackoverflow.com/a/56874327/4475605
-                (red, green, blue) = (int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+                (red, green, blue, alpha) = (int >> 24 & 0xFF, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
             default:
-                (red, green, blue) = (0, 0, 0)
+                (red, green, blue, alpha) = (0, 0, 0, 255)
         }
-        self.init(red: Double(red) / 255, green: Double(green) / 255, blue: Double(blue) / 255)
+        self.init(red: Double(red) / 255, green: Double(green) / 255, blue: Double(blue) / 255, opacity: Double(alpha) / 255)
     }
     
     public init(hue: Double, saturation: Double, lightness: Double, opacity: Double = 1) {
@@ -101,8 +101,9 @@ extension Color {
         guard let platformColor = nsColor.usingColorSpace(.sRGB) else {
             return "#000000"  // 默认值，以防颜色空间转换失败
         }
-//        #else
-//        let platformColor = UIColor(self)
+        #else
+        // 如果没有 UIKit 或 AppKit，则直接返回默认值
+        return "#000000FF"
         #endif
         
         // 获取颜色的RGBA组件
@@ -116,9 +117,10 @@ extension Color {
         let redHex = String(format: "%02X", Int(red * 255))
         let greenHex = String(format: "%02X", Int(green * 255))
         let blueHex = String(format: "%02X", Int(blue * 255))
-        
+        let alphaHex = String(format: "%02X", Int(alpha * 255))
+
         // 拼接成完整的16进制颜色代码
-        return "#\(redHex)\(greenHex)\(blueHex)"
+        return "#\(redHex)\(greenHex)\(blueHex)\(alphaHex)"
     }
 }
 
