@@ -23,7 +23,7 @@ let package = Package(
         .package(url: "https://github.com/elai950/AlertToast.git", branch: "master"),
         .package(url: "https://github.com/stevengharris/SplitView.git", from: "3.0.0"),
         .package(url: "https://github.com/fatbobman/SwiftUIOverlayContainer.git", from: "2.0.0"),
-        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "5.2.0")),
+        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "5.3.0")),
         .package(url: "https://github.com/lorenzofiamingo/swiftui-cached-async-image.git", .upToNextMajor(from: "2.1.1")),
         .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.2.2")
     ],
