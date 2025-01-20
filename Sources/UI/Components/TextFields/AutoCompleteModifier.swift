@@ -9,24 +9,29 @@ import SwiftUI
 
 struct AutoCompleteModifier: ViewModifier {
     var items: [String]
+    var arrowEdge: Edge?
     
     @FocusState var isFocus: Bool
-    
     @Binding var text: String
     
-    init(items: [String], text: Binding<String>) {
+    init(items: [String], text: Binding<String>, arrowEdge: Edge?) {
         self.items = items
         self._text = text
+        self.arrowEdge = arrowEdge
     }
     
     @State private var showPopover: Bool = false
+    @State private var popoverHeight: CGFloat = .zero
     
     func body(content: Content) -> some View {
         content
             .focused($isFocus)
             .onChange(of: text) { newValue in
                 withAnimation {
-                    if items.filter({$0 == newValue}).count == 1 || !items.contains(where: {$0.lowercased().contains(text.lowercased())}) {
+                    if items.filter({$0 == newValue}).count == 1 || (
+                        !items.contains(where: {$0.lowercased().contains(text.lowercased())}) &&
+                        !newValue.isEmpty
+                    ) || items.isEmpty {
                         showPopover = false
                     } else if items.contains(where: {$0.lowercased().contains(text.lowercased())}) {
                         showPopover = true
@@ -44,7 +49,7 @@ struct AutoCompleteModifier: ViewModifier {
                     }
                 }
             }
-            .popover(isPresented: $showPopover, content: {
+            .popover(isPresented: $showPopover, arrowEdge: arrowEdge, content: {
                 // Can not use List, it will resign textField's first responder
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
@@ -76,7 +81,9 @@ struct AutoCompleteModifier: ViewModifier {
                     .lineLimit(1)
                     .padding(.horizontal, 6)
                     .padding(.bottom, 2)
+                    .readHeight($popoverHeight)
                 }
+                .frame(height: min(popoverHeight, 200))
                 .frame(minWidth: 300, maxHeight: 200)
             })
     }
@@ -85,7 +92,7 @@ struct AutoCompleteModifier: ViewModifier {
 
 extension TextField {
     @ViewBuilder
-    public func autoComplete(items: [String], text: Binding<String>) -> some View {
-        modifier(AutoCompleteModifier(items: items,text: text))
+    public func autoComplete(items: [String], text: Binding<String>, arrowEdge: Edge? = nil) -> some View {
+        modifier(AutoCompleteModifier(items: items,text: text, arrowEdge: arrowEdge))
     }
 }

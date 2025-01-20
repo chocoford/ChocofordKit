@@ -18,7 +18,6 @@ struct AutoActivationPolicyModifer: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
-//                print("[AutoActivationPolicyModifer] onAppear")
                 activateApp()
                 self.window?.makeKeyAndOrderFront(nil)
             }
@@ -28,12 +27,10 @@ struct AutoActivationPolicyModifer: ViewModifier {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { output in
-//                print("[AutoActivationPolicyModifer] NSWindow.didBecomeKeyNotification \(output.object ?? "")")
                 guard let window = output.object as? NSWindow else { return }
                 DispatchQueue.main.async {
                     if window == self.window {
                         NSApp.setActivationPolicy(.regular)
-//                        print("[AutoActivationPolicyModifer] NSApp.setActivationPolicy(.regular)")
                     }
                 }
             }
@@ -46,10 +43,6 @@ struct AutoActivationPolicyModifer: ViewModifier {
                 DispatchQueue.main.async {
                     if NSApp.windows.filter({ $0.identifier != nil && $0.canBecomeKey && $0.isVisible }).isEmpty {
                         NSApp.setActivationPolicy(.accessory)
-//                        print("[AutoActivationPolicyModifer] NSApp.setActivationPolicy(.accessory)")
-//                        DispatchQueue.main.async {
-//                            print("[AutoActivationPolicyModifer]", String(describing: NSApp.activationPolicy()), NSApp.activationPolicy().rawValue)
-//                        }
                     }
                 }
             }
@@ -64,7 +57,7 @@ public enum FakeNSWindowAnimationBehavior {
 
 extension View {
     @available(macOS 10.15, *)
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public func autoActivationPolicy() -> some View {
         self
 #if os(macOS)
@@ -75,7 +68,7 @@ extension View {
     
 #if os(macOS)
     @available(macOS 10.15, *)
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public func windowAnimationBehavior(_ behavior: NSWindow.AnimationBehavior) -> some View {
         introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
             window.animationBehavior = behavior
@@ -88,14 +81,14 @@ extension View {
 #endif
     
 #if os(macOS)
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public func window(perform action: @escaping (NSWindow) -> Void) -> some View {
         introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
             action(window)
         }
     }
     
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public func bindWindow(_ windowBinding: Binding<NSWindow?>) -> some View {
         introspect(.window, on: .macOS(.v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
             if windowBinding.wrappedValue != window {
@@ -106,14 +99,14 @@ extension View {
         }
     }
 #elseif os(iOS)
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public func window(perform action: @escaping (UIWindow) -> Void) -> some View {
         introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17, .v18)) { window in
             action(window)
         }
     }
     
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public func bindWindow(_ windowBinding: Binding<UIWindow?>) -> some View {
         introspect(.window, on: .iOS(.v13, .v14, .v15, .v16, .v17, .v18)) { window in
             DispatchQueue.main.async {

@@ -8,10 +8,11 @@
 #if canImport(SwiftUI) && os(macOS)
 import SwiftUI
 
+//@available(*, deprecated, message: "deprecated, use SettingsAccess instead")
 public struct SettingsButton<Label: View>: View {
     
     var useDefaultLabel: Bool
-    var action: () -> Void
+//    var action: () -> Void
     var label: () -> Label
     
     /// Create a Settings Button
@@ -21,11 +22,11 @@ public struct SettingsButton<Label: View>: View {
     ///   - label: The label of Settings button
     public init(
         useDefaultLabel: Bool = false,
-        followingAction: @escaping () -> Void = {},
+//        followingAction: @escaping () -> Void = {},
         @ViewBuilder label: @escaping () -> Label
     ) {
         self.useDefaultLabel = useDefaultLabel
-        self.action = followingAction
+//        self.action = followingAction
         self.label = label
     }
     
@@ -41,7 +42,7 @@ public struct SettingsButton<Label: View>: View {
                 Button(action: togglePreferenceView, label: label)
             }
         }
-        .onAppear(perform: action)
+//        .onAppear(perform: action)
     }
     
     public func togglePreferenceView() {

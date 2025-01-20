@@ -26,9 +26,7 @@ public enum TryTaskErrorHandler {
 struct TryTaskViewModifier: ViewModifier {
 #if canImport(SwiftyAlert)
     @Environment(\.alert) var alert
-#if canImport(AlertToast)
     @Environment(\.alertToast) var alertToast
-#endif
 #endif
     var priority: TaskPriority
     var errorHandler: TryTaskErrorHandler
@@ -57,10 +55,8 @@ struct TryTaskViewModifier: ViewModifier {
 #if canImport(SwiftyAlert)
                         case .alert:
                             alert(error: error)
-#if canImport(AlertToast)
                         case .alertToast:
                             alertToast(.init(error: error))
-#endif
 #endif
                         case .print:
                             print(error)

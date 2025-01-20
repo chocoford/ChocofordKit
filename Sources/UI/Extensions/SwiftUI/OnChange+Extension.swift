@@ -60,11 +60,7 @@ struct DebounceOnChangeModifier<V: Equatable>: ViewModifier {
             }
         }
         .onReceive(passthroughSubject.debounce(for: .nanoseconds(Int(interval * 1e+9)), scheduler: RunLoop.current)) { output in
-            if #available(macOS 14.0, iOS 17.0, *) {
-                self.action(output.0, output.1)
-            } else {
-                self.action(output.0, output.1)
-            }
+            self.action(output.0, output.1)
         }
     }
 }
@@ -208,7 +204,7 @@ extension View {
         initial: Bool = false,
         throttle: TimeInterval,
         latest: Bool,
-        action: @escaping (_ oldVal: V, _ newVal: V) -> Void
+        action: @escaping (_ oldValue: V, _ newValue: V) -> Void
     ) -> some View {
         modifier(ThrottleOnChangeModifier(value: value, initial: initial, interval: throttle, latest: latest, action: action))
     }

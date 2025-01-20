@@ -9,29 +9,21 @@
 import AppKit
 
 extension NSImage {
-//    func preparingThumbnail(of size: CGSize) -> NSImage? {
-//        preparingThumbnail(of: max(size.width, size.height))
-//    }
-//    
-//    func preparingThumbnail(of size: CGFloat) -> NSImage? {
-////        var start = Date()
-//        guard let data = self.pngData else { return nil }
-////        print("pngData taking: ", Date().timeIntervalSince(start))
-////        start = Date()
-//        guard let cgImage = CGImage.createThumbnail(from: data, size: size) else { return nil }
-////        print("preparingThumbnail taking: ", Date().timeIntervalSince(start))
-//        return NSImage(cgImage: cgImage, size: .zero)
-//    }
-    
-    public func preparingThumbnail(of size: CGSize) -> NSImage? {
+    public func preparingThumbnail(of size: CGSize, keepRatio: Bool = true) -> NSImage? {
         let start = Date()
-        let originalSize = self.size
+        
+        let originalSize: CGSize
+        
+        if keepRatio {
+            originalSize = self.size 
+        } else {
+            originalSize = self.size
+        }
         let fromRect = NSMakeRect(0, 0, originalSize.width, originalSize.height)
         let smallerImage = NSImage(size: size, flipped: false) { rect in
             self.draw(in: rect, from: fromRect, operation: .copy, fraction: 1)
             return true
         }
-//        print("byPreparingThumbnail taking: ", Date().timeIntervalSince(start))
         return smallerImage
     }
     
