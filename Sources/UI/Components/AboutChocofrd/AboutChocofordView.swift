@@ -52,10 +52,7 @@ public struct AboutChocofordView: View {
                 } else {
                     LazyVGrid(
                         columns: [
-                            GridItem(.fixed(80)),
-                            GridItem(.fixed(80)),
-                            GridItem(.fixed(80)),
-                            GridItem(.fixed(80))
+                            GridItem(.adaptive(minimum: 80, maximum: 80)),
                         ]
                     ) {
                         myApps()

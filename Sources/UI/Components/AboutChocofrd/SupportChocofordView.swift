@@ -8,7 +8,7 @@
 import SwiftUI
 import StoreKit
 
-struct SupportChocofordView: View {
+public struct SupportChocofordView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dismiss) var dismiss
     @Environment(\.alertToast) var alertToast
@@ -17,10 +17,14 @@ struct SupportChocofordView: View {
 //    var privacyPolicy: URL?
 //    var termsOfUse: URL?
     
+    public init(isAppStore: Bool) {
+        self.isAppStore = isAppStore
+    }
+    
     @State private var isSupportHistoryPresented = false
     @State private var purchaseHistory: [StoreKit.Transaction] = []
 
-    var body: some View {
+    public var body: some View {
         ViewSizeReader { size in
             ZStack {
                 // Main content
@@ -324,16 +328,15 @@ struct SupportChocofordView: View {
     @MainActor @ViewBuilder
     private func purchaseItems() -> some View {
         HStack {
-            // Buy me a coffee
-            Link(destination: URL(string: "https://buymeacoffee.com/Chocoford")!) {
+            Link(destination: URL(string: "https://www.chocoford.com/donation")!) {
 #if canImport(AppKit)
-                if let nsImage = NSImage(contentsOfFile: Bundle.module.path(forResource: "bmc-button", ofType: "png")!) {
+                if let nsImage = NSImage(contentsOfFile: Bundle.module.path(forResource: "Donation Button", ofType: "png")!) {
                     Image(nsImage: nsImage)
                         .resizable()
                         .scaledToFit()
                 }
 #elseif canImport(UIKit)
-                if let uiImage = UIImage(contentsOfFile: Bundle.module.path(forResource: "bmc-button", ofType: "png")!) {
+                if let uiImage = UIImage(contentsOfFile: Bundle.module.path(forResource: "Donation Button", ofType: "png")!) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFit()

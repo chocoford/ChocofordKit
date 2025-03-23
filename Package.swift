@@ -18,12 +18,12 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/chocoford/SwiftyAlert.git", branch: "dev"),
         .package(url: "https://github.com/ohitsdaniel/ShapeBuilder.git", from: "0.1.0"),
-        .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", .upToNextMajor(from: "1.5.1")),
         .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", .upToNextMajor(from: "1.3.0")),
         .package(url: "https://github.com/elai950/AlertToast.git", branch: "master"),
         .package(url: "https://github.com/stevengharris/SplitView.git", from: "3.0.0"),
         .package(url: "https://github.com/fatbobman/SwiftUIOverlayContainer.git", from: "2.0.0"),
-        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "5.3.0")),
+        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "6.2.0")),
         .package(url: "https://github.com/lorenzofiamingo/swiftui-cached-async-image.git", .upToNextMajor(from: "2.1.1")),
         .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.2.2")
     ],
