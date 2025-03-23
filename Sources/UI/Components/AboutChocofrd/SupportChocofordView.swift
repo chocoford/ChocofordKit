@@ -20,6 +20,8 @@ public struct SupportChocofordView: View {
     public init(isAppStore: Bool) {
         self.isAppStore = isAppStore
     }
+
+    var config = Config()
     
     @State private var isSupportHistoryPresented = false
     @State private var purchaseHistory: [StoreKit.Transaction] = []
@@ -60,7 +62,7 @@ public struct SupportChocofordView: View {
                         }
                     }
                 }
-                .padding(40)
+                .padding(config.contentPadding)
                 .offset(y: isSupportHistoryPresented ? -size.height : 0)
                 .animation(.smooth, value: isSupportHistoryPresented)
                 
@@ -75,7 +77,7 @@ public struct SupportChocofordView: View {
                                 )
                             }
                         }
-                        .padding(40)
+                        .padding(config.contentPadding)
                     }
                     .overlay(alignment: .topLeading) {
                         Button {
@@ -346,6 +348,17 @@ public struct SupportChocofordView: View {
             .buttonStyle(.plain)
             .frame(width: nil, height: 40)
         }
+    }
+}
+
+extension SupportChocofordView {
+    class Config {
+        var contentPadding: CGFloat = .zero
+    }
+    
+    public func contentPadding(_ padding: CGFloat) -> SupportChocofordView {
+        self.config.contentPadding = padding
+        return self
     }
 }
 

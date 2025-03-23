@@ -71,6 +71,7 @@ public struct AboutChocofordView: View {
             SupportChocofordView(
                 isAppStore: isAppStore
             )
+            .contentPadding(40)
             .frame(width: horizontalSizeClass == .compact ? nil : 560)
             .swiftyAlert()
         }
