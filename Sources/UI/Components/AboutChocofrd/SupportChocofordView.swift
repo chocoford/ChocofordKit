@@ -30,82 +30,99 @@ public struct SupportChocofordView: View {
         ViewSizeReader { size in
             ZStack {
                 // Main content
-                VStack(spacing: 20){
-                    Text("Your support is the biggest motivation for me")
-                        .font(.title)
-                        .padding(.bottom, 20)
-                    if isAppStore {
-                        purchaseItemsAppStore()
-                    } else {
-                        purchaseItems()
-                    }
-                    HStack {
-                        if isAppStore {
-                            Button {
-                                isSupportHistoryPresented.toggle()
-                            } label: {
-                                Text("Support history")
-                            }
-                            
-                            AsyncButton {
-                                try await AppStore.sync()
-                            } label: {
-                                Text("Restore purchase")
-                            }
-                            .buttonStyle(.borderless)
-                        }
-                        Spacer()
-                        Button {
-                            dismiss()
-                        } label: {
-                            Text("Close")
-                        }
-                    }
-                }
-                .padding(config.contentPadding)
-                .offset(y: isSupportHistoryPresented ? -size.height : 0)
-                .animation(.smooth, value: isSupportHistoryPresented)
+                content()
+                    .padding(config.contentPadding)
+                    .offset(y: isSupportHistoryPresented ? -size.height : 0)
+                    .animation(.smooth, value: isSupportHistoryPresented)
                 
                 if isAppStore {
-                    // Purchase history
-                    ScrollView {
-                        LazyVStack(spacing: 10) {
-                            ForEach(purchaseHistory, id: \.self) { transaction in
-                                PurchaseHistoryItemView(
-                                    allProducts: Set(suppoprts + memberships),
-                                    transaction: transaction
-                                )
-                            }
-                        }
-                        .padding(config.contentPadding)
+                    purchaseHistoryContent()
+                        .offset(y: isSupportHistoryPresented ? 0 : size.height)
+                }
+            }
+        }
+        .onChange(of: isSupportHistoryPresented) { newValue in
+            self.config.isSupportHistoryPresented?.wrappedValue = newValue
+        }
+        .onChange(of: self.config.isSupportHistoryPresented?.wrappedValue) { newValue in
+            if let newValue {
+                self.isSupportHistoryPresented = newValue
+            }
+        }
+    }
+    
+    @MainActor @ViewBuilder
+    private func content() -> some View {
+        VStack(spacing: 20){
+            Text("Your support is the biggest motivation for me")
+                .font(.title)
+                .padding(.bottom, 20)
+            if isAppStore {
+                purchaseItemsAppStore()
+            } else {
+                purchaseItems()
+            }
+            
+            Spacer(minLength: 0)
+            
+            HStack {
+                if isAppStore {
+                    Button {
+                        isSupportHistoryPresented.toggle()
+                    } label: {
+                        Text("Support history")
                     }
-                    .overlay(alignment: .topLeading) {
-                        Button {
-                            isSupportHistoryPresented.toggle()
-                        } label: {
-                            Label("Back", systemSymbol: .chevronUp)
-                                .labelStyle(.iconOnly)
-                        }
-                        .buttonStyle(.text(square: true))
-                        .padding()
+                    
+                    AsyncButton {
+                        try await AppStore.sync()
+                    } label: {
+                        Text("Restore purchase")
                     }
-                    .offset(y: isSupportHistoryPresented ? 0 : size.height)
-                    .animation(.smooth, value: isSupportHistoryPresented)
-                    .task {
-                        do {
-                            var iterator = StoreKit.Transaction.all.makeAsyncIterator()
-                            while let result = await iterator.next() {
-                                switch result {
-                                    case .unverified(let signedType, let verificationError):
-                                        break
-                                    case .verified(let signedType):
-                                        self.purchaseHistory.append(signedType)
-                                }
-                            }
-                        } catch {
-                            alertToast(error)
-                        }
-                    }
+                    .buttonStyle(.borderless)
+                }
+                Spacer()
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Close")
+                }
+            }
+        }
+    }
+    
+    @MainActor @ViewBuilder
+    private func purchaseHistoryContent() -> some View {
+        // Purchase history
+        ScrollView {
+            LazyVStack(spacing: 10) {
+                ForEach(purchaseHistory, id: \.self) { transaction in
+                    PurchaseHistoryItemView(
+                        allProducts: Set(suppoprts + memberships),
+                        transaction: transaction
+                    )
+                }
+            }
+            .padding(config.contentPadding)
+        }
+        .overlay(alignment: .topLeading) {
+            Button {
+                isSupportHistoryPresented.toggle()
+            } label: {
+                Label("Back", systemSymbol: .chevronUp)
+                    .labelStyle(.iconOnly)
+            }
+            .buttonStyle(.text(square: true))
+            .padding(config.contentPadding)
+        }
+        .animation(.smooth, value: isSupportHistoryPresented)
+        .task {
+            var iterator = StoreKit.Transaction.all.makeAsyncIterator()
+            while let result = await iterator.next() {
+                switch result {
+                    case .unverified:
+                        break
+                    case .verified(let signedType):
+                        self.purchaseHistory.append(signedType)
                 }
             }
         }
@@ -354,10 +371,16 @@ public struct SupportChocofordView: View {
 extension SupportChocofordView {
     class Config {
         var contentPadding: CGFloat = .zero
+        var isSupportHistoryPresented: Binding<Bool>? = nil
     }
     
     public func contentPadding(_ padding: CGFloat) -> SupportChocofordView {
         self.config.contentPadding = padding
+        return self
+    }
+    
+    public func bindingSupportHistoryPresentedValue(_ value: Binding<Bool>) -> Self {
+        self.config.isSupportHistoryPresented = value
         return self
     }
 }
