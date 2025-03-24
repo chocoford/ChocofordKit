@@ -175,12 +175,49 @@ public struct AboutChocofordView: View {
                         .frame(width: height - 10, height: height - 10)
                         .clipShape(Circle())
                 }
-                
                 VStack(alignment: .leading) {
                     Text("Chocoford")
                         .font(.title)
-                    VStack {
-                        myLinks()
+                    if #available(macOS 13.0, iOS 16.0, *) {
+                        FlexStack {
+                            myLinks()
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                // twitter
+                                fastLinkChip(url: URL(string: "https://x.com/Chocoford_")!) {
+                                    HStack(spacing: 4) {
+                                        TwitterLogo()
+                                            .scaledToFit()
+                                            .frame(height: 12)
+                                        Text("Chocoford")
+                                            .font(.footnote)
+                                    }
+                                }
+                                fastLinkChip(url: URL(string: "https://github.com/chocoford")!) {
+                                    HStack(spacing: 4) {
+                                        GithubLogo()
+                                            .scaledToFit()
+                                            .frame(height: 12)
+                                        Text("Chocoford")
+                                            .font(.footnote)
+                                    }
+                                }
+                            }
+                            fastLinkChip(url: URL(string: "https://discord.gg/VMJBD6rFA7")!) {
+                                HStack(spacing: 4) {
+                                    ZStack {
+                                        DiscordLogo()
+                                            .scaledToFit()
+                                            .frame(height: 14)
+                                    }
+                                    .frame(height: 12)
+                                    Text("Chocoford's Server")
+                                        .font(.footnote)
+                                }
+                            }
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
