@@ -12,6 +12,7 @@ import SwiftyAlert
 
 public struct AboutChocofordView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.openURL) private var openURL
     
     var isAppStore: Bool
 //    var privacyPolicy: URL?
@@ -251,16 +252,19 @@ public struct AboutChocofordView: View {
         url: URL,
         @ViewBuilder _ content: () -> Content
     ) -> some View {
-        Link(destination: url) {
+        Button {
+            openURL(url)
+        } label: {
             content()
+                .foregroundStyle(.blue)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background {
                     Capsule()
-                        .fill(.blue.opacity(0.2))
+                        .fill(.blue.opacity(0.1))
                 }
         }
-        .clipped()
+        .buttonStyle(.plain)
     }
 }
 
