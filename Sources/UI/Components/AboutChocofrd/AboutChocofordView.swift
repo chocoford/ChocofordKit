@@ -112,7 +112,7 @@ public struct AboutChocofordView: View {
                     .font(.footnote)
             }
         }
-        fastLinkChip(url: URL(string: "https://discord.gg/VMJBD6rFA7")!) {
+        fastLinkChip(url: URL(string: "https://discord.gg/W6PERqKRMd")!) {
             HStack(spacing: 4) {
                 ZStack {
                     DiscordLogo()
@@ -257,10 +257,10 @@ public struct AboutChocofordView: View {
                 .padding(.vertical, 3)
                 .background {
                     Capsule()
-                        .fill(.background)
+                        .fill(.blue.opacity(0.2))
                 }
-            
         }
+        .clipped()
     }
 }
 

@@ -259,7 +259,7 @@ public struct SupportChocofordView: View {
                 }
             }
             
-            transactionUpdates = detach {
+            transactionUpdates = Task.detached {
                 for await update in StoreKit.Transaction.updates {
                     if let transaction = try? update.payloadValue {
                         await fetchActiveTransactions()
