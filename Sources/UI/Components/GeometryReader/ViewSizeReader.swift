@@ -21,21 +21,37 @@ public struct ViewSizeReader<Content: View>: View {
         self.content = content
     }
     
+    var config = Config()
+    
     @State private var size: CGSize = SizeKey.defaultValue
     
     public var body: some View {
         content(size)
             .background {
                 GeometryReader { proxy in
-                    Color.clear
-                        .watchImmediately(of: proxy.size) { size = $0 }
-                        .onChange(of: proxy.size) { newValue in
-                            size = newValue
+                    ZStack {
+                        if config.ignoreSafeArea {
+                            Color.clear
+                                .ignoresSafeArea()
+                        } else {
+                            Color.clear
                         }
-//                        .preference(key: SizeKey.self, value: proxy.size)
+                    }
+                    .watchImmediately(of: proxy.size) { size = $0 }
+                    .onChange(of: proxy.size) { newValue in
+                        size = newValue
+                    }
                 }
             }
-//            .onPreferenceChange(SizeKey.self) { size = $0 }
+    }
+    
+    class Config {
+        var ignoreSafeArea: Bool = false
+    }
+    
+    public func ignoreSafeArea() -> Self {
+        self.config.ignoreSafeArea = true
+        return self
     }
 }
 

@@ -40,8 +40,8 @@ public struct SupportChocofordView: View {
                         .offset(y: isSupportHistoryPresented ? 0 : size.height)
                 }
             }
-            .ignoresSafeArea()
         }
+        .ignoresSafeArea()
         .onChange(of: isSupportHistoryPresented) { newValue in
             self.config.isSupportHistoryPresented?.wrappedValue = newValue
         }
