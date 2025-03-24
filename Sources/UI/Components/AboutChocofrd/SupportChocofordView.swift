@@ -54,7 +54,7 @@ public struct SupportChocofordView: View {
     
     @MainActor @ViewBuilder
     private func content() -> some View {
-        VStack(spacing: 20){
+        VStack(spacing: 20) {
             Text("Your support is the biggest motivation for me")
                 .font(.title)
                 .padding(.bottom, 20)
@@ -63,17 +63,14 @@ public struct SupportChocofordView: View {
             } else {
                 purchaseItems()
             }
-            
-            Spacer(minLength: 0)
-            
-            HStack {
-                if isAppStore {
+            if isAppStore {
+                HStack {
                     Button {
                         isSupportHistoryPresented.toggle()
                     } label: {
                         Text("Support history")
                     }
-                    
+                    Spacer()
                     AsyncButton {
                         try await AppStore.sync()
                     } label: {
@@ -81,13 +78,9 @@ public struct SupportChocofordView: View {
                     }
                     .buttonStyle(.borderless)
                 }
-                Spacer()
-                Button {
-                    dismiss()
-                } label: {
-                    Text("Close")
-                }
             }
+
+            Spacer(minLength: 0)
         }
     }
     
