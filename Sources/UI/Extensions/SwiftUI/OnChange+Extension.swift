@@ -49,8 +49,13 @@ struct DebounceOnChangeModifier<V: Equatable>: ViewModifier {
         Group {
             if #available(macOS 14.0, iOS 17.0, *) {
                 content
-                    .onChange(of: value, initial: initial) { oldValue, newValue in
+                    .onChange(of: value, initial: false) { oldValue, newValue in
                         passthroughSubject.send((oldValue, newValue))
+                    }
+                    .onAppear {
+                        if initial {
+                            self.action(value, value)
+                        }
                     }
             } else {
                 content
@@ -59,7 +64,7 @@ struct DebounceOnChangeModifier<V: Equatable>: ViewModifier {
                     }
                     .onAppear {
                         if initial {
-                            passthroughSubject.send((value, value))
+                            self.action(value, value)
                         }
                     }
             }
