@@ -57,6 +57,11 @@ struct DebounceOnChangeModifier<V: Equatable>: ViewModifier {
                     .onChange(of: value) { newValue in
                         passthroughSubject.send((newValue, newValue))
                     }
+                    .onAppear {
+                        if initial {
+                            passthroughSubject.send((value, value))
+                        }
+                    }
             }
         }
         .onReceive(passthroughSubject.debounce(for: .nanoseconds(Int(interval * 1e+9)), scheduler: RunLoop.current)) { output in
