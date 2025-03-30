@@ -54,7 +54,7 @@ struct WidthProxyModifier: ViewModifier {
     }
 }
 
-struct WithContainerSize<Content: View>: View {
+public struct WithContainerSize<Content: View>: View {
     @Environment(\.containerSize) private var containerSize
     
     var content: (_ containerSize: CGSize) -> Content
@@ -65,7 +65,7 @@ struct WithContainerSize<Content: View>: View {
         self.content = content
     }
     
-    var body: some View {
+    public var body: some View {
         content(containerSize)
     }
 }
