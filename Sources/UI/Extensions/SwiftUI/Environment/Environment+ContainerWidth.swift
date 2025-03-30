@@ -53,3 +53,19 @@ struct WidthProxyModifier: ViewModifier {
             .environment(\.containerSize, size)
     }
 }
+
+struct WithContainerSize<Content: View>: View {
+    @Environment(\.containerSize) private var containerSize
+    
+    var content: (_ containerSize: CGSize) -> Content
+    
+    public init(
+        @ViewBuilder content: @escaping (_ containerSize: CGSize) -> Content
+    ) {
+        self.content = content
+    }
+    
+    var body: some View {
+        content(containerSize)
+    }
+}
