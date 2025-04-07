@@ -403,7 +403,7 @@ struct PhotoUploader_Previews: PreviewProvider {
                         }
                         .size(50)
                     } else {
-                        AvatarView(urlString: nil, fallbackText: "T")
+                        AvatarView(nil, fallbackText: "T")
                             .size(50)
                     }
                 }

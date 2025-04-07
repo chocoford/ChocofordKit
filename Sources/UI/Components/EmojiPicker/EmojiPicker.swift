@@ -7,10 +7,10 @@
 
 import SwiftUI
 import ChocofordEssentials
-import SwiftUIOverlayContainer
+//import SwiftUIOverlayContainer
 
 public struct EmojiPicker<Content: View>: View {
-    @Environment(\.overlayContainerManager) var telepoter
+//    @Environment(\.overlayContainerManager) var telepoter
 
     var content: () -> Content
     var onSelected: (_ emoji: String) -> Void
@@ -100,7 +100,7 @@ public struct EmojiPicker<Content: View>: View {
 //#endif
 
 struct EmojiKeyboardMaskView: View {
-    @Environment(\.overlayContainer) var container
+//    @Environment(\.overlayContainer) var container
 
     var onTap: () -> Void
     
@@ -110,13 +110,13 @@ struct EmojiKeyboardMaskView: View {
             .ignoresSafeArea()
             .onTapGesture {
                 onTap()
-                container.dismiss()
+//                container.dismiss()
             }
             .highPriorityGesture(
                 DragGesture(minimumDistance: 0.1)
                     .onChanged({ _ in
                         onTap()
-                        container.dismiss()
+//                        container.dismiss()
                     })
             )
     }

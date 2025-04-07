@@ -29,7 +29,7 @@ public struct AvatarsGroupView<T: AvatarUserRepresentable>: View {
                                fallbackText: String(member.name?.first ?? "?"))
                     .size(20)
                 } else if let urlString = member.avatarURL as? String {
-                    AvatarView(urlString: urlString,
+                    AvatarView(URL(string: urlString),
                                fallbackText: String(member.name?.first ?? "?"))
                     .size(20)
                 } else {

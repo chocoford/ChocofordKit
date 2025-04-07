@@ -7,7 +7,7 @@
 
 import SwiftUI
 import ShapeBuilder
-import SDWebImageSwiftUI
+import Kingfisher
 
 public protocol AvatarUserRepresentable: Hashable, Identifiable {
     associatedtype AvatarURL
@@ -18,33 +18,21 @@ public protocol AvatarUserRepresentable: Hashable, Identifiable {
 
 
 
-public struct AvatarView<V: View>: View {
+public struct AvatarView: View {
     var url: URL?
-    var fallbackView: () -> V
+    var fallbackView: AnyView
     var config: Config = .init()
     private var shouldAdjustTextSize = false
     
-    public init<S: StringProtocol>(_ url: URL? = nil, fallbackText: S) where V == Text {
+    public init<S: StringProtocol>(_ url: URL? = nil, fallbackText: S) {
         self.url = url
-        self.fallbackView = {
-            Text(fallbackText)
-        }
+        self.fallbackView = AnyView(Text(fallbackText))
         self.shouldAdjustTextSize = true
     }
     
-    public init<S: StringProtocol>(urlString: String?, fallbackText: S) where V == Text {
-        self.init(URL(string: urlString ?? ""), fallbackText: fallbackText)
-        self.shouldAdjustTextSize = true
-    }
-    
-    public init(_ url: URL? = nil, @ViewBuilder content: @escaping () -> V) {
+    public init<V: View>(_ url: URL? = nil, @ViewBuilder content: @escaping () -> V) {
         self.url = url
-        self.fallbackView = content
-    }
-    
-    public init(urlString: String?, @ViewBuilder content: @escaping () -> V) {
-        self.url = URL(string: urlString ?? "")
-        self.fallbackView = content
+        self.fallbackView = AnyView(content())
     }
     
     @ShapeBuilder
@@ -62,18 +50,17 @@ public struct AvatarView<V: View>: View {
     }
     
     public var body: some View {
-        WebImage(url: url, options: [.lowPriority, .scaleDownLargeImages])
-            .resizable()
+        KFImage(url)
             .placeholder {
                 clipShape
                     .fill(self.config.bgColor)
                     .overlay(alignment: .center) {
                         if shouldAdjustTextSize {
-                            fallbackView()
+                            fallbackView
                                 .font(.system(size: config.size / 2))
                                 .foregroundColor(.white)
                         } else {
-                            fallbackView()
+                            fallbackView
                         }
                     }
             }
@@ -118,14 +105,11 @@ public extension AvatarView {
 }
 
 #if DEBUG
-struct AvatarView_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack {
-            ForEach(Array(stride(from: 10, through: 100, by: 10)), id: \.self) { size in
-                AvatarView(nil, fallbackText: "A")
-            }
+#Preview {
+    VStack {
+        ForEach(Array(stride(from: 10, through: 100, by: 10)), id: \.self) { size in
+            AvatarView(nil, fallbackText: "A")
         }
-        
     }
 }
 #endif
