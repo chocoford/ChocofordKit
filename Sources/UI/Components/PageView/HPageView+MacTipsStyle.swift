@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
-import ChocofordEssentials
 import AVKit
+
+import ChocofordEssentials
 import SwiftUIIntrospect
 import SFSafeSymbols
-import CachedAsyncImage
+import Kingfisher
 
 public struct MacTipsPageViewItem: Hashable {
     public var image: String?
@@ -115,13 +116,9 @@ public struct MacTipsPageViewContent: View {
     func mediaContent() -> some View {
         if let image = item.image {
             if image.hasPrefix("http"), let url = URL(string: image) {
-                CachedAsyncImage(url: url) {
-                    $0
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    
-                }
+                KFImage(url)
+                    .resizable()
+                    .scaledToFill()
             } else {
                 Image(image)
                     .resizable()
