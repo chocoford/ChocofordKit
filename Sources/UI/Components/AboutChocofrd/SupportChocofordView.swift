@@ -55,15 +55,27 @@ public struct SupportChocofordView: View {
     @MainActor @ViewBuilder
     private func content() -> some View {
         VStack(spacing: 20) {
-            Text("Your support is the biggest motivation for me")
-                .font(.title)
-                .padding(.bottom, 20)
-            if isAppStore {
-                purchaseItemsAppStore()
-            } else {
-                purchaseItems()
+            VStack(spacing: 10) {
+                Text("Your support is the biggest motivation for me")
+                    .font(.title)
+                HStack {
+                    if let privacyPolicy = URL(string: "https://chocoford.com/donation/privacy") {
+                        Link("Privacy Policy", destination: privacyPolicy)
+                    }
+                    Text("·")
+                    if let termsOfUse = URL(string: "https://chocoford.com/donation/terms") {
+                        Link("Terms of Use", destination: termsOfUse)
+                    }
+                }
+                .font(.footnote)
             }
+            .padding(.bottom, 20)
+            
             if isAppStore {
+                
+                
+                purchaseItemsAppStore()
+                
                 HStack {
                     Button {
                         isSupportHistoryPresented.toggle()
@@ -78,6 +90,8 @@ public struct SupportChocofordView: View {
                     }
                     .buttonStyle(.borderless)
                 }
+            } else {
+                purchaseItems()
             }
 
             Spacer(minLength: 0)
