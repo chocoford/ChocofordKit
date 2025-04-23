@@ -81,7 +81,7 @@ public struct AboutChocofordView: View {
                     Image(systemSymbol: .xmark)
                 }
                 .buttonStyle(.text(square: true))
-                .padding(40)
+                .padding(20)
             }
             .swiftyAlert()
         }
