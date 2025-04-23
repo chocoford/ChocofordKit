@@ -73,6 +73,7 @@ public struct AboutChocofordView: View {
                 isAppStore: isAppStore
             )
             .contentPadding(40)
+            .frame(width: horizontalSizeClass == .compact ? nil : 560)
             .overlay(alignment: .topLeading) {
                 Button {
                     isSupportSheetPresented.toggle()
@@ -80,9 +81,8 @@ public struct AboutChocofordView: View {
                     Image(systemSymbol: .xmark)
                 }
                 .buttonStyle(.text(square: true))
-                .padding(20)
+                .padding(40)
             }
-            .frame(width: horizontalSizeClass == .compact ? nil : 560)
             .swiftyAlert()
         }
     }
