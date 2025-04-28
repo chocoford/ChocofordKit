@@ -47,9 +47,9 @@ public struct EmojiPicker<Content: View>: View {
                     NSApp.orderFrontCharacterPalette(nil)
                 }
 #elseif os(iOS)
-                telepoter.show(view: EmojiKeyboardMaskView {
-                    textFieldFocused = false
-                }, in: "teleport", using: TeleportConfiguration())
+//                telepoter.show(view: EmojiKeyboardMaskView {
+//                    textFieldFocused = false
+//                }, in: "teleport", using: TeleportConfiguration())
 #endif
             } label: {
                 content()
