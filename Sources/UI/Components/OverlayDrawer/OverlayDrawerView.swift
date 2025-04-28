@@ -51,11 +51,11 @@ public struct OverlayDrawerViewModier<Drawer: View>: ViewModifier {
         if isPresent {
             ZStack(alignment: alignment) {
                 Color.black.opacity(0.6)
-                    .transition(.fade)
+                    .transition(.opacity)
                     .onTapGesture {
                         isPresent = false
                     }
-                    .transition(.fade)
+                    .transition(.opacity)
 
                 drawerView()
                     .padding(.top, .safeArearTop)
