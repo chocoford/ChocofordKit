@@ -112,6 +112,7 @@ struct AutoCompleteModifier: ViewModifier {
     }
     
     private func addKeyDownListener() {
+#if canImport(AppKit)
         keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             guard isFocused else { return event }
             print(event.keyCode)
@@ -131,12 +132,15 @@ struct AutoCompleteModifier: ViewModifier {
             }
             return event
         }
+#endif
     }
     
     private func removeKeyDownLinstener() {
+#if canImport(AppKit)
         if let keydownListener {
             NSEvent.removeMonitor(keydownListener)
         }
+#endif
     }
 }
 
