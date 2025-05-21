@@ -20,7 +20,7 @@ public extension CGFloat {
             .first?.windows
             .filter({$0.isKeyWindow}).first
         
-        return (keyWindow?.safeAreaInsets.top)!
+        return (keyWindow?.safeAreaInsets.top) ?? 0
         
     }
     #endif
