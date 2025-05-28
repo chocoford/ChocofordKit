@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import Logging
 
 public struct WithAsyncValue<Content: View, Value>: View {
     @Environment(\.alertToast) var alertToast
+    
+    private let logger = Logger(label: "WithAsyncValue")
     
     var asyncValue: @Sendable () async throws -> Value?
     var content: (Value?, Error?) -> Content
@@ -43,6 +46,7 @@ public struct WithAsyncValue<Content: View, Value>: View {
         content(value, error)
             .onAppear {
                 Task.detached {
+                    logger.info("\(Thread.current)")
                     do {
                         let value = try await asyncValue()
                         await MainActor.run {
