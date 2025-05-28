@@ -8,7 +8,7 @@
 import SwiftUI
 import Logging
 
-public struct WithAsyncValue<Content: View, Value>: View {
+public struct WithAsyncValue<Content: View, Value: Sendable>: View {
     @Environment(\.alertToast) var alertToast
     
     private let logger = Logger(label: "WithAsyncValue")
