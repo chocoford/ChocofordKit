@@ -10,7 +10,7 @@ import SwiftUI
 public struct WithAsyncValue<Content: View, Value>: View {
     @Environment(\.alertToast) var alertToast
     
-    var asyncValue: () async throws -> Value
+    var asyncValue: @Sendable () async throws -> Value?
     var content: (Value?, Error?) -> Content
     var errorHandler: ((Error) -> Void)?
     
@@ -18,7 +18,7 @@ public struct WithAsyncValue<Content: View, Value>: View {
     @State private var error: Error?
     
     public init(
-        _ asyncValue: @escaping () async throws -> Value,
+        _ asyncValue: @Sendable @escaping () async throws -> Value?,
         @ViewBuilder content: @escaping (Value?, Error?) -> Content,
         errorHandler: ((Error) -> Void)? = nil
     ) {
@@ -28,7 +28,7 @@ public struct WithAsyncValue<Content: View, Value>: View {
     }
     
     public init(
-        _ asyncValue: @escaping () async throws -> Value,
+        _ asyncValue: @Sendable @escaping () async throws -> Value?,
         @ViewBuilder content: @escaping (Value?) -> Content,
         errorHandler: ((Error) -> Void)? = nil
     ) {
@@ -41,15 +41,22 @@ public struct WithAsyncValue<Content: View, Value>: View {
     
     public var body: some View {
         content(value, error)
-            .task {
-                do {
-                    self.value = try await asyncValue()
-                } catch {
-                    self.error = error
-                    if let errorHandler {
-                        errorHandler(error)
-                    } else {
-                        alertToast(error)
+            .onAppear {
+                Task.detached {
+                    do {
+                        let value = try await asyncValue()
+                        await MainActor.run {
+                            self.value = value
+                        }
+                    } catch {
+                        await MainActor.run {
+                            self.error = error
+                            if let errorHandler {
+                                errorHandler(error)
+                            } else {
+                                alertToast(error)
+                            }
+                        }
                     }
                 }
             }
