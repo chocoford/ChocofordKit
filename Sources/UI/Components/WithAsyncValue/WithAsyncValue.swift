@@ -20,6 +20,8 @@ public struct WithAsyncValue<Content: View, Value: Sendable>: View {
     @State private var value: Value?
     @State private var error: Error?
     
+    @State private var getValueTask: Task<Void, Never>? = nil
+    
     public init(
         _ asyncValue: @Sendable @escaping () async throws -> Value?,
         @ViewBuilder content: @escaping (Value?, Error?) -> Content,
@@ -45,7 +47,7 @@ public struct WithAsyncValue<Content: View, Value: Sendable>: View {
     public var body: some View {
         content(value, error)
             .onAppear {
-                Task.detached {
+                self.getValueTask = Task.detached {
                     logger.info("\(Thread.current)")
                     do {
                         let value = try await asyncValue()
@@ -63,6 +65,9 @@ public struct WithAsyncValue<Content: View, Value: Sendable>: View {
                         }
                     }
                 }
+            }
+            .onDisappear {
+                self.getValueTask?.cancel()
             }
     }
 }
