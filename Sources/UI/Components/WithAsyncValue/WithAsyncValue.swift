@@ -67,6 +67,7 @@ public struct WithAsyncValue<Content: View, Value: Sendable>: View {
                 }
             }
             .onDisappear {
+                logger.info("on Disappear, cancel task...")
                 self.getValueTask?.cancel()
             }
     }
