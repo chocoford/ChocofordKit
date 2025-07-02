@@ -149,7 +149,6 @@ public struct LoadableListContentView<
             let keyPath = \EnumeratedSequence<Items>.Element.element
             ForEach(contents, id: keyPath.appending(path: id)) { i, element in
                 content(element)
-                    .id(element[keyPath: id])
                     .onAppear {
                         inScreenElements.append((i, element[keyPath: id]))
                         if i == 0 {

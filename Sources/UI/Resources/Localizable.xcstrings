@@ -7,6 +7,9 @@
     " / " : {
       "shouldTranslate" : false
     },
+    "·" : {
+
+    },
     "%@" : {
       "shouldTranslate" : false
     },
@@ -306,6 +309,9 @@
     "OK" : {
 
     },
+    "Privacy Policy" : {
+
+    },
     "Ready" : {
 
     },
@@ -387,6 +393,9 @@
           }
         }
       }
+    },
+    "Terms of Use" : {
+
     },
     "Toggle Drawer" : {
 

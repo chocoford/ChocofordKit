@@ -45,31 +45,33 @@ public struct WithAsyncValue<Content: View, Value: Sendable>: View {
     }
     
     public var body: some View {
-        content(value, error)
-            .onAppear {
-                self.getValueTask = Task.detached {
-                    logger.info("\(Thread.current)")
-                    do {
-                        let value = try await asyncValue()
-                        await MainActor.run {
-                            self.value = value
-                        }
-                    } catch {
-                        await MainActor.run {
-                            self.error = error
-                            if let errorHandler {
-                                errorHandler(error)
-                            } else {
-                                alertToast(error)
-                            }
+        ZStack {
+            content(value, error)
+        }
+        .onAppear {
+            self.getValueTask = Task.detached {
+                logger.info("\(Thread.current)")
+                do {
+                    let value = try await asyncValue()
+                    await MainActor.run {
+                        self.value = value
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.error = error
+                        if let errorHandler {
+                            errorHandler(error)
+                        } else {
+                            alertToast(error)
                         }
                     }
                 }
             }
-            .onDisappear {
-                logger.info("on Disappear, cancel task...")
-                self.getValueTask?.cancel()
-            }
+        }
+        .onDisappear {
+            logger.info("on Disappear, cancel task...")
+            self.getValueTask?.cancel()
+        }
     }
 }
 
