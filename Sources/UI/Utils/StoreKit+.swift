@@ -8,7 +8,7 @@
 import Foundation
 import StoreKit
 @Sendable
-func isChinaAppStore() async -> Bool {
+public func isChinaAppStore() async -> Bool {
     // ⚠️ Storefront.current 是 async
     if let storefront = await Storefront.current {
         return storefront.countryCode.uppercased() == "CHN"
