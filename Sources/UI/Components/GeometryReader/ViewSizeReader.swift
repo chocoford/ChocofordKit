@@ -57,15 +57,23 @@ public struct ViewSizeReader<Content: View>: View {
 
 
 public struct BindSizeModifier: ViewModifier {
-    var width: Binding<CGFloat>?
-    var height: Binding<CGFloat>?
+    var width: Binding<CGFloat?>?
+    var height: Binding<CGFloat?>?
+    
+    public init(
+        width: Binding<CGFloat?>? = nil,
+        height: Binding<CGFloat?>? = nil
+    ) {
+        self.width = width
+        self.height = height
+    }
     
     public init(
         width: Binding<CGFloat>? = nil,
         height: Binding<CGFloat>? = nil
     ) {
-        self.width = width
-        self.height = height
+        self.width = width.map { Binding<CGFloat?>($0) }
+        self.height = height.map { Binding<CGFloat?>($0) }
     }
     
     public func body(content: Content) -> some View {
@@ -131,6 +139,40 @@ extension View {
     
     @MainActor @ViewBuilder
     public func readHeight(_ height: Binding<CGFloat>) -> some View {
+        modifier(
+            BindSizeModifier(
+                height: Binding(
+                    get: {
+                        height.wrappedValue
+
+                    },
+                    set: { val in
+                        height.wrappedValue = val
+                    }
+                )
+            )
+        )
+    }
+    
+    
+    @MainActor @ViewBuilder
+    public func readWidth(_ width: Binding<CGFloat?>) -> some View {
+        modifier(
+            BindSizeModifier(
+                width: Binding(
+                    get: {
+                        width.wrappedValue
+                    },
+                    set: { val in
+                        width.wrappedValue = val
+                    }
+                )
+            )
+        )
+    }
+    
+    @MainActor @ViewBuilder
+    public func readHeight(_ height: Binding<CGFloat?>) -> some View {
         modifier(
             BindSizeModifier(
                 height: Binding(

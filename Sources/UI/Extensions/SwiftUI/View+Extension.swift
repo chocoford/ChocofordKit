@@ -16,9 +16,11 @@ extension View {
     ///   - transform: The transform to apply to the source `View`.
     /// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
     @ViewBuilder
-    public func `if`<TrueContent: View, FalseContent: View>(_ condition: @autoclosure () -> Bool,
-                                                            transform: (Self) -> TrueContent,
-                                                            falseTransform: (Self) -> FalseContent) -> some View {
+    public func `if`<TrueContent: View, FalseContent: View>(
+        _ condition: @autoclosure () -> Bool,
+        @ViewBuilder transform: (Self) -> TrueContent,
+        @ViewBuilder falseTransform: (Self) -> FalseContent
+    ) -> some View {
         if condition() {
             transform(self)
         } else {
@@ -28,8 +30,10 @@ extension View {
     
     
     @ViewBuilder
-    public func `if`<TrueContent: View>(_ condition: @autoclosure () -> Bool,
-                                        transform: @escaping (Self) -> TrueContent) -> some View {
+    public func `if`<TrueContent: View>(
+        _ condition: @autoclosure () -> Bool,
+        @ViewBuilder transform: @escaping (Self) -> TrueContent
+    ) -> some View {
         if condition() {
             transform(self)
         } else {
