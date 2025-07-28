@@ -156,6 +156,31 @@ extension View {
     
     
     @MainActor @ViewBuilder
+    public func readSize(width: Binding<CGFloat?>, height: Binding<CGFloat?>) -> some View {
+        modifier(
+            BindSizeModifier(
+                width: Binding(
+                    get: {
+                        width.wrappedValue
+                    },
+                    set: { val in
+                        width.wrappedValue = val
+                    }
+                ),
+                height: Binding(
+                    get: {
+                        height.wrappedValue
+
+                    },
+                    set: { val in
+                        height.wrappedValue = val
+                    }
+                )
+            )
+        )
+    }
+    
+    @MainActor @ViewBuilder
     public func readWidth(_ width: Binding<CGFloat?>) -> some View {
         modifier(
             BindSizeModifier(
