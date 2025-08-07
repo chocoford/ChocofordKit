@@ -41,8 +41,8 @@ public extension View {
                     .padding(.horizontal, square ? 4 : 10)
                 
             case .xsmall:
-                padding(.vertical, 2)
-                    .padding(.horizontal, square ? 2 : 6)
+                padding(.vertical, 0)
+                    .padding(.horizontal, square ? 0 : 4)
               
         }
     }
