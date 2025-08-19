@@ -7,6 +7,15 @@
 
 import SwiftUI
 
+struct ViewSizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize { .zero }
+    
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+    
+
 public struct ViewSizeReader<Content: View>: View {
     private struct SizeKey: PreferenceKey {
         static var defaultValue: CGSize { .zero }
@@ -38,9 +47,6 @@ public struct ViewSizeReader<Content: View>: View {
                         }
                     }
                     .watchImmediately(of: proxy.size) { size = $0 }
-                    .onChange(of: proxy.size) { newValue in
-                        size = newValue
-                    }
                 }
             }
     }
