@@ -32,23 +32,11 @@ public struct ViewSizeReader<Content: View>: View {
     
     var config = Config()
     
-    @State private var size: CGSize = SizeKey.defaultValue
+    @State private var size: CGSize = .zero
     
     public var body: some View {
         content(size)
-            .background {
-                GeometryReader { proxy in
-                    ZStack {
-                        if config.ignoreSafeArea {
-                            Color.clear
-                                .ignoresSafeArea()
-                        } else {
-                            Color.clear
-                        }
-                    }
-                    .watchImmediately(of: proxy.size) { size = $0 }
-                }
-            }
+            .readSize($size)
     }
     
     class Config {
@@ -83,21 +71,20 @@ public struct BindSizeModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        ViewSizeReader { size in
-            if #available(iOS 17.0, macOS 14.0, *) {
-                content
-                    .onChange(of: size, initial: true) { _, size in
-                        self.width?.wrappedValue = size.width
-                        self.height?.wrappedValue = size.height
-                    }
-            } else {
-                content
-                    .onChange(of: size) { size in
-                        self.width?.wrappedValue = size.width
-                        self.height?.wrappedValue = size.height
-                    }
+        content
+            .background {
+                GeometryReader { geometry in
+                    Color.clear
+                        .watchImmediately(of: geometry.size) { size in
+                            if let width = width {
+                                width.wrappedValue = size.width
+                            }
+                            if let height = height {
+                                height.wrappedValue = size.height
+                            }
+                        }
+                }
             }
-        }
     }
 }
 
