@@ -18,7 +18,7 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "6.2.0")),
-        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", .upToNextMajor(from: "1.3.0")),
+        .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.4.0-beta.4"),
         .package(url: "https://github.com/ohitsdaniel/ShapeBuilder.git", from: "0.1.0"),
         .package(url: "https://github.com/chocoford/SwiftyAlert.git", branch: "dev"),
         .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", .upToNextMajor(from: "1.5.1")),
@@ -50,7 +50,10 @@ let package = Package(
         .target(
             name: "ChocofordEssentials",
             dependencies: [],
-            path: "Sources/Essentials"
+            path: "Sources/Essentials",
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
+            ]
         ),
 //        .testTarget(
 //            name: "ChocofordUITests",

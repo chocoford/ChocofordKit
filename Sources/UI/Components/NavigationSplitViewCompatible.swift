@@ -139,7 +139,7 @@ extension NavigationSplitViewCompatible {
         if #available(macOS 15.0, *) {
             self // do nothing
         } else {
-            introspect(.navigationSplitView, on: .macOS(.v13, .v14)) { splitView in
+            introspect(.navigationSplitView, on: .macOS(.v14, .v13)) { splitView in
                 let toolbar = splitView.window?.toolbar
                 let toolbarItems = toolbar?.items
                 // "com.apple.SwiftUI.navigationSplitView.toggleSidebar"
