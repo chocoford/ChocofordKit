@@ -145,6 +145,13 @@ struct ThrottleOnChangeModifier<V: Equatable>: ViewModifier {
                 self.action(output.0, output.1)
             }
         }
+        .onAppear {
+            if #available(macOS 14.0, iOS 17.0, *) {
+                
+            } else if initial {
+                self.action(value, value)
+            }
+        }
     }
 }
 
