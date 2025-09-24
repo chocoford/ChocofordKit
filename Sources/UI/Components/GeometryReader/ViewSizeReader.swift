@@ -76,13 +76,11 @@ public struct BindSizeModifier: ViewModifier {
                 GeometryReader { geometry in
                     Color.clear
                         .watchImmediately(of: geometry.size) { size in
-                            DispatchQueue.main.async {
-                                if let width = width {
-                                    width.wrappedValue = size.width
-                                }
-                                if let height = height {
-                                    height.wrappedValue = size.height
-                                }
+                            if let width = width {
+                                width.wrappedValue = size.width
+                            }
+                            if let height = height {
+                                height.wrappedValue = size.height
                             }
                         }
                 }
