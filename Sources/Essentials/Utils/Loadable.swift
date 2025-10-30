@@ -42,11 +42,27 @@ public enum Loadable<T> {
     case failed(data: T?, error: LoadableError)
 
     public var value: T? {
-        switch self {
-            case let .loaded(value): return value
-            case let .isLoading(last): return last
-            case .failed(let last, _): return last
-        default: return nil
+        get {
+            switch self {
+                case let .loaded(value): return value
+                case let .isLoading(last): return last
+                case .failed(let last, _): return last
+                default: return nil
+            }
+        }
+        
+        set {
+            guard let newValue else { return }
+            switch self {
+                case .loaded(let value):
+                    self = .loaded(data: newValue)
+                case let .isLoading(last):
+                    self = .isLoading(last: newValue)
+                case .failed(let last, let error):
+                    self = .failed(data: newValue, error: error)
+                default:
+                    return
+            }
         }
     }
     public var error: LoadableError? {
