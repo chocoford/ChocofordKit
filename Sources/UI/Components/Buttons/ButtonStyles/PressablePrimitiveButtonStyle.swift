@@ -17,6 +17,14 @@ public struct PrimitiveButtonWrapper<Content: View>: View {
         self.onTrigger = onTrigger
         self.content = content
     }
+        
+    public init(
+        configuration: PrimitiveButtonStyleConfiguration,
+        @ViewBuilder content: @escaping (_ isPressed: Bool) -> Content = { _ in EmptyView() }
+    ) {
+        self.onTrigger = configuration.trigger
+        self.content = content
+    }
     
     @State private var isPressed: Bool = false
     @GestureState private var isDetectingTap = false
@@ -48,10 +56,18 @@ public struct PrimitiveButtonWrapper<Content: View>: View {
 }
 
 struct PressablePrimitiveButtonStyle: PrimitiveButtonStyle {
+//    var content: (_ label: PrimitiveButtonStyleConfiguration.Label, _ isPressed: Bool) -> AnyView
+//    
+//    init<Content: View>(
+//        @ViewBuilder content: @escaping (_ label: PrimitiveButtonStyleConfiguration.Label, _ isPressed: Bool) -> Content
+//    ) {
+//        self.content = {
+//            AnyView(content($0, $1))
+//        }
+//    }
+//    
     func makeBody(configuration: Configuration) -> some View {
-        PrimitiveButtonWrapper {
-            configuration.trigger()
-        } content: { isPressed in
+        PrimitiveButtonWrapper(configuration: configuration) { isPressed in
             configuration.label
         }
     }
