@@ -90,26 +90,32 @@ public struct TextFieldKeyDownEventHandler {
     public func stop(
         triggers: [(UInt16, NSEvent.ModifierFlags?)]? = [],
     ) -> TextFieldKeyDownEventHandler {
-        TextFieldKeyDownEventHandler { event in
-            guard let event else { return nil }
-            if let triggers {
-                if triggers.isEmpty {
-                    for trigger in triggers {
-                        let (keyCode, specialKey) = trigger
-                        if event.keyCode == keyCode {
-                            if let specialKey, event.modifierFlags.contains(specialKey) {
-                                return nil
-                            } else if specialKey == nil {
-                                return nil
+        TextFieldKeyDownEventHandler(
+            triggers: self.triggers,
+            actions: self.actions + [
+                { event in
+                    guard let event else { return nil }
+                    if let triggers {
+                        if triggers.isEmpty {
+                            for trigger in triggers {
+                                let (keyCode, specialKey) = trigger
+                                if event.keyCode == keyCode {
+                                    if let specialKey, event.modifierFlags.contains(specialKey) {
+                                        return nil
+                                    } else if specialKey == nil {
+                                        return nil
+                                    }
+                                }
                             }
+                        } else {
+                            return nil
                         }
                     }
-                } else {
-                    return nil
+                    return event
                 }
-            }
-            return event
-        }
+            ]
+        )
+        
     }
     
     
