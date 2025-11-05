@@ -77,8 +77,10 @@ public struct TextFieldKeyDownEventHandler {
     
     public func callAsFunction(_ event: NSEvent?) -> NSEvent? {
         var resultEvent = event
-        for action in actions.reversed() {
+        print("KeyDown handler triggered: \(String(describing: resultEvent))", terminator: " -> ")
+        for action in actions {
             resultEvent = action(resultEvent)
+            print(String(describing: resultEvent), terminator: " -> ")
         }
         return resultEvent
     }
@@ -100,7 +102,6 @@ public struct TextFieldKeyDownEventHandler {
                             } else if specialKey == nil {
                                 return nil
                             }
-                            
                         }
                     }
                 } else {
