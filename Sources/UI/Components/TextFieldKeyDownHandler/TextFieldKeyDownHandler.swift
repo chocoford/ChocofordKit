@@ -142,7 +142,7 @@ public struct TextFieldKeyDownEventHandler {
         )
     }
     
-    public func callAsFunction(_ event: NSEvent?) -> NSEvent? {
+    public func callAsFunction(_ event: NSEvent?, log: Bool = false) -> NSEvent? {
         var resultEvent = event
         print("KeyDown handler triggered: \(String(describing: resultEvent))", terminator: "\n⬇️\n")
         for (i, action) in actions.enumerated() {
@@ -163,10 +163,12 @@ public struct TextFieldKeyDownEventHandler {
 struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
     var handler: TextFieldKeyDownEventHandler
     var isEnabled: Bool
+    var log: Bool = false
     
-    init(handler: TextFieldKeyDownEventHandler, isEnabled: Bool = true) {
+    init(handler: TextFieldKeyDownEventHandler, isEnabled: Bool = true, log: Bool = false) {
         self.handler = handler
         self.isEnabled = isEnabled
+        self.log = log
     }
     
     @FocusState var isFocused: Bool
@@ -202,7 +204,7 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
         removeKeyDownListener()
         keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             guard isFocused else { return event }
-            return self.handler(event)
+            return self.handler(event, log: log)
         }
     }
     
@@ -215,8 +217,12 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
 
 extension View {
     @MainActor @ViewBuilder
-    public func keyDownHandler(_ handler: TextFieldKeyDownEventHandler, isEnabled: Bool = true) -> some View {
-        modifier(TextFieldKeyDownEventMonitorModifier(handler: handler))
+    public func keyDownHandler(
+        _ handler: TextFieldKeyDownEventHandler,
+        isEnabled: Bool = true,
+        log: Bool = false
+    ) -> some View {
+        modifier(TextFieldKeyDownEventMonitorModifier(handler: handler, isEnabled: isEnabled, log: log))
     }
 }
 
