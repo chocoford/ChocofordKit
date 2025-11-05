@@ -196,30 +196,30 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
             .onDisappear {
                 removeKeyDownListener()
             }
-//            .onChange(of: isFocused) { newValue in
-//                DispatchQueue.main.async {
-//                    if newValue, isEnabled {
-//                        addKeyDownListener()
-//                    } else {
-//                        removeKeyDownListener()
-//                    }
-//                }
-//            }
-//            .onChange(of: isEnabled) { newValue in
-//                DispatchQueue.main.async {
-//                    if newValue {
-//                        addKeyDownListener()
-//                    } else {
-//                        removeKeyDownListener()
-//                    }
-//                }
-//            }
+            .onChange(of: isFocused) { newValue in
+                DispatchQueue.main.async {
+                    if newValue, isEnabled {
+                        addKeyDownListener()
+                    } else {
+                        removeKeyDownListener()
+                    }
+                }
+            }
+            .onChange(of: isEnabled) { newValue in
+                DispatchQueue.main.async {
+                    if newValue {
+                        addKeyDownListener()
+                    } else {
+                        removeKeyDownListener()
+                    }
+                }
+            }
     }
     
     private func addKeyDownListener() {
         removeKeyDownListener()
         keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            guard isFocused || isEnabled else { return event }
+            guard isFocused && isEnabled else { return event }
             return self.handler(event, log: log)
         }
     }
