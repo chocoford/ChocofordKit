@@ -91,9 +91,11 @@ public struct TextFieldKeyDownEventHandler {
 
 struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
     var handler: TextFieldKeyDownEventHandler
+    var isEnabled: Bool
     
-    init(handler: TextFieldKeyDownEventHandler) {
+    init(handler: TextFieldKeyDownEventHandler, isEnabled: Bool = true) {
         self.handler = handler
+        self.isEnabled = isEnabled
     }
     
     @FocusState var isFocused: Bool
@@ -110,7 +112,14 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
                 }
             }
             .onChange(of: isFocused) { newValue in
-                if newValue  {
+                if newValue, isEnabled {
+                    addKeyDownListener()
+                } else {
+                    removeKeyDownListener()
+                }
+            }
+            .onChange(of: isEnabled) { newValue in
+                if newValue {
                     addKeyDownListener()
                 } else {
                     removeKeyDownListener()
@@ -121,7 +130,6 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
     private func addKeyDownListener() {
         keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             guard isFocused else { return event }
-//            print(event.keyCode)
             return self.handler(event)
         }
     }
@@ -135,7 +143,7 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
 
 extension View {
     @MainActor @ViewBuilder
-    public func keyDownHandler(_ handler: TextFieldKeyDownEventHandler) -> some View {
+    public func keyDownHandler(_ handler: TextFieldKeyDownEventHandler, isEnabled: Bool = true) -> some View {
         modifier(TextFieldKeyDownEventMonitorModifier(handler: handler))
     }
 }

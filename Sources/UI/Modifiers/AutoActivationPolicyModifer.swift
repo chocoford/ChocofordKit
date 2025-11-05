@@ -118,6 +118,4 @@ extension View {
 #endif
 }
 
-
-
 #endif
