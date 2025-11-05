@@ -77,7 +77,7 @@ public struct TextFieldKeyDownEventHandler {
     
     public func callAsFunction(_ event: NSEvent?) -> NSEvent? {
         var resultEvent = event
-        for action in actions {
+        for action in actions.reversed() {
             resultEvent = action(resultEvent)
         }
         return resultEvent
