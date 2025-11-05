@@ -190,6 +190,12 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
                     }
                 }
             }
+            .onAppear {
+                addKeyDownListener()
+            }
+            .onDisappear {
+                removeKeyDownListener()
+            }
 //            .onChange(of: isFocused) { newValue in
 //                DispatchQueue.main.async {
 //                    if newValue, isEnabled {
