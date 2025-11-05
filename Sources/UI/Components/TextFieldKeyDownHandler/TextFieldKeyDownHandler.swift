@@ -61,7 +61,10 @@ public struct TextFieldKeyDownEventHandler {
             return event
         }
     }
-     
+    
+    var triggers: [(UInt16, NSEvent.ModifierFlags?)] = []
+    var actions: [(_ event: NSEvent?) -> NSEvent?]
+    
     public init(triggers: [(UInt16, NSEvent.ModifierFlags?)] = [], _ action: @escaping (_ event: NSEvent?) -> NSEvent?) {
         self.triggers = triggers
         self.actions = [action]
@@ -72,25 +75,13 @@ public struct TextFieldKeyDownEventHandler {
         self.actions = actions
     }
     
-    var triggers: [(UInt16, NSEvent.ModifierFlags?)] = []
-    var actions: [(_ event: NSEvent?) -> NSEvent?]
-    
-    public func callAsFunction(_ event: NSEvent?) -> NSEvent? {
-        var resultEvent = event
-        print("KeyDown handler triggered: \(String(describing: resultEvent))", terminator: "\n⬇️\n")
-        for action in actions {
-            resultEvent = action(resultEvent)
-            print(String(describing: resultEvent), terminator: "\n⬇️\n")
-        }
-        return resultEvent
-    }
-    
-    
+
+
     /// A handler that stops further processing of the key down event.
     public func stop(
         triggers: [(UInt16, NSEvent.ModifierFlags?)]? = [],
     ) -> TextFieldKeyDownEventHandler {
-        print("KeyDown handler stop called with triggers: \(String(describing: triggers))")
+        print("KeyDown handler stop called with triggers: \(String(describing: triggers ?? self.triggers))")
         return TextFieldKeyDownEventHandler(
             triggers: self.triggers,
             actions: self.actions + [
@@ -98,7 +89,7 @@ public struct TextFieldKeyDownEventHandler {
                     guard let event else { return nil }
                     if let triggers {
                         if triggers.isEmpty {
-                            for trigger in triggers {
+                            for trigger in self.triggers {
                                 let (keyCode, specialKey) = trigger
                                 if event.keyCode == keyCode {
                                     if let specialKey, event.modifierFlags.contains(specialKey) {
@@ -151,6 +142,18 @@ public struct TextFieldKeyDownEventHandler {
             actions: self.actions + handler.actions
         )
     }
+    
+    public func callAsFunction(_ event: NSEvent?) -> NSEvent? {
+        var resultEvent = event
+        print("KeyDown handler triggered: \(String(describing: resultEvent))", terminator: "\n⬇️\n")
+        for action in actions {
+            resultEvent = action(resultEvent)
+            print(String(describing: resultEvent), terminator: "\n⬇️\n")
+        }
+        return resultEvent
+    }
+
+    
 }
 
 struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
