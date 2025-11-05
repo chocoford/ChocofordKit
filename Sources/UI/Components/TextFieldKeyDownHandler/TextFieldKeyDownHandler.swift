@@ -9,7 +9,7 @@ import SwiftUI
 #if canImport(AppKit)
 public struct TextFieldKeyDownEventHandler {
     public static func selection(_ selection: Binding<Int?>, maxIndex: Int) -> TextFieldKeyDownEventHandler {
-        TextFieldKeyDownEventHandler { event in
+        TextFieldKeyDownEventHandler(triggers: [(125, nil), (126, nil)]) { event in
             guard let event else { return nil }
             if event.keyCode == 125 { // arrow down
                 selection.wrappedValue = max(0, min(maxIndex, (selection.wrappedValue ?? -1) + 1))
@@ -37,13 +37,6 @@ public struct TextFieldKeyDownEventHandler {
         custom(key: .escape, with: specialKey, action: action)
     }
     
-    /// A handler that stops further processing of the key down event.
-    public static func stop() -> TextFieldKeyDownEventHandler {
-        TextFieldKeyDownEventHandler { event in
-            return nil
-        }
-    }
-    
     public static func custom(
         key: Key,
         with specialKey: NSEvent.ModifierFlags? = nil,
@@ -56,7 +49,7 @@ public struct TextFieldKeyDownEventHandler {
         with specialKey: NSEvent.ModifierFlags? = nil,
         action: @escaping () -> Void
     ) -> TextFieldKeyDownEventHandler {
-        TextFieldKeyDownEventHandler { event in
+        TextFieldKeyDownEventHandler(triggers: [(keyCode, specialKey)]) { event in
             guard let event else { return nil }
             if event.keyCode == keyCode {
                 if let specialKey, event.modifierFlags.contains(specialKey) {
@@ -69,14 +62,17 @@ public struct TextFieldKeyDownEventHandler {
         }
     }
      
-    public init(_ action: @escaping (_ event: NSEvent?) -> NSEvent?) {
+    public init(triggers: [(UInt16, NSEvent.ModifierFlags?)] = [], _ action: @escaping (_ event: NSEvent?) -> NSEvent?) {
+        self.triggers = triggers
         self.actions = [action]
     }
     
-    private init(actions: [(_ event: NSEvent?) -> NSEvent?]) {
+    private init(triggers: [(UInt16, NSEvent.ModifierFlags?)], actions: [(_ event: NSEvent?) -> NSEvent?]) {
+        self.triggers = triggers
         self.actions = actions
     }
     
+    var triggers: [(UInt16, NSEvent.ModifierFlags?)] = []
     var actions: [(_ event: NSEvent?) -> NSEvent?]
     
     public func callAsFunction(_ event: NSEvent?) -> NSEvent? {
@@ -87,20 +83,65 @@ public struct TextFieldKeyDownEventHandler {
         return resultEvent
     }
     
-    public mutating func append(action: @escaping (_ event: NSEvent?) -> NSEvent?) {
+    
+    /// A handler that stops further processing of the key down event.
+    public func stop(
+        triggers: [(UInt16, NSEvent.ModifierFlags?)]? = [],
+    ) -> TextFieldKeyDownEventHandler {
+        TextFieldKeyDownEventHandler { event in
+            guard let event else { return nil }
+            if let triggers {
+                if triggers.isEmpty {
+                    for trigger in triggers {
+                        let (keyCode, specialKey) = trigger
+                        if event.keyCode == keyCode {
+                            if let specialKey, event.modifierFlags.contains(specialKey) {
+                                return nil
+                            } else if specialKey == nil {
+                                return nil
+                            }
+                            
+                        }
+                    }
+                } else {
+                    return nil
+                }
+            }
+            return event
+        }
+    }
+    
+    
+    public mutating func append(
+        trigger: (UInt16, NSEvent.ModifierFlags?)? = nil,
+        action: @escaping (_ event: NSEvent?) -> NSEvent?
+    ) {
+        if let trigger {
+            self.triggers.append(trigger)
+        }
         self.actions.append(action)
     }
     
-    public func combine(with action: @escaping (_ event: NSEvent?) -> NSEvent?) -> Self {
-        TextFieldKeyDownEventHandler(actions: self.actions + [action])
+    public func combine(
+        trigger: (UInt16, NSEvent.ModifierFlags?)? = nil,
+        with action: @escaping (_ event: NSEvent?) -> NSEvent?
+    ) -> Self {
+        TextFieldKeyDownEventHandler(
+            triggers: trigger != nil ? [trigger!] : [],
+            actions: self.actions + [action]
+        )
     }
     
     public mutating func append(handler: TextFieldKeyDownEventHandler) {
+        self.triggers.append(contentsOf: handler.triggers)
         self.actions.append(contentsOf: handler.actions)
     }
     
     public func combine(with handler: TextFieldKeyDownEventHandler) -> Self {
-        TextFieldKeyDownEventHandler(actions: self.actions + handler.actions)
+        TextFieldKeyDownEventHandler(
+            triggers: self.triggers + handler.triggers,
+            actions: self.actions + handler.actions
+        )
     }
 }
 
