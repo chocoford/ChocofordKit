@@ -196,7 +196,7 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
             .onDisappear {
                 removeKeyDownListener()
             }
-            .onChange(of: isEnabled) { newValue in
+            .onChange(of: isFocused && isEnabled) { newValue in
                 DispatchQueue.main.async {
                     if newValue {
                         addKeyDownListener()
@@ -208,20 +208,24 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
     }
     
     private func addKeyDownListener() {
-        removeKeyDownListener()
-        keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if log {
-                // Seems always cature values...
-                print("KeyDown event received: \(event), isFocused: \(isFocused), isEnabled: \(isEnabled)")
+        DispatchQueue.main.async {
+            removeKeyDownListener()
+            keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+                if log {
+                    // Seems always cature values...
+                    print("KeyDown event received: \(event), isFocused: \(isFocused), isEnabled: \(isEnabled)")
+                }
+                // guard isFocused && isEnabled else { return event }
+                return self.handler(event, log: log)
             }
-            // guard isFocused && isEnabled else { return event }
-            return self.handler(event, log: log)
         }
     }
     
     private func removeKeyDownListener() {
-        if let keydownListener {
-            NSEvent.removeMonitor(keydownListener)
+        DispatchQueue.main.async {
+            if let keydownListener {
+                NSEvent.removeMonitor(keydownListener)
+            }
         }
     }
 }
