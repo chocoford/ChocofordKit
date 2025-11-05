@@ -219,6 +219,9 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
     private func addKeyDownListener() {
         removeKeyDownListener()
         keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if log {
+                print("KeyDown event received: \(event), isFocused: \(isFocused), isEnabled: \(isEnabled)")
+            }
             guard isFocused && isEnabled else { return event }
             return self.handler(event, log: log)
         }
