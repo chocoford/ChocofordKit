@@ -81,7 +81,7 @@ public struct TextFieldKeyDownEventHandler {
     public func stop(
         triggers: [(UInt16, NSEvent.ModifierFlags?)]? = [],
     ) -> TextFieldKeyDownEventHandler {
-        print("KeyDown handler stop called with triggers: \(String(describing: triggers ?? self.triggers))")
+        print("KeyDown handler stop called with triggers: \(String(describing: triggers?.isEmpty == true ? self.triggers : triggers))")
         return TextFieldKeyDownEventHandler(
             triggers: self.triggers,
             actions: self.actions + [
@@ -145,9 +145,14 @@ public struct TextFieldKeyDownEventHandler {
     public func callAsFunction(_ event: NSEvent?) -> NSEvent? {
         var resultEvent = event
         print("KeyDown handler triggered: \(String(describing: resultEvent))", terminator: "\n⬇️\n")
-        for action in actions {
+        for (i, action) in actions.enumerated() {
             resultEvent = action(resultEvent)
-            print(String(describing: resultEvent), terminator: "\n⬇️\n")
+            print(String(describing: resultEvent))
+            if i < actions.endIndex - 1 {
+                print("⬇️")
+            } else {
+                print("\n")
+            }
         }
         return resultEvent
     }
