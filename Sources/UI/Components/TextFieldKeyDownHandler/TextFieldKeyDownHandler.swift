@@ -107,7 +107,6 @@ public struct TextFieldKeyDownEventHandler {
                 }
             ]
         )
-        
     }
     
     
@@ -195,6 +194,7 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
     }
     
     private func addKeyDownListener() {
+        removeKeyDownListener()
         keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             guard isFocused else { return event }
             return self.handler(event)
