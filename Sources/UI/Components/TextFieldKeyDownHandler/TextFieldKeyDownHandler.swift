@@ -185,21 +185,27 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
             .bindWindow($window)
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
                 if let window = notification.object as? NSWindow, window == self.window {
-                    removeKeyDownListener()
+                    DispatchQueue.main.async {
+                        removeKeyDownListener()
+                    }
                 }
             }
             .onChange(of: isFocused) { newValue in
-                if newValue, isEnabled {
-                    addKeyDownListener()
-                } else {
-                    removeKeyDownListener()
+                DispatchQueue.main.async {
+                    if newValue, isEnabled {
+                        addKeyDownListener()
+                    } else {
+                        removeKeyDownListener()
+                    }
                 }
             }
             .onChange(of: isEnabled) { newValue in
-                if newValue {
-                    addKeyDownListener()
-                } else {
-                    removeKeyDownListener()
+                DispatchQueue.main.async {
+                    if newValue {
+                        addKeyDownListener()
+                    } else {
+                        removeKeyDownListener()
+                    }
                 }
             }
     }
