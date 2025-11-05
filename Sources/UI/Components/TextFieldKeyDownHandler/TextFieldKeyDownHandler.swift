@@ -144,14 +144,18 @@ public struct TextFieldKeyDownEventHandler {
     
     public func callAsFunction(_ event: NSEvent?, log: Bool = false) -> NSEvent? {
         var resultEvent = event
-        print("KeyDown handler triggered: \(String(describing: resultEvent))", terminator: "\n⬇️\n")
+        if log {
+            print("KeyDown handler triggered: \(String(describing: resultEvent))", terminator: "\n⬇️\n")
+        }
         for (i, action) in actions.enumerated() {
             resultEvent = action(resultEvent)
-            print(String(describing: resultEvent))
-            if i < actions.endIndex - 1 {
-                print("⬇️")
-            } else {
-                print("\n")
+            if log {
+                print(String(describing: resultEvent))
+                if i < actions.endIndex - 1 {
+                    print("⬇️")
+                } else {
+                    print("\n")
+                }
             }
         }
         return resultEvent
