@@ -7,31 +7,40 @@
 
 #if canImport(SwiftUI)
 import SwiftUI
+import Logging
 #if os(macOS)
 /// Auto set `ActivationPolicy` for `UIElement` App..
 /// When the view's window is opened, app will be `.regular`.
 /// And when the last window is closed, the app will be `.accessory`
 @available(macOS 10.15, *)
 struct AutoActivationPolicyModifer: ViewModifier {
+    let logger = Logger(label: "AutoActivationPolicyModifer")
+    
     @State private var window: NSWindow? = nil
     
     func body(content: Content) -> some View {
         content
-            .onAppear {
-                activateApp()
-                self.window?.makeKeyAndOrderFront(nil)
-                NSApp.setActivationPolicy(.regular)
-            }
-            .introspect(.window, on: .macOS(.v26, .v15, .v14, .v13, .v12, .v11, .v10_15)) { window in
-                DispatchQueue.main.async {
-                    self.window = window
-                }
-            }
+            .bindWindow($window)
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { output in
                 guard let window = output.object as? NSWindow else { return }
-                DispatchQueue.main.async {
-                    if window == self.window {
+                Task { @MainActor in
+                    if window == self.window, NSApp.activationPolicy() == .accessory {
+//                        logger.info("Window did become key... is key: \(window.isKeyWindow), first responder \(window.firstResponder)")
                         NSApp.setActivationPolicy(.regular)
+                        
+                        window.resignFirstResponder()
+                        window.resignKey()
+                        activateApp()
+
+                        Task { @MainActor in
+                            var temps = 0
+                            while temps < 5 {
+                                activateWindow()
+                                temps += 1
+                                try? await Task.sleep(nanoseconds: UInt64(0.2 * 1e+9))
+//                                logger.info("Activate window, is key: \(window.isKeyWindow), first responder \(window.firstResponder)")
+                            }
+                        }
                     }
                 }
             }
@@ -41,12 +50,32 @@ struct AutoActivationPolicyModifer: ViewModifier {
                     object: window
                 )
             ) { _ in
-                DispatchQueue.main.async {
-                    if NSApp.windows.filter({ $0.identifier != nil && $0.canBecomeKey && $0.isVisible }).isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    logger.info(
+                        "Window will close 0.5 seconds ago... \(String(describing: NSApp.windows.map { ($0.identifier, $0.canBecomeKey, $0.isVisible) }))"
+                    )
+                    if NSApp.activationPolicy() == .regular,
+                       NSApp.windows.filter({ $0.identifier != nil && $0.canBecomeKey && $0.isVisible }).isEmpty {
+                        // logger.info("Window did close 0.5 seconds ago...")
                         NSApp.setActivationPolicy(.accessory)
                     }
                 }
             }
+//            .onAppear {
+//                logger.info("Window did appear...")≈
+//                // activateApp()
+//                self.window?.makeKeyAndOrderFront(nil)
+//                NSApp.setActivationPolicy(.regular)
+//            }
+    }
+    
+    @MainActor
+    private func activateWindow() {
+     
+//        Task { @MainActor in
+            window?.makeFirstResponder(nil)
+            window?.makeKeyAndOrderFront(nil)
+//        }
     }
 }
 #endif
