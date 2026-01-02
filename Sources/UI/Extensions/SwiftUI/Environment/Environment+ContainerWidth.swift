@@ -35,31 +35,24 @@ struct ContainerSizePreferenceKey: PreferenceKey {
     }
 }
 
-struct ContainerSizePreferenceView: View {
-    var size: CGSize
-    
-    var body: some View {
-       
-    }
-}
-
 struct WidthProxyModifier: ViewModifier {
     @State private var size: CGSize = .zero
     
     func body(content: Content) -> some View {
         content
             .environment(\.containerSize, size)
-            .overlay {
+            .background {
                 GeometryReader { geometry in
                     Color.clear
                         .preference(key: ContainerSizePreferenceKey.self, value: size)
                         .onAppear {
+                            print("geometry.size", geometry.size)
                             size = geometry.size
                         }
                 }
-                .opacity(0)
             }
             .onPreferenceChange(ContainerSizePreferenceKey.self) { newSize in
+                print("onPreferenceChange", newSize)
                 size = newSize
             }
     }
@@ -79,4 +72,11 @@ public struct WithContainerSize<Content: View>: View {
     public var body: some View {
         content(containerSize)
     }
+}
+
+#Preview {
+    VStack {
+        Color.red
+    }
+    .withContainerSize()
 }
