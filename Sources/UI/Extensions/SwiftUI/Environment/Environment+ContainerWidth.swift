@@ -27,34 +27,22 @@ public extension View {
     }
 }
 
-struct ContainerSizePreferenceKey: PreferenceKey {
-    static let defaultValue: CGSize = .zero
-
-    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
-        value = nextValue()
-    }
-}
-
 struct WidthProxyModifier: ViewModifier {
     @State private var size: CGSize = .zero
     
     func body(content: Content) -> some View {
         content
-            .environment(\.containerSize, size)
             .background {
                 GeometryReader { geometry in
                     Color.clear
-                        .preference(key: ContainerSizePreferenceKey.self, value: size)
-                        .onAppear {
-                            print("geometry.size", geometry.size)
-                            size = geometry.size
+                        .watch(value: geometry.size, initial: true) { oldValue, newValue in
+                            Task { @MainActor in
+                                size = newValue
+                            }
                         }
                 }
             }
-            .onPreferenceChange(ContainerSizePreferenceKey.self) { newSize in
-                print("onPreferenceChange", newSize)
-                size = newSize
-            }
+            .environment(\.containerSize, size)
     }
 }
 
@@ -72,11 +60,4 @@ public struct WithContainerSize<Content: View>: View {
     public var body: some View {
         content(containerSize)
     }
-}
-
-#Preview {
-    VStack {
-        Color.red
-    }
-    .withContainerSize()
 }
