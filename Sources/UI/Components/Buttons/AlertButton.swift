@@ -34,7 +34,7 @@ public struct AlertButton: View {
         alertTitle: LocalizedStringKey = "Warning",
         message: LocalizedStringKey,
         @ViewBuilder label: () -> Label,
-        onConfirm: @escaping () async throws -> Void
+        onConfirm: @Sendable @escaping () async throws -> Void
     ) {
         self.role = role
         self.alertTitle = alertTitle
@@ -58,7 +58,7 @@ public struct AlertButton: View {
         role: ButtonRole? = nil,
         alertTitle: LocalizedStringKey = "Warning",
         message: LocalizedStringKey,
-        onConfirm: @escaping () async throws -> Void
+        onConfirm: @Sendable @escaping () async throws -> Void
     ) {
         self.role = role
         self.alertTitle = alertTitle

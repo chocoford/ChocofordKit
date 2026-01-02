@@ -34,7 +34,7 @@ public struct ToggleButton<L: View>: View {
                     }
                 }
             }
-            .watchImmediately(of: self.isOn) { newVal in
+            .watch(value: self.isOn) { _, newVal in
                 self.localIsOn = newVal
             }
     }

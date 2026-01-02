@@ -318,6 +318,7 @@ private extension PhotoUploader {
 }
 
 // MARK: - Wrapper
+@MainActor
 protocol PhotoUploaderStatusWrapperable: View {
     associatedtype Content
     var phase: PhotoUploaderPhase { get set }
@@ -326,20 +327,22 @@ protocol PhotoUploaderStatusWrapperable: View {
 
 extension PhotoUploaderStatusWrapperable {
     @ViewBuilder
-    func defaultStatusWrapper<C: View>(phase: PhotoUploaderPhase,
-                                       @ViewBuilder content: @escaping (Image?) -> C) -> some View {
+    func defaultStatusWrapper<C: View>(
+        phase: PhotoUploaderPhase,
+        @ViewBuilder content: @escaping (Image?) -> C
+    ) -> some View {
         switch phase {
             case .empty:
                 content(nil)
             case .loading(let progress):
                 content(nil)
-                    .overlay(
+                    .overlay(alignment: .bottomTrailing) {
                         CircularProgressView()
                             .stroke(.accentColor)
                             .size(14)
                             .lineWidth(4)
-                            .progress(progress.fractionCompleted),
-                        alignment: .bottomTrailing)
+                            .progress(progress.fractionCompleted)
+                    }
             case .uploading(let image):
                 content(image)
                     .overlay(

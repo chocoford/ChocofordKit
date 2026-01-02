@@ -27,7 +27,7 @@ public struct LagacyAutoGrowTextEditor: View {
                 .background {
                     GeometryReader { geometry in
                         Color.clear
-                            .watchImmediately(of: geometry.size) { newValue in
+                            .watch(value: geometry.size) { _, newValue in
                                 height = newValue.height
                             }
                     }
@@ -45,7 +45,7 @@ public struct LagacyAutoGrowTextEditor: View {
     }
 }
 
-@available(macOS 15.0, iOS 15.0, *)
+@available(macOS 15.0, iOS 18.0, *)
 public struct AutoGrowTextEditor: View {
     @Binding var inputText: String
     var placeholder: Text

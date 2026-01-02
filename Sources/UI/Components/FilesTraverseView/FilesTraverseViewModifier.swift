@@ -136,7 +136,7 @@ struct FilesTraverseViewModifier: ViewModifier {
                 }
         } else {
             content
-                .watchImmediately(of: self.urls) { newValue in
+                .watch(value: self.urls) { _, newValue in
                     if !newValue.isEmpty {
                         onURLsChanged()
                     }
