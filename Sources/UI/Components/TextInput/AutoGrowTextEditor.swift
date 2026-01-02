@@ -45,7 +45,7 @@ public struct LagacyAutoGrowTextEditor: View {
     }
 }
 
-@available(macOS 15.0, iOS 18.0, *)
+@available(macOS 15.0, iOS 15.0, *)
 public struct AutoGrowTextEditor: View {
     @Binding var inputText: String
     var placeholder: Text
