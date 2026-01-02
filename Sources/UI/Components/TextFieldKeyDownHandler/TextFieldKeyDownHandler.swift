@@ -7,12 +7,31 @@
 
 import SwiftUI
 #if canImport(AppKit)
-public struct TextFieldKeyDownEventHandler {
-    public static func selection(_ selection: Binding<Int?>, maxIndex: Int) -> TextFieldKeyDownEventHandler {
-        TextFieldKeyDownEventHandler(triggers: [(125, nil), (126, nil)]) { event in
+public struct TextFieldKeyDownEventHandler: Equatable {
+    public static func == (lhs: TextFieldKeyDownEventHandler, rhs: TextFieldKeyDownEventHandler) -> Bool {
+        
+        let lhsTriggersDescription: String = lhs.triggers.map { trigger in
+            let (keyCode, specialKey) = trigger
+            return String(describing: keyCode) + "-" + "\(specialKey?.rawValue ?? 0)"
+        }.joined(separator: "") + lhs.equatableKeys.joined(separator: ",")
+        let rhsTriggersDescription: String = rhs.triggers.map { trigger in
+            let (keyCode, specialKey) = trigger
+            return String(describing: keyCode) + "-" + "\(specialKey?.rawValue ?? 0)"
+        }.joined(separator: "") + rhs.equatableKeys.joined(separator: ",")
+        
+        
+        return lhsTriggersDescription == rhsTriggersDescription &&
+        lhs.actions.count == rhs.actions.count
+    }
+    
+    public static func selection(
+        _ selection: Binding<Int?>,
+        maxIndex: @autoclosure @escaping () -> Int
+    ) -> TextFieldKeyDownEventHandler {
+        TextFieldKeyDownEventHandler(triggers: [(125, nil), (126, nil)], equatableKeys: []) { event in
             guard let event else { return nil }
             if event.keyCode == 125 { // arrow down
-                selection.wrappedValue = max(0, min(maxIndex, (selection.wrappedValue ?? -1) + 1))
+                selection.wrappedValue = max(0, min(maxIndex(), (selection.wrappedValue ?? -1) + 1))
             } else if event.keyCode == 126 { // arrow up
                 if selection.wrappedValue == 0 {
                     selection.wrappedValue = nil
@@ -64,80 +83,97 @@ public struct TextFieldKeyDownEventHandler {
     
     var triggers: [(UInt16, NSEvent.ModifierFlags?)] = []
     var actions: [(_ event: NSEvent?) -> NSEvent?]
+    var equatableKeys: [String] = []
     
-    public init(triggers: [(UInt16, NSEvent.ModifierFlags?)] = [], _ action: @escaping (_ event: NSEvent?) -> NSEvent?) {
+    public init(
+        triggers: [(UInt16, NSEvent.ModifierFlags?)] = [],
+        equatableKeys: [String] = [],
+        _ action: @escaping (_ event: NSEvent?) -> NSEvent?
+    ) {
         self.triggers = triggers
+        self.equatableKeys = equatableKeys
         self.actions = [action]
     }
     
-    private init(triggers: [(UInt16, NSEvent.ModifierFlags?)], actions: [(_ event: NSEvent?) -> NSEvent?]) {
+    private init(
+        triggers: [(UInt16, NSEvent.ModifierFlags?)],
+        equatableKeys: [String] = [],
+        actions: [(_ event: NSEvent?) -> NSEvent?]
+    ) {
         self.triggers = triggers
+        self.equatableKeys = equatableKeys
         self.actions = actions
     }
-    
 
 
     /// A handler that stops further processing of the key down event.
     public func stop(
         triggers: [(UInt16, NSEvent.ModifierFlags?)]? = [],
     ) -> TextFieldKeyDownEventHandler {
-        print("KeyDown handler stop called with triggers: \(String(describing: triggers?.isEmpty == true ? self.triggers : triggers))")
+        let triggers = triggers?.isEmpty == true ? self.triggers : triggers
+        
+        // print("KeyDown handler stop called with triggers: \(String(describing: triggers))")
         return TextFieldKeyDownEventHandler(
-            triggers: self.triggers,
+            triggers: triggers ?? [],
+            equatableKeys: self.equatableKeys,
             actions: self.actions + [
                 { event in
                     guard let event else { return nil }
                     if let triggers {
-                        if triggers.isEmpty {
-                            for trigger in self.triggers {
-                                let (keyCode, specialKey) = trigger
-                                if event.keyCode == keyCode {
-                                    if let specialKey, event.modifierFlags.contains(specialKey) {
-                                        return nil
-                                    } else if specialKey == nil {
-                                        return nil
-                                    }
+                        for trigger in triggers {
+                            let (keyCode, specialKey) = trigger
+                            if event.keyCode == keyCode {
+                                if let specialKey, event.modifierFlags.contains(specialKey) {
+                                    return nil
+                                } else if specialKey == nil {
+                                    return nil
                                 }
                             }
-                        } else {
-                            return nil
                         }
                     }
                     return event
                 }
-            ]
+            ],
         )
     }
     
     
     public mutating func append(
         trigger: (UInt16, NSEvent.ModifierFlags?)? = nil,
+        equitableKey: String? = nil,
         action: @escaping (_ event: NSEvent?) -> NSEvent?
     ) {
         if let trigger {
             self.triggers.append(trigger)
+        }
+        if let equitableKey {
+            self.equatableKeys.append(equitableKey)
         }
         self.actions.append(action)
     }
     
     public func combine(
         trigger: (UInt16, NSEvent.ModifierFlags?)? = nil,
+        equitableKey: String? = nil,
         with action: @escaping (_ event: NSEvent?) -> NSEvent?
     ) -> Self {
         TextFieldKeyDownEventHandler(
-            triggers: trigger != nil ? [trigger!] : [],
+            triggers: self.triggers + (trigger != nil ? [trigger!] : []),
+            equatableKeys: self.equatableKeys + (equitableKey != nil ? [equitableKey!] : []),
             actions: self.actions + [action]
         )
     }
     
     public mutating func append(handler: TextFieldKeyDownEventHandler) {
         self.triggers.append(contentsOf: handler.triggers)
+        self.equatableKeys.append(contentsOf: handler.equatableKeys)
         self.actions.append(contentsOf: handler.actions)
     }
     
     public func combine(with handler: TextFieldKeyDownEventHandler) -> Self {
         TextFieldKeyDownEventHandler(
             triggers: self.triggers + handler.triggers,
+            equatableKeys: self.equatableKeys + handler.equatableKeys,
             actions: self.actions + handler.actions
         )
     }
@@ -165,6 +201,8 @@ public struct TextFieldKeyDownEventHandler {
 }
 
 struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
+    @Environment(\.isPresented) private var isPresented
+    
     var handler: TextFieldKeyDownEventHandler
     var isEnabled: Bool
     var log: Bool = false
@@ -178,59 +216,57 @@ struct TextFieldKeyDownEventMonitorModifier: ViewModifier {
     @FocusState var isFocused: Bool
     @State private var window: NSWindow?
     @State private var keydownListener: Any?
+    @State private var isAppeared = false
 
     func body(content: Content) -> some View {
         content
             .focused($isFocused)
             .bindWindow($window)
-            .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
-                if let window = notification.object as? NSWindow, window == self.window {
+            .onWindowWillClose { isAppeared = false }
+            .onChange(of: handler) { newValue in
+                guard isPresented, isAppeared else { return }
+                DispatchQueue.main.async {
+                    print("KeyDown handler changed: \(newValue)")
+                    addKeyDownListener(handler: newValue)
+                }
+            }
+            .onChange(of: isAppeared) { newValue in
+                if !newValue {
                     DispatchQueue.main.async {
                         removeKeyDownListener()
                     }
                 }
             }
             .onAppear {
+                isAppeared = true
                 addKeyDownListener()
             }
             .onDisappear {
-                removeKeyDownListener()
-            }
-            .onChange(of: isFocused && isEnabled) { newValue in
-                DispatchQueue.main.async {
-                    if newValue {
-                        addKeyDownListener()
-                    } else {
-                        removeKeyDownListener()
-                    }
-                }
+                isAppeared = false
             }
     }
     
-    private func addKeyDownListener() {
-        DispatchQueue.main.async {
-            removeKeyDownListener()
-            keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-                if log {
-                    // Seems always cature values...
-                    print("KeyDown event received: \(event), isFocused: \(isFocused), isEnabled: \(isEnabled)")
-                }
-                // guard isFocused && isEnabled else { return event }
-                return self.handler(event, log: log)
+    private func addKeyDownListener(handler: TextFieldKeyDownEventHandler? = nil) {
+        removeKeyDownListener()
+        keydownListener = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if log {
+                // Seems always cature values...
+                print("KeyDown event received: \(event), isFocused: \(isFocused), isEnabled: \(isEnabled)")
             }
+            guard isFocused && isEnabled else { return event }
+            return (handler ?? self.handler)(event, log: log)
         }
     }
     
     private func removeKeyDownListener() {
-        DispatchQueue.main.async {
-            if let keydownListener {
-                NSEvent.removeMonitor(keydownListener)
-            }
+        if let keydownListener {
+            NSEvent.removeMonitor(keydownListener)
         }
     }
 }
 
 extension View {
+    /// Invoke only one handler per view.
     @MainActor @ViewBuilder
     public func keyDownHandler(
         _ handler: TextFieldKeyDownEventHandler,

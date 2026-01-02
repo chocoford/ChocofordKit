@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContainerUISizeClassKey: EnvironmentKey {
 //#if os(macOS)
-    static var defaultValue: UserInterfaceSizeClass? = .regular
+    static let defaultValue: UserInterfaceSizeClass? = .regular
 //#else
 //    static var defaultValue: UserInterfaceSizeClass? = .regular
 //#endif

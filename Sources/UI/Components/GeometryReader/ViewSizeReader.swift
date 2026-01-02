@@ -75,7 +75,7 @@ public struct BindSizeModifier: ViewModifier {
             .background {
                 GeometryReader { geometry in
                     Color.clear
-                        .watchImmediately(of: geometry.size) { size in
+                        .watch(value: geometry.size) { _, size in
                             if let width = width {
                                 width.wrappedValue = size.width
                             }

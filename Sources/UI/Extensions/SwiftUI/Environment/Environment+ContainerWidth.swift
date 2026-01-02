@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContainerSizeKey: EnvironmentKey {
-    static var defaultValue: CGSize = .zero
+    static let defaultValue: CGSize = .zero
 }
 
 public extension EnvironmentValues {
@@ -27,6 +27,17 @@ public extension View {
     }
 }
 
+struct ContainerSizePreferenceKey: PreferenceKey {
+    static let defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        let next = nextValue()
+        if value != next {
+            value = next
+        }
+    }
+}
+
 struct WidthProxyModifier: ViewModifier {
     @State private var size: CGSize = .zero
     
@@ -34,20 +45,16 @@ struct WidthProxyModifier: ViewModifier {
         content
             .background {
                 GeometryReader { geometry in
-                    if #available(macOS 14.0, iOS 17.0, *) {
-                        Color.clear
-                            .onChange(of: geometry.size, initial: true) { oldValue, newValue in
-                                size = newValue
-                            }
-                    } else {
-                        Color.clear
-                            .onChange(of: geometry.size) { newValue in
-                                size = newValue
-                            }
-                            .onAppear {
-                                size = geometry.size
-                            }
-                    }
+                    Color.clear
+                        .preference(key: ContainerSizePreferenceKey.self, value: geometry.size)
+                        .onAppear {
+                            size = geometry.size
+                        }
+                }
+            }
+            .onPreferenceChange(ContainerSizePreferenceKey.self) { newSize in
+                if size != newSize {
+                    size = newSize
                 }
             }
             .environment(\.containerSize, size)

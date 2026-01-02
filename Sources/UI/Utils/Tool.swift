@@ -65,6 +65,7 @@ public func openSecuritySettings() {
 public func activateApp() {
 #if canImport(AppKit)
     if #available(macOS 15.0, *) {
+        // NSApp.activate(ignoringOtherApps: true)
         NSApp.activate()
     } else {
         NSApp.activate(ignoringOtherApps: true)

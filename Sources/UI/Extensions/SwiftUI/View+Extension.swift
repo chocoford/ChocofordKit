@@ -89,7 +89,8 @@ extension View {
         border([edge], width: width, style: style)
     }
     
-    @MainActor @ViewBuilder
+    @available(*, deprecated, renamed: "watch", message: "Use watch instead")
+    @ViewBuilder
     public func watchImmediately<V : Equatable>(
         of value: V,
         perform action: @escaping (V) -> Void
@@ -106,6 +107,30 @@ extension View {
                 }
                 .onChange(of: value) { newValue in
                     action(newValue)
+                }
+        }
+    }
+    
+    @ViewBuilder
+    public func watch<V : Equatable>(
+        value: V,
+        initial: Bool = false,
+        perform action: @escaping (_ oldValue: V, _ newValue: V) -> Void
+    ) -> some View {
+        if #available(macOS 14.0, iOS 17.0, *) {
+            self
+                .onChange(of: value, initial: true) { oldValue, newValue in
+                    action(oldValue, newValue)
+                }
+        } else {
+            self
+                .onAppear {
+                    if initial {
+                        action(value, value)
+                    }
+                }
+                .onChange(of: value) { newValue in
+                    action(value, newValue)
                 }
         }
     }
