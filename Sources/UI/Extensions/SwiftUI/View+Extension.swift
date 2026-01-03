@@ -135,6 +135,27 @@ extension View {
         }
     }
     
+    @ViewBuilder
+    public func watch<V : Equatable>(
+        value: V,
+        initial: Bool = false,
+        perform action: @escaping (_ newValue: V) -> Void
+    ) -> some View {
+        watch(value: value, initial: initial) { _, newValue in
+            action(newValue)
+        }
+    }    
+    @ViewBuilder
+    public func watch<V : Equatable>(
+        value: V,
+        initial: Bool = false,
+        perform action: @escaping () -> Void
+    ) -> some View {
+        watch(value: value, initial: initial) { _, _ in
+            action()
+        }
+    }
+    
     /// show a badge without text
     public func badge(show: Bool = true) -> some View {
         overlay(alignment: .topTrailing) {
