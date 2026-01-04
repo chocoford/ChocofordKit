@@ -69,7 +69,7 @@ public typealias ThumbnailImageCache = NSCache<NSString, NSImage>
 #elseif os(iOS)
 public typealias ThumbnailImageCache = NSCache<NSString, UIImage>
 #endif
-public var deafultThumbnailImageCache: ThumbnailImageCache = {
+public let deafultThumbnailImageCache: ThumbnailImageCache = {
     let cache = ThumbnailImageCache()
     cache.name = "ThumbnailImageCache"
     return cache
@@ -82,6 +82,7 @@ public struct ThumbnailImage<I: View>: View {
     public typealias PlatformImage = UIImage
 #endif
     
+    private var id = UUID()
     private var url: URL?
     private var sourceImage: PlatformImage?
     private var cacheID: String?
@@ -181,7 +182,7 @@ public struct ThumbnailImage<I: View>: View {
 #endif
         } else {
             placeholder
-                .task {
+                .task(id: id) {
                     loadThumbnail()
                     loadThumbnailV2()
                 }

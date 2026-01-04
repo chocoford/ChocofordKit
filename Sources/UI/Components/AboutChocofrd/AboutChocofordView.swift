@@ -248,7 +248,7 @@ public struct AboutChocofordView: View {
     @MainActor @ViewBuilder
     private func myApps() -> some View {
         Link(destination: URL(string: "https://excalidrawz.chocoford.com")!) {
-            Image("ExcalidrawZ")
+            Image(modulePath: "ExcalidrawZ Icon", ofType: "png")
                 .resizable()
                 .scaledToFit()
                 .frame(height: 64)
