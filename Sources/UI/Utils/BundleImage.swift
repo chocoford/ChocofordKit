@@ -14,12 +14,14 @@ extension Image {
             contentsOfFile: Bundle.module.path(forResource: name, ofType: ext)!
         ) {
             self.init(nsImage: nsImage)
+            return
         }
 #elseif canImport(UIKit)
         if let uiImage = UIImage(
             contentsOfFile: Bundle.module.path(forResource: name, ofType: ext)!
         ) {
             self.init(uiImage: uiImage)
+            return
         }
 #endif
         fatalError("Not supported")
