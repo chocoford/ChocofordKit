@@ -27,10 +27,15 @@ extension URL {
     /// [ChocofordKit]
     /// Get the file path of the url
     public var filePath: String {
+        guard isFileURL else {
+            assertionFailure("filePath accessed on non-file URL: \(self)")
+            return path
+        }
+        
         if #available(macOS 13.0, iOS 16.0, *) {
-            path(percentEncoded: false)
+            return path(percentEncoded: false)
         } else {
-            standardizedFileURL.path
+            return path.removingPercentEncoding ?? path
         }
     }
 }
