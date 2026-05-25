@@ -63,6 +63,7 @@ public struct AutoGrowTextEditor: View {
     @State private var scrollPosition: ScrollPosition = .init()
     @State private var oneLineTextHeight = CGFloat.zero
     @FocusState private var isFocused: Bool
+
     
     public var body: some View {
         ScrollView {
@@ -81,6 +82,7 @@ public struct AutoGrowTextEditor: View {
                     .overlay(alignment: .topLeading) {
                         if inputText.isEmpty {
                             placeholder
+                                .foregroundStyle(.placeholder)
 #if canImport(AppKit)
                                 .pointerStyle(.horizontalText)
 #endif
@@ -97,10 +99,8 @@ public struct AutoGrowTextEditor: View {
                     .padding(.horizontal, 12)
                     .scrollIndicators(.hidden)
 #if canImport(AppKit)
-                    .keyDownHandler(.enter {
-                        if textEditorHeight >= config.maxHeight {
-                            scrollPosition.scrollTo(edge: .bottom)
-                        }
+                    .if(config.userKeyDownHandler != nil, transform: { content in
+                        content.keyDownHandler(config.userKeyDownHandler!)
                     })
 #endif
             }
@@ -115,6 +115,7 @@ public struct AutoGrowTextEditor: View {
         .background {
             config.background
         }
+        .compositingGroup()
         .onChange(of: textHeight, initial: true) { oldValue, newValue in
             if oldValue == nil, let newValue {
                 oneLineTextHeight = newValue
@@ -127,12 +128,17 @@ public struct AutoGrowTextEditor: View {
             } else {
                 textEditorHeight = newValue
             }
-            
+
             if oldValue == oneLineTextHeight, newValue > oneLineTextHeight {
                 // print("changed to multi line", oldValue, newValue, oneLineTextHeight)
                 self.config.onSingleLineChanged?(false)
             } else if let oldValue, newValue == oneLineTextHeight, oldValue > oneLineTextHeight {
                 self.config.onSingleLineChanged?(true)
+            }
+
+            // Keep the caret visible when content grows past maxHeight.
+            if let oldValue, newValue > oldValue, newValue >= config.maxHeight {
+                scrollPosition.scrollTo(edge: .bottom)
             }
         }
     }
@@ -143,6 +149,9 @@ public struct AutoGrowTextEditor: View {
         var background: AnyView = AnyView(EmptyView())
         var clipShape: AnyShape?
         var onSingleLineChanged: ((_ isSingleLine: Bool) -> Void)?
+#if canImport(AppKit)
+        var userKeyDownHandler: TextFieldKeyDownEventHandler?
+#endif
     }
     
     @MainActor
@@ -168,4 +177,16 @@ public struct AutoGrowTextEditor: View {
         self.config.onSingleLineChanged = action
         return self
     }
+
+#if canImport(AppKit)
+    /// Install a custom key-down handler. The component does not attach any
+    /// key handler by default: enter/shift+enter fall through to the system
+    /// (which inserts a newline at the caret). Return `nil` from the handler
+    /// to consume an event, or return the event to let it pass through.
+    @MainActor
+    public func keyDownHandler(_ handler: TextFieldKeyDownEventHandler) -> AutoGrowTextEditor {
+        self.config.userKeyDownHandler = handler
+        return self
+    }
+#endif
 }
