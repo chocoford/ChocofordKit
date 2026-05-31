@@ -705,10 +705,10 @@ extension TextArea {
 
         @MainActor
         final class Coordinator: NSObject, UITextViewDelegate {
-            var parent: Representable
+            fileprivate var parent: Representable
             weak var textView: AutoGrowUITextView?
 
-            init(_ parent: Representable) {
+            fileprivate init(_ parent: Representable) {
                 self.parent = parent
             }
 
@@ -774,7 +774,7 @@ extension TextArea {
 }
 
 final class AutoGrowUITextView: UITextView {
-    weak var coordinator: TextArea.Representable.Coordinator?
+    fileprivate weak var coordinator: TextArea.Representable.Coordinator?
 
     override func layoutSubviews() {
         super.layoutSubviews()

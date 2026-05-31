@@ -360,7 +360,11 @@ struct TextAreaMenuView: View {
         .frame(minWidth: 180, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
         .overlay {
-            RoundedRectangle(cornerRadius: 6).strokeBorder(.separator)
+            if #available(macOS 14.0, iOS 17.0, *) {
+                RoundedRectangle(cornerRadius: 6).strokeBorder(.separator)
+            } else {
+                RoundedRectangle(cornerRadius: 6).strokeBorder(.secondary)
+            }
         }
         .shadow(radius: 8, y: 4)
     }

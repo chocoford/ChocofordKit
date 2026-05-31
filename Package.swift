@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "6.2.0")),
+        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", from: "7.0.0"),
         .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.4.0-beta.4"),
         .package(url: "https://github.com/ohitsdaniel/ShapeBuilder.git", from: "0.1.0"),
         .package(url: "https://github.com/chocoford/SwiftyAlert.git", branch: "dev"),
