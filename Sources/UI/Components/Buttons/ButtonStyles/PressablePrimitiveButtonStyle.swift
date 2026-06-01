@@ -47,7 +47,7 @@ public struct PrimitiveButtonWrapper<Content: View>: View {
             .background {
                 GeometryReader { geometry in
                     Color.clear
-                        .watch(value: geometry.frame(in: .local)) { _, frame in
+                        .watch(value: geometry.frame(in: .local), initial: true) { _, frame in
                             self.frame = frame
                         }
                 }
