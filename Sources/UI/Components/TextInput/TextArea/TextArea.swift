@@ -189,9 +189,33 @@ public struct TextArea: View {
         }
     }
 
-    private var resolvedHeight: CGFloat? {
-        guard contentHeight > 0 else { return nil }
-        return min(contentHeight, config.maxHeight)
+    private var resolvedHeight: CGFloat {
+        // After the first measurement, contentHeight is the real value.
+        if contentHeight > 0 {
+            return min(contentHeight, config.maxHeight)
+        }
+        // Before the first measurement, fall back to the last known
+        // one-line height. If that hasn't been recorded either (very first
+        // frame), estimate from system font metrics so we never render
+        // with an indeterminate height.
+        if oneLineHeight > 0 {
+            return oneLineHeight
+        }
+        return Self.estimatedSingleLineHeight
+    }
+
+    private static var estimatedSingleLineHeight: CGFloat {
+        // Vertical inset is 12 top + 12 bottom (see makeNSView / makeUIView).
+        let inset: CGFloat = 24
+#if canImport(AppKit)
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        return ceil(font.boundingRectForFont.height) + inset
+#elseif canImport(UIKit)
+        let font = UIFont.preferredFont(forTextStyle: .body)
+        return ceil(font.lineHeight) + inset
+#else
+        return 40
+#endif
     }
 
     @ViewBuilder
