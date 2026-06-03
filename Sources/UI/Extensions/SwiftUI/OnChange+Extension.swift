@@ -97,9 +97,7 @@ struct ThrottleOnChangeModifier<V: Equatable>: ViewModifier {
         self.interval = interval
     }
     
-    @available(macOS, deprecated: 14.0)
-    @available(iOS, deprecated: 17.0)
-    @available(visionOS, deprecated: 1.0)
+    @available(macOS 11.0, iOS 13.0, *)
     public init(
         value: V,
         initial: Bool,
@@ -192,9 +190,6 @@ extension View {
         }
     }
     
-//    @available(macOS, deprecated: 14.0)
-//    @available(iOS, deprecated: 17.0)
-//    @available(visionOS, deprecated: 1.0)
     @ViewBuilder
     public func onChange<V: Equatable>(
         of value: V,
@@ -249,9 +244,6 @@ extension View {
         }
     }
     
-    @available(macOS, deprecated: 14.0)
-    @available(iOS, deprecated: 17.0)
-    @available(visionOS, deprecated: 1.0)
     @ViewBuilder
     public func onChange<V: Equatable>(
         of value: V,
