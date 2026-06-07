@@ -495,11 +495,22 @@ extension TextArea {
 
                 var height = ceil(contentHeight) + textView.textContainerInset.height * 2
                 // `usageBoundsForTextContainer` doesn't count the empty line a
-                // trailing `\n` produces — add a line back so the editor reflects
-                // it before the user types the next character.
-                if textView.string.hasSuffix("\n") {
-                    let font = textView.font ?? NSFont.systemFont(ofSize: NSFont.systemFontSize)
-                    height += ceil(font.boundingRectForFont.height)
+                // trailing `\n` produces — ask the last laid-out fragment for
+                // its actual line height (matches what TextKit will use when a
+                // character is typed there, so the editor height doesn't jump).
+                if textView.string.hasSuffix("\n"),
+                   let textLayoutManager = textView.textLayoutManager {
+                    var trailingLineHeight: CGFloat = 0
+                    textLayoutManager.enumerateTextLayoutFragments(
+                        from: nil,
+                        options: [.reverse, .ensuresLayout]
+                    ) { fragment in
+                        if let lastLine = fragment.textLineFragments.last {
+                            trailingLineHeight = lastLine.typographicBounds.height
+                        }
+                        return false
+                    }
+                    height += ceil(trailingLineHeight)
                 }
 
                 // Toggle the scroller based on whether content actually exceeds
@@ -777,12 +788,23 @@ extension TextArea {
 
                 let insetVertical = textView.textContainerInset.top + textView.textContainerInset.bottom
                 var height = ceil(contentHeight) + insetVertical
-                // TextKit 2's `usageBoundsForTextContainer` doesn't include the
-                // empty line that a trailing `\n` produces. Add a line back so
-                // pressing Enter (without typing) still grows the editor.
-                if (textView.text ?? "").hasSuffix("\n") {
-                    let font = textView.font ?? UIFont.preferredFont(forTextStyle: .body)
-                    height += ceil(font.lineHeight)
+                // `usageBoundsForTextContainer` doesn't count the empty line a
+                // trailing `\n` produces. Ask the last laid-out fragment for the
+                // actual line height it used so the editor height matches what
+                // TextKit will produce when the user types on that empty line.
+                if (textView.text ?? "").hasSuffix("\n"),
+                   let textLayoutManager = textView.textLayoutManager {
+                    var trailingLineHeight: CGFloat = 0
+                    textLayoutManager.enumerateTextLayoutFragments(
+                        from: nil,
+                        options: [.reverse, .ensuresLayout]
+                    ) { fragment in
+                        if let lastLine = fragment.textLineFragments.last {
+                            trailingLineHeight = lastLine.typographicBounds.height
+                        }
+                        return false
+                    }
+                    height += ceil(trailingLineHeight)
                 }
 
                 // Toggle internal scrolling: only enable once content exceeds
