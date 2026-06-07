@@ -493,7 +493,14 @@ extension TextArea {
                     return
                 }
 
-                let height = ceil(contentHeight) + textView.textContainerInset.height * 2
+                var height = ceil(contentHeight) + textView.textContainerInset.height * 2
+                // `usageBoundsForTextContainer` doesn't count the empty line a
+                // trailing `\n` produces — add a line back so the editor reflects
+                // it before the user types the next character.
+                if textView.string.hasSuffix("\n") {
+                    let font = textView.font ?? NSFont.systemFont(ofSize: NSFont.systemFontSize)
+                    height += ceil(font.boundingRectForFont.height)
+                }
 
                 // Toggle the scroller based on whether content actually exceeds
                 // maxHeight, not on the current (animated) frame size. Otherwise
@@ -769,7 +776,14 @@ extension TextArea {
                 }
 
                 let insetVertical = textView.textContainerInset.top + textView.textContainerInset.bottom
-                let height = ceil(contentHeight) + insetVertical
+                var height = ceil(contentHeight) + insetVertical
+                // TextKit 2's `usageBoundsForTextContainer` doesn't include the
+                // empty line that a trailing `\n` produces. Add a line back so
+                // pressing Enter (without typing) still grows the editor.
+                if (textView.text ?? "").hasSuffix("\n") {
+                    let font = textView.font ?? UIFont.preferredFont(forTextStyle: .body)
+                    height += ceil(font.lineHeight)
+                }
 
                 // Toggle internal scrolling: only enable once content exceeds
                 // maxHeight so the frame can grow naturally below that.
