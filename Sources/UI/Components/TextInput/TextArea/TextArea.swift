@@ -694,14 +694,19 @@ extension TextArea {
         @Binding var isComposing: Bool
 
         func makeUIView(context: Context) -> UITextView {
-            let textView = AutoGrowUITextView()
+            let textView = AutoGrowUITextView(usingTextLayoutManager: true)
             textView.coordinator = context.coordinator
             textView.delegate = context.coordinator
             textView.font = .preferredFont(forTextStyle: .body)
             textView.backgroundColor = .clear
+            textView.textColor = .label
+            textView.tintColor = .label
             textView.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
             textView.textContainer.lineFragmentPadding = 0
-            textView.isScrollEnabled = true
+            // Start non-scrolling: lets the frame grow naturally with content.
+            // We flip to scrolling once measured height exceeds maxHeight, see
+            // recomputeHeight below.
+            textView.isScrollEnabled = false
             textView.text = text
 
             context.coordinator.textView = textView
@@ -750,14 +755,28 @@ extension TextArea {
 
             func recomputeHeight() {
                 guard let textView else { return }
-                let width = textView.bounds.width > 0
-                    ? textView.bounds.width
-                    : UIScreen.main.bounds.width
-                let size = textView.sizeThatFits(CGSize(
-                    width: width,
-                    height: .greatestFiniteMagnitude
-                ))
-                let height = ceil(size.height)
+
+                let contentHeight: CGFloat
+                if let textLayoutManager = textView.textLayoutManager {
+                    // TextKit 2
+                    textLayoutManager.ensureLayout(for: textLayoutManager.documentRange)
+                    contentHeight = textLayoutManager.usageBoundsForTextContainer.height
+                } else {
+                    // TextKit 1 fallback (e.g. if init(usingTextLayoutManager:) wasn't honored)
+                    let lm = textView.layoutManager
+                    lm.ensureLayout(for: textView.textContainer)
+                    contentHeight = lm.usedRect(for: textView.textContainer).height
+                }
+
+                let insetVertical = textView.textContainerInset.top + textView.textContainerInset.bottom
+                let height = ceil(contentHeight) + insetVertical
+
+                // Toggle internal scrolling: only enable once content exceeds
+                // maxHeight so the frame can grow naturally below that.
+                let shouldScroll = height > parent.config.maxHeight
+                if textView.isScrollEnabled != shouldScroll {
+                    textView.isScrollEnabled = shouldScroll
+                }
 
                 if parent.oneLineHeight <= 0 {
                     parent.oneLineHeight = height
@@ -799,10 +818,19 @@ extension TextArea {
 
 final class AutoGrowUITextView: UITextView {
     fileprivate weak var coordinator: TextArea.Representable.Coordinator?
+    private var lastFrameWidth: CGFloat = 0
+    private var heightRecomputeScheduled = false
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        // Only react to width changes (rotation / parent reflow); height
+        // changes are driven by us and don't require another recompute.
+        guard bounds.width != lastFrameWidth else { return }
+        lastFrameWidth = bounds.width
+        guard !heightRecomputeScheduled else { return }
+        heightRecomputeScheduled = true
         DispatchQueue.main.async { [weak self] in
+            self?.heightRecomputeScheduled = false
             self?.coordinator?.recomputeHeight()
         }
     }

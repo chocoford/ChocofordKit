@@ -7,7 +7,7 @@ let package = Package(
     name: "ChocofordKit",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v15), .watchOS(.v6), .macOS(.v12), .visionOS(.v1)
+        .iOS(.v16), .watchOS(.v6), .macOS(.v12), .visionOS(.v1)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
