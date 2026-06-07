@@ -774,38 +774,17 @@ extension TextArea {
             func recomputeHeight() {
                 guard let textView else { return }
 
-                let contentHeight: CGFloat
-                if let textLayoutManager = textView.textLayoutManager {
-                    // TextKit 2
-                    textLayoutManager.ensureLayout(for: textLayoutManager.documentRange)
-                    contentHeight = textLayoutManager.usageBoundsForTextContainer.height
-                } else {
-                    // TextKit 1 fallback (e.g. if init(usingTextLayoutManager:) wasn't honored)
-                    let lm = textView.layoutManager
-                    lm.ensureLayout(for: textView.textContainer)
-                    contentHeight = lm.usedRect(for: textView.textContainer).height
-                }
-
-                let insetVertical = textView.textContainerInset.top + textView.textContainerInset.bottom
-                var height = ceil(contentHeight) + insetVertical
-                // `usageBoundsForTextContainer` doesn't count the empty line a
-                // trailing `\n` produces. Ask the last laid-out fragment for the
-                // actual line height it used so the editor height matches what
-                // TextKit will produce when the user types on that empty line.
-                if (textView.text ?? "").hasSuffix("\n"),
-                   let textLayoutManager = textView.textLayoutManager {
-                    var trailingLineHeight: CGFloat = 0
-                    textLayoutManager.enumerateTextLayoutFragments(
-                        from: nil,
-                        options: [.reverse, .ensuresLayout]
-                    ) { fragment in
-                        if let lastLine = fragment.textLineFragments.last {
-                            trailingLineHeight = lastLine.typographicBounds.height
-                        }
-                        return false
-                    }
-                    height += ceil(trailingLineHeight)
-                }
+                // Ask UITextView where the caret would sit at the end of the
+                // text. This already accounts for every layout-time detail —
+                // line wrapping, trailing `\n` producing an empty visual line,
+                // line-height adjustments. Bottom of caret + bottom inset =
+                // total content height the editor needs to display.
+                let endPos = textView.endOfDocument
+                let caretRect = textView.caretRect(for: endPos)
+                guard !caretRect.isNull,
+                      caretRect.height.isFinite,
+                      caretRect.height > 0 else { return }
+                let height = ceil(caretRect.maxY + textView.textContainerInset.bottom)
 
                 // Toggle internal scrolling: only enable once content exceeds
                 // maxHeight so the frame can grow naturally below that.
