@@ -49,6 +49,28 @@ public final class TextAreaProxy: ObservableObject {
     public func dismissMenu() {
         controller?.dismiss()
     }
+
+    /// Resign focus from the underlying platform text view.
+    ///
+    /// Useful when a surrounding scroll view wants keyboard-dismiss behavior:
+    /// the scroll view can call this proxy instead of relying on global
+    /// responder-chain actions that may miss custom UIKit/AppKit wrappers.
+    @MainActor
+    public func dismissKeyboard() {
+        controller?.dismissKeyboard()
+    }
+}
+
+public extension View {
+    /// Supplies an externally-owned proxy to descendant ``TextArea`` views.
+    ///
+    /// `TextAreaReader` is still the convenient local form. Use this modifier
+    /// when a sibling view, such as an enclosing scroll view, needs to drive
+    /// the text area's focus state.
+    @MainActor
+    func textAreaProxy(_ proxy: TextAreaProxy) -> some View {
+        environment(\.textAreaProxy, proxy)
+    }
 }
 
 // MARK: - Reader

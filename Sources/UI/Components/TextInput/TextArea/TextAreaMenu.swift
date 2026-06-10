@@ -9,6 +9,8 @@ import SwiftUI
 
 #if canImport(AppKit)
 import AppKit
+#elseif canImport(UIKit)
+import UIKit
 #endif
 
 // MARK: - State
@@ -36,6 +38,8 @@ final class TextAreaController: ObservableObject {
 
 #if canImport(AppKit)
     weak var textView: AutoGrowNSTextView?
+#elseif canImport(UIKit)
+    weak var textView: AutoGrowUITextView?
 #endif
 
     private var searchTaskID = UUID()
@@ -181,6 +185,16 @@ final class TextAreaController: ObservableObject {
         menuState = nil
     }
 
+    func dismissKeyboard() {
+        menuState = nil
+#if canImport(AppKit)
+        guard let textView else { return }
+        textView.window?.makeFirstResponder(nil)
+#elseif canImport(UIKit)
+        textView?.resignFirstResponder()
+#endif
+    }
+
     /// Programmatically insert `character` at the current caret and open its
     /// trigger menu (if registered). Boundary checks are skipped — the menu
     /// opens regardless of surrounding whitespace.
@@ -267,6 +281,11 @@ final class TextAreaController: ObservableObject {
     func handlePaste(_ items: [TextAreaPasteItem]) -> Bool {
 #if canImport(AppKit)
         guard let textView else { return false }
+#elseif canImport(UIKit)
+        guard let textView else { return false }
+#else
+        return false
+#endif
         var handledAny = false
         for item in items {
             let result = pasteHandler?(item)
@@ -282,9 +301,6 @@ final class TextAreaController: ObservableObject {
             }
         }
         return handledAny
-#else
-        return false
-#endif
     }
 
 #if canImport(AppKit)
@@ -329,6 +345,32 @@ final class TextAreaController: ObservableObject {
         textView.textStorage?.replaceCharacters(in: range, with: attrStr)
         textView.didChangeText()
         isProgrammaticEdit = false
+    }
+#endif
+
+#if canImport(UIKit)
+    private func applyAtCaret(
+        _ insertion: TextAreaInsertion,
+        in textView: AutoGrowUITextView
+    ) {
+        switch insertion {
+        case .text(let s):
+            insertText(s, in: textView)
+        case .token(let token):
+            insertText(token.plainText, in: textView)
+        case .action(let perform):
+            perform()
+        case .submenu, .dismiss:
+            break
+        }
+    }
+
+    private func insertText(_ s: String, in textView: AutoGrowUITextView) {
+        if let range = textView.selectedTextRange {
+            textView.replace(range, withText: s)
+        } else {
+            textView.insertText(s)
+        }
     }
 #endif
 }

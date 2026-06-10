@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 #if canImport(AppKit)
 import AppKit
@@ -31,6 +32,10 @@ public enum TextAreaPasteItem {
 
 #if canImport(AppKit)
 extension TextAreaPasteItem {
+    static func items(from pasteboard: NSPasteboard) -> [TextAreaPasteItem] {
+        pasteboard.pasteboardItems?.compactMap { TextAreaPasteItem(from: $0) } ?? []
+    }
+
     /// Classify a single `NSPasteboardItem` in priority order:
     /// image > fileURL > url > text > unknown.
     init?(from pbItem: NSPasteboardItem) {
@@ -64,6 +69,87 @@ extension TextAreaPasteItem {
            let data = pbItem.data(forType: firstType) {
             self = .unknown(data, type: firstType.rawValue)
             return
+        }
+        return nil
+    }
+}
+#endif
+
+#if canImport(UIKit) && !os(watchOS) && !os(tvOS)
+extension TextAreaPasteItem {
+    static func items(from pasteboard: UIPasteboard) -> [TextAreaPasteItem] {
+        if let image = pasteboard.image {
+            return [.image(image)]
+        }
+
+        if let url = pasteboard.url {
+            return [url.isFileURL ? .fileURL(url) : .url(url)]
+        }
+
+        if let string = pasteboard.string {
+            return [.text(string)]
+        }
+
+        return pasteboard.items.compactMap { item in
+            TextAreaPasteItem(from: item)
+        }
+    }
+
+    init?(from pasteboardItem: [String: Any]) {
+        for (typeIdentifier, value) in pasteboardItem {
+            guard let type = UTType(typeIdentifier) else { continue }
+
+            if type.conforms(to: .image) {
+                if let image = value as? UIImage {
+                    self = .image(image)
+                    return
+                }
+                if let data = value as? Data, let image = UIImage(data: data) {
+                    self = .image(image)
+                    return
+                }
+            }
+
+            if type.conforms(to: .fileURL),
+               let url = Self.url(from: value),
+               url.isFileURL {
+                self = .fileURL(url)
+                return
+            }
+
+            if type.conforms(to: .url),
+               let url = Self.url(from: value) {
+                self = url.isFileURL ? .fileURL(url) : .url(url)
+                return
+            }
+        }
+
+        for (typeIdentifier, value) in pasteboardItem {
+            guard let data = value as? Data else { continue }
+            self = .unknown(data, type: typeIdentifier)
+            return
+        }
+
+        if let string = pasteboardItem.values.compactMap({ $0 as? String }).first {
+            self = .text(string)
+            return
+        }
+
+        return nil
+    }
+
+    private static func url(from value: Any) -> URL? {
+        if let url = value as? URL {
+            return url
+        }
+        if let url = value as? NSURL {
+            return url as URL
+        }
+        if let data = value as? Data {
+            return URL(dataRepresentation: data, relativeTo: nil)
+        }
+        if let string = value as? String {
+            return URL(string: string)
         }
         return nil
     }
