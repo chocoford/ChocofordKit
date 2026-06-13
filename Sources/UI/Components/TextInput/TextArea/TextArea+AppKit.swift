@@ -63,6 +63,7 @@ extension TextArea {
             textView.autoresizingMask = .width
             textView.string = text
             textView.userKeyDownHandler = config.userKeyDownHandler
+            textView.submitOnReturn = config.submitOnReturn
 
             scrollView.documentView = textView
             context.coordinator.textView = textView
@@ -83,6 +84,7 @@ extension TextArea {
             guard let textView = scrollView.documentView as? AutoGrowNSTextView else { return }
             let didUpdateInsets = applyTextInsets(to: textView)
             textView.userKeyDownHandler = config.userKeyDownHandler
+            textView.submitOnReturn = config.submitOnReturn
             textView.controller = controller
             controller.textView = textView
             controller.triggers = config.triggers
@@ -162,39 +164,8 @@ extension TextArea {
             func recomputeHeight() {
                 guard let textView else { return }
 
-                let contentHeight: CGFloat
-                if let textLayoutManager = textView.textLayoutManager {
-                    // TextKit 2
-                    textLayoutManager.ensureLayout(for: textLayoutManager.documentRange)
-                    contentHeight = textLayoutManager.usageBoundsForTextContainer.height
-                } else if let layoutManager = textView.layoutManager,
-                          let textContainer = textView.textContainer {
-                    // TextKit 1 fallback
-                    layoutManager.ensureLayout(for: textContainer)
-                    contentHeight = layoutManager.usedRect(for: textContainer).height
-                } else {
-                    return
-                }
-
-                var height = ceil(contentHeight) + textView.textContainerInset.height * 2
-                // `usageBoundsForTextContainer` doesn't count the empty line a
-                // trailing `\n` produces — ask the last laid-out fragment for
-                // its actual line height (matches what TextKit will use when a
-                // character is typed there, so the editor height doesn't jump).
-                if textView.string.hasSuffix("\n"),
-                   let textLayoutManager = textView.textLayoutManager {
-                    var trailingLineHeight: CGFloat = 0
-                    textLayoutManager.enumerateTextLayoutFragments(
-                        from: nil,
-                        options: [.reverse, .ensuresLayout]
-                    ) { fragment in
-                        if let lastLine = fragment.textLineFragments.last {
-                            trailingLineHeight = lastLine.typographicBounds.height
-                        }
-                        return false
-                    }
-                    height += ceil(trailingLineHeight)
-                }
+                let contentHeight = measuredContentHeight(in: textView)
+                let height = ceil(contentHeight) + textView.textContainerInset.height * 2
 
                 // Toggle the scroller based on whether content actually exceeds
                 // maxHeight, not on the current (animated) frame size. Otherwise
@@ -245,6 +216,48 @@ extension TextArea {
                     parent.isComposing = composing
                 }
             }
+
+            private func measuredContentHeight(in textView: AutoGrowNSTextView) -> CGFloat {
+                let width = measuredTextWidth(in: textView)
+                let attributed = measuredAttributedString(in: textView)
+                let rect = attributed.boundingRect(
+                    with: NSSize(
+                        width: width,
+                        height: CGFloat.greatestFiniteMagnitude
+                    ),
+                    options: [.usesLineFragmentOrigin, .usesFontLeading]
+                )
+                return ceil(rect.height)
+            }
+
+            private func measuredAttributedString(in textView: AutoGrowNSTextView) -> NSAttributedString {
+                let attributed = textView.attributedString()
+                guard attributed.length == 0 else { return attributed }
+
+                let font = textView.font ?? .systemFont(ofSize: NSFont.systemFontSize)
+                return NSAttributedString(string: " ", attributes: [.font: font])
+            }
+
+            private func measuredTextWidth(in textView: AutoGrowNSTextView) -> CGFloat {
+                let containerWidth = [
+                    textView.bounds.width,
+                    textView.enclosingScrollView?.contentSize.width ?? 0,
+                    measuredTextContainerWidth(in: textView)
+                ]
+                .first { $0 > 0 } ?? 1
+                let horizontalInset = textView.textContainerInset.width * 2
+                let lineFragmentPadding = (textView.textContainer?.lineFragmentPadding ?? 0) * 2
+                return max(1, containerWidth - horizontalInset - lineFragmentPadding)
+            }
+
+            private func measuredTextContainerWidth(in textView: AutoGrowNSTextView) -> CGFloat {
+                guard let width = textView.textContainer?.containerSize.width,
+                      width.isFinite,
+                      width < CGFloat.greatestFiniteMagnitude / 2 else {
+                    return 0
+                }
+                return width
+            }
         }
     }
 }
@@ -253,6 +266,7 @@ final class AutoGrowNSTextView: NSTextView {
     fileprivate weak var coordinator: TextArea.Representable.Coordinator?
     weak var controller: TextAreaController?
     var userKeyDownHandler: TextFieldKeyDownEventHandler?
+    var submitOnReturn: (() -> Void)?
     private var isNormalizingAttributes = false
     private var lastFrameWidth: CGFloat = 0
     private var heightRecomputeScheduled = false
@@ -280,6 +294,12 @@ final class AutoGrowNSTextView: NSTextView {
                 default:
                     break
             }
+        }
+        if let submitOnReturn,
+           event.keyCode == 36,
+           !event.modifierFlags.contains(.shift) {
+            submitOnReturn()
+            return
         }
         if let handler = userKeyDownHandler {
             if handler(event) == nil { return }

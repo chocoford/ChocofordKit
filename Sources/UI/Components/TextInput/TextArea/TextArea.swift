@@ -233,6 +233,8 @@ public struct TextArea: View {
         var clipShapeApplier: ((AnyView) -> AnyView)?
         var onSingleLineChanged: ((_ isSingleLine: Bool) -> Void)?
         var linesOverflowBinding: Binding<Bool>?
+        var autofocus: Bool = false
+        var submitOnReturn: (() -> Void)?
         var triggers: [Character: AnyTextAreaTrigger] = [:]
         var pasteHandler: ((TextAreaPasteItem) -> TextAreaInsertion?)?
 #if canImport(AppKit)
@@ -322,6 +324,33 @@ public struct TextArea: View {
     @MainActor
     public func linesOverflow(_ isOverflowing: Binding<Bool>) -> TextArea {
         self.config.linesOverflowBinding = isOverflowing
+        return self
+    }
+
+    /// Requests focus once when the underlying platform text view is ready.
+    ///
+    /// This is intentionally opt-in. Unlike SwiftUI's `.focused`, the request
+    /// is fulfilled by the wrapped text view itself after it has entered a
+    /// window, which avoids the common "focus before UIKit/AppKit is ready"
+    /// race during animated presentation.
+    ///
+    /// - Parameter enabled: Pass `false` to keep the modifier in a conditional
+    ///   chain without requesting focus. Defaults to `true`.
+    /// - Returns: A text area that focuses itself once on appearance.
+    @MainActor
+    public func autofocus(_ enabled: Bool = true) -> TextArea {
+        self.config.autofocus = enabled
+        return self
+    }
+
+    /// Submits when the user presses Return without Shift.
+    ///
+    /// On iOS this intercepts software keyboard Return and hardware keyboard
+    /// Return. Hardware Shift-Return still inserts a newline. On macOS this
+    /// maps to Return while preserving Shift-Return for newline.
+    @MainActor
+    public func submitOnReturn(_ action: @escaping () -> Void) -> TextArea {
+        self.config.submitOnReturn = action
         return self
     }
 

@@ -38,6 +38,7 @@ extension TextArea {
             // We flip to scrolling once measured height exceeds maxHeight, see
             // recomputeHeight below.
             textView.isScrollEnabled = false
+            textView.returnKeyType = config.submitOnReturn == nil ? .default : .send
             textView.text = text
 
             context.coordinator.textView = textView
@@ -47,6 +48,7 @@ extension TextArea {
             DispatchQueue.main.async {
                 context.coordinator.recomputeHeight()
             }
+            context.coordinator.scheduleAutofocusIfNeeded()
             return textView
         }
 
@@ -54,6 +56,7 @@ extension TextArea {
             let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
             context.coordinator.parent = self
             controller.pasteHandler = config.pasteHandler
+            textView.returnKeyType = config.submitOnReturn == nil ? .default : .send
             let didUpdateInsets = applyTextInsets(to: textView)
             // Skip while IME is composing — assigning `text` clears marked text.
             if textView.markedTextRange == nil && textView.text != text {
@@ -66,6 +69,7 @@ extension TextArea {
                     context.coordinator.recomputeHeight()
                 }
             }
+            context.coordinator.scheduleAutofocusIfNeeded()
         }
 
         @discardableResult
@@ -98,9 +102,15 @@ extension TextArea {
             fileprivate var parent: Representable
             weak var textView: AutoGrowUITextView?
             private var lastIsSingleLine: Bool?
+            private var didAutofocus = false
+            private var autofocusTask: Task<Void, Never>?
 
             fileprivate init(_ parent: Representable) {
                 self.parent = parent
+            }
+
+            deinit {
+                autofocusTask?.cancel()
             }
 
             func textViewDidChange(_ textView: UITextView) {
@@ -118,6 +128,22 @@ extension TextArea {
 
             func textViewDidChangeSelection(_ textView: UITextView) {
                 recomputeComposing()
+            }
+
+            func textView(
+                _ textView: UITextView,
+                shouldChangeTextIn range: NSRange,
+                replacementText text: String
+            ) -> Bool {
+                guard text == "\n",
+                      textView.markedTextRange == nil,
+                      let submitOnReturn = parent.config.submitOnReturn
+                else {
+                    return true
+                }
+
+                submitOnReturn()
+                return false
             }
 
             func recomputeHeight() {
@@ -176,6 +202,51 @@ extension TextArea {
                 }
             }
 
+            func scheduleAutofocusIfNeeded() {
+                guard parent.config.autofocus,
+                      !didAutofocus,
+                      autofocusTask == nil
+                else {
+                    return
+                }
+                autofocusTask?.cancel()
+                autofocusTask = Task { @MainActor [weak self] in
+                    await self?.focusWhenReady()
+                }
+            }
+
+            private func focusWhenReady() async {
+                defer {
+                    autofocusTask = nil
+                }
+
+                let delays: [UInt64] = [
+                    0,
+                    50_000_000,
+                    120_000_000,
+                    250_000_000,
+                    500_000_000
+                ]
+
+                for delay in delays {
+                    guard parent.config.autofocus, !didAutofocus else { return }
+                    if delay > 0 {
+                        try? await Task.sleep(nanoseconds: delay)
+                    }
+                    guard !Task.isCancelled,
+                          let textView
+                    else {
+                        return
+                    }
+                    guard textView.window != nil else { continue }
+                    textView.becomeFirstResponder()
+                    if textView.isFirstResponder {
+                        didAutofocus = true
+                        return
+                    }
+                }
+            }
+
             func recomputeComposing() {
                 let composing = textView?.markedTextRange != nil
                 if parent.isComposing != composing {
@@ -218,6 +289,12 @@ final class AutoGrowUITextView: UITextView {
     private var lastFrameWidth: CGFloat = 0
     private var heightRecomputeScheduled = false
 
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        guard window != nil else { return }
+        coordinator?.scheduleAutofocusIfNeeded()
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         // Only react to width changes (rotation / parent reflow); height
@@ -230,6 +307,21 @@ final class AutoGrowUITextView: UITextView {
             self?.heightRecomputeScheduled = false
             self?.coordinator?.recomputeHeight()
         }
+    }
+
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        guard let press = presses.first,
+              let key = press.key,
+              key.charactersIgnoringModifiers == "\r" || key.charactersIgnoringModifiers == "\n",
+              !key.modifierFlags.contains(.shift),
+              markedTextRange == nil,
+              let submitOnReturn = coordinator?.parent.config.submitOnReturn
+        else {
+            super.pressesBegan(presses, with: event)
+            return
+        }
+
+        submitOnReturn()
     }
 
     override func paste(_ sender: Any?) {
