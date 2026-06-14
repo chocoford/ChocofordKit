@@ -345,8 +345,9 @@ public struct TextArea: View {
 
     /// Submits when the user presses Return without Shift.
     ///
-    /// On iOS this intercepts software keyboard Return and hardware keyboard
-    /// Return. Hardware Shift-Return still inserts a newline. On macOS this
+    /// On iOS this only handles hardware keyboard Return; software keyboard
+    /// Return keeps the normal multi-line editor behavior and inserts a
+    /// newline. Hardware Shift-Return still inserts a newline. On macOS this
     /// maps to Return while preserving Shift-Return for newline.
     @MainActor
     public func submitOnReturn(_ action: @escaping () -> Void) -> TextArea {

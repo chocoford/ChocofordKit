@@ -38,7 +38,7 @@ extension TextArea {
             // We flip to scrolling once measured height exceeds maxHeight, see
             // recomputeHeight below.
             textView.isScrollEnabled = false
-            textView.returnKeyType = config.submitOnReturn == nil ? .default : .send
+            textView.returnKeyType = .default
             textView.text = text
 
             context.coordinator.textView = textView
@@ -56,7 +56,7 @@ extension TextArea {
             let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
             context.coordinator.parent = self
             controller.pasteHandler = config.pasteHandler
-            textView.returnKeyType = config.submitOnReturn == nil ? .default : .send
+            textView.returnKeyType = .default
             let didUpdateInsets = applyTextInsets(to: textView)
             // Skip while IME is composing — assigning `text` clears marked text.
             if textView.markedTextRange == nil && textView.text != text {
@@ -135,15 +135,10 @@ extension TextArea {
                 shouldChangeTextIn range: NSRange,
                 replacementText text: String
             ) -> Bool {
-                guard text == "\n",
-                      textView.markedTextRange == nil,
-                      let submitOnReturn = parent.config.submitOnReturn
-                else {
-                    return true
-                }
-
-                submitOnReturn()
-                return false
+                // Software keyboard Return reaches this delegate path as
+                // "\n"; keep it as normal multiline input. Hardware
+                // Return is handled by AutoGrowUITextView.pressesBegan.
+                return true
             }
 
             func recomputeHeight() {
