@@ -38,7 +38,10 @@ extension TextArea {
             // We flip to scrolling once measured height exceeds maxHeight, see
             // recomputeHeight below.
             textView.isScrollEnabled = false
-            textView.returnKeyType = .default
+            textView.returnKeyType = config.submitOnReturn != nil
+                && config.submitOnReturnSources.contains(.softwareKeyboard)
+                ? .send
+                : .default
             textView.text = text
 
             context.coordinator.textView = textView
@@ -56,7 +59,10 @@ extension TextArea {
             let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
             context.coordinator.parent = self
             controller.pasteHandler = config.pasteHandler
-            textView.returnKeyType = .default
+            textView.returnKeyType = config.submitOnReturn != nil
+                && config.submitOnReturnSources.contains(.softwareKeyboard)
+                ? .send
+                : .default
             let didUpdateInsets = applyTextInsets(to: textView)
             // Skip while IME is composing — assigning `text` clears marked text.
             if textView.markedTextRange == nil && textView.text != text {
@@ -135,10 +141,16 @@ extension TextArea {
                 shouldChangeTextIn range: NSRange,
                 replacementText text: String
             ) -> Bool {
-                // Software keyboard Return reaches this delegate path as
-                // "\n"; keep it as normal multiline input. Hardware
-                // Return is handled by AutoGrowUITextView.pressesBegan.
-                return true
+                guard text == "\n",
+                      textView.markedTextRange == nil,
+                      parent.config.submitOnReturnSources.contains(.softwareKeyboard),
+                      let submitOnReturn = parent.config.submitOnReturn
+                else {
+                    return true
+                }
+
+                submitOnReturn()
+                return false
             }
 
             func recomputeHeight() {
@@ -310,6 +322,7 @@ final class AutoGrowUITextView: UITextView {
               key.charactersIgnoringModifiers == "\r" || key.charactersIgnoringModifiers == "\n",
               !key.modifierFlags.contains(.shift),
               markedTextRange == nil,
+              coordinator?.parent.config.submitOnReturnSources.contains(.hardwareKeyboard) == true,
               let submitOnReturn = coordinator?.parent.config.submitOnReturn
         else {
             super.pressesBegan(presses, with: event)

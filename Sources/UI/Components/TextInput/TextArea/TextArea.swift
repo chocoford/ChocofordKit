@@ -120,6 +120,18 @@ import UIKit
 ///
 /// ### Pasting custom content
 /// - ``onPaste(_:)``
+public struct TextAreaReturnSubmitSources: OptionSet, Sendable {
+    public let rawValue: Int
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+
+    public static let softwareKeyboard = TextAreaReturnSubmitSources(rawValue: 1 << 0)
+    public static let hardwareKeyboard = TextAreaReturnSubmitSources(rawValue: 1 << 1)
+    public static let all: TextAreaReturnSubmitSources = [.softwareKeyboard, .hardwareKeyboard]
+}
+
 public struct TextArea: View {
     @Binding var inputText: String
     var placeholder: Text
@@ -235,6 +247,7 @@ public struct TextArea: View {
         var linesOverflowBinding: Binding<Bool>?
         var autofocus: Bool = false
         var submitOnReturn: (() -> Void)?
+        var submitOnReturnSources: TextAreaReturnSubmitSources = .all
         var triggers: [Character: AnyTextAreaTrigger] = [:]
         var pasteHandler: ((TextAreaPasteItem) -> TextAreaInsertion?)?
 #if canImport(AppKit)
@@ -345,13 +358,16 @@ public struct TextArea: View {
 
     /// Submits when the user presses Return without Shift.
     ///
-    /// On iOS this only handles hardware keyboard Return; software keyboard
-    /// Return keeps the normal multi-line editor behavior and inserts a
-    /// newline. Hardware Shift-Return still inserts a newline. On macOS this
-    /// maps to Return while preserving Shift-Return for newline.
+    /// By default, this handles both software and hardware keyboard Return
+    /// where the platform exposes them. Pass `sources` to choose a narrower
+    /// policy, such as hardware-keyboard-only submission on iPad.
     @MainActor
-    public func submitOnReturn(_ action: @escaping () -> Void) -> TextArea {
+    public func submitOnReturn(
+        sources: TextAreaReturnSubmitSources = .all,
+        _ action: @escaping () -> Void
+    ) -> TextArea {
         self.config.submitOnReturn = action
+        self.config.submitOnReturnSources = sources
         return self
     }
 

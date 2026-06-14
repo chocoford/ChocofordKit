@@ -64,6 +64,7 @@ extension TextArea {
             textView.string = text
             textView.userKeyDownHandler = config.userKeyDownHandler
             textView.submitOnReturn = config.submitOnReturn
+            textView.submitOnReturnSources = config.submitOnReturnSources
 
             scrollView.documentView = textView
             context.coordinator.textView = textView
@@ -85,6 +86,7 @@ extension TextArea {
             let didUpdateInsets = applyTextInsets(to: textView)
             textView.userKeyDownHandler = config.userKeyDownHandler
             textView.submitOnReturn = config.submitOnReturn
+            textView.submitOnReturnSources = config.submitOnReturnSources
             textView.controller = controller
             controller.textView = textView
             controller.triggers = config.triggers
@@ -267,6 +269,7 @@ final class AutoGrowNSTextView: NSTextView {
     weak var controller: TextAreaController?
     var userKeyDownHandler: TextFieldKeyDownEventHandler?
     var submitOnReturn: (() -> Void)?
+    var submitOnReturnSources: TextAreaReturnSubmitSources = .all
     private var isNormalizingAttributes = false
     private var lastFrameWidth: CGFloat = 0
     private var heightRecomputeScheduled = false
@@ -297,7 +300,8 @@ final class AutoGrowNSTextView: NSTextView {
         }
         if let submitOnReturn,
            event.keyCode == 36,
-           !event.modifierFlags.contains(.shift) {
+           !event.modifierFlags.contains(.shift),
+           submitOnReturnSources.contains(.hardwareKeyboard) {
             submitOnReturn()
             return
         }
