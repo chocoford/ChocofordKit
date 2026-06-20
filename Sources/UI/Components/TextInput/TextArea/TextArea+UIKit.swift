@@ -9,6 +9,31 @@
 import SwiftUI
 import UIKit
 
+extension TextAreaFont {
+    var uiKitFont: UIFont {
+        let pointSize = size ?? UIFont.preferredFont(forTextStyle: .body).pointSize
+        switch design {
+            case .default:
+                return .systemFont(ofSize: pointSize, weight: uiKitWeight)
+            case .monospaced:
+                return .monospacedSystemFont(ofSize: pointSize, weight: uiKitWeight)
+        }
+    }
+
+    private var uiKitWeight: UIFont.Weight {
+        switch weight {
+            case .regular:
+                return .regular
+            case .medium:
+                return .medium
+            case .semibold:
+                return .semibold
+            case .bold:
+                return .bold
+        }
+    }
+}
+
 extension TextArea {
     struct Representable: UIViewRepresentable {
         @Binding var text: String
@@ -28,7 +53,7 @@ extension TextArea {
             let textView = AutoGrowUITextView()
             textView.coordinator = context.coordinator
             textView.delegate = context.coordinator
-            textView.font = .preferredFont(forTextStyle: .body)
+            textView.font = config.font.uiKitFont
             textView.backgroundColor = .clear
             textView.textColor = .label
             textView.tintColor = .label
@@ -59,6 +84,7 @@ extension TextArea {
             let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
             context.coordinator.parent = self
             controller.pasteHandler = config.pasteHandler
+            let didUpdateFont = applyFont(to: textView)
             textView.returnKeyType = config.submitOnReturn != nil
                 && config.submitOnReturnSources.contains(.softwareKeyboard)
                 ? .send
@@ -70,12 +96,20 @@ extension TextArea {
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
-            } else if didUpdateInsets || maxHeightChanged {
+            } else if didUpdateFont || didUpdateInsets || maxHeightChanged {
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
             }
             context.coordinator.scheduleAutofocusIfNeeded()
+        }
+
+        @discardableResult
+        private func applyFont(to textView: UITextView) -> Bool {
+            let font = config.font.uiKitFont
+            guard textView.font != font else { return false }
+            textView.font = font
+            return true
         }
 
         @discardableResult
@@ -178,8 +212,12 @@ extension TextArea {
                 // Toggle internal scrolling: only enable once content exceeds
                 // maxHeight so the frame can grow naturally below that.
                 let isOverflowing = height > parent.config.maxHeight + parent.config.overflowTolerance
+                textView.isContentOverflowing = isOverflowing
                 if textView.isScrollEnabled != isOverflowing {
                     textView.isScrollEnabled = isOverflowing
+                }
+                if !isOverflowing {
+                    textView.resetContentOffsetIfNeeded()
                 }
                 if let binding = parent.config.linesOverflowBinding,
                    binding.wrappedValue != isOverflowing {
@@ -293,6 +331,7 @@ extension TextArea {
 
 final class AutoGrowUITextView: UITextView {
     fileprivate weak var coordinator: TextArea.Representable.Coordinator?
+    fileprivate var isContentOverflowing = false
     private var lastFrameWidth: CGFloat = 0
     private var heightRecomputeScheduled = false
 
@@ -330,6 +369,16 @@ final class AutoGrowUITextView: UITextView {
         }
 
         submitOnReturn()
+    }
+
+    override func scrollRangeToVisible(_ range: NSRange) {
+        guard isContentOverflowing else { return }
+        super.scrollRangeToVisible(range)
+    }
+
+    fileprivate func resetContentOffsetIfNeeded() {
+        guard contentOffset != .zero else { return }
+        setContentOffset(.zero, animated: false)
     }
 
     override func paste(_ sender: Any?) {

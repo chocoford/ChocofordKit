@@ -9,6 +9,31 @@
 import SwiftUI
 import AppKit
 
+extension TextAreaFont {
+    var appKitFont: NSFont {
+        let pointSize = size ?? NSFont.systemFontSize
+        switch design {
+            case .default:
+                return .systemFont(ofSize: pointSize, weight: appKitWeight)
+            case .monospaced:
+                return .monospacedSystemFont(ofSize: pointSize, weight: appKitWeight)
+        }
+    }
+
+    private var appKitWeight: NSFont.Weight {
+        switch weight {
+            case .regular:
+                return .regular
+            case .medium:
+                return .medium
+            case .semibold:
+                return .semibold
+            case .bold:
+                return .bold
+        }
+    }
+}
+
 extension TextArea {
     struct Representable: NSViewRepresentable {
         @Binding var text: String
@@ -42,14 +67,15 @@ extension TextArea {
             textView.allowsImageEditing = false
             textView.allowsUndo = true
             textView.drawsBackground = false
-            textView.font = .systemFont(ofSize: NSFont.systemFontSize)
+            let font = config.font.appKitFont
+            textView.font = font
             // Bind to system-dynamic colors so appearance changes (light/dark)
             // propagate even if some path replaces attributes.
             textView.textColor = .labelColor
             textView.insertionPointColor = .labelColor
             textView.typingAttributes = [
                 .foregroundColor: NSColor.labelColor,
-                .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)
+                .font: font
             ]
             applyTextInsets(to: textView)
             textView.textContainer?.widthTracksTextView = true
@@ -83,6 +109,7 @@ extension TextArea {
             let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
             context.coordinator.parent = self
             guard let textView = scrollView.documentView as? AutoGrowNSTextView else { return }
+            let didUpdateFont = applyFont(to: textView)
             let didUpdateInsets = applyTextInsets(to: textView)
             textView.userKeyDownHandler = config.userKeyDownHandler
             textView.submitOnReturn = config.submitOnReturn
@@ -99,11 +126,53 @@ extension TextArea {
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
-            } else if didUpdateInsets || maxHeightChanged {
+            } else if didUpdateFont || didUpdateInsets || maxHeightChanged {
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
             }
+        }
+
+        @discardableResult
+        private func applyFont(to textView: AutoGrowNSTextView) -> Bool {
+            let font = config.font.appKitFont
+            var didChange = false
+            if textView.font != font {
+                textView.font = font
+                didChange = true
+            }
+
+            var typing = textView.typingAttributes
+            if let currentFont = typing[.font] as? NSFont {
+                if !currentFont.isEqual(font) {
+                    typing[.font] = font
+                    didChange = true
+                }
+            } else {
+                typing[.font] = font
+                didChange = true
+            }
+            if let currentColor = typing[.foregroundColor] as? NSColor {
+                if !currentColor.isEqual(NSColor.labelColor) {
+                    typing[.foregroundColor] = NSColor.labelColor
+                    didChange = true
+                }
+            } else {
+                typing[.foregroundColor] = NSColor.labelColor
+                didChange = true
+            }
+            textView.typingAttributes = typing
+
+            if didChange,
+               let textStorage = textView.textStorage,
+               textStorage.length > 0 {
+                textStorage.addAttribute(
+                    .font,
+                    value: font,
+                    range: NSRange(location: 0, length: textStorage.length)
+                )
+            }
+            return didChange
         }
 
         @discardableResult
@@ -136,6 +205,7 @@ extension TextArea {
             var parent: Representable
             weak var textView: AutoGrowNSTextView?
             weak var scrollView: NSScrollView?
+            fileprivate var isOverflowing = false
 
             init(_ parent: Representable) {
                 self.parent = parent
@@ -174,10 +244,14 @@ extension TextArea {
                 // the scroll bar flashes during the grow animation while the
                 // SwiftUI frame is still catching up to the new content height.
                 let isOverflowing = height > parent.config.maxHeight + parent.config.overflowTolerance
+                self.isOverflowing = isOverflowing
                 if let scrollView {
                     if scrollView.hasVerticalScroller != isOverflowing {
                         scrollView.hasVerticalScroller = isOverflowing
                     }
+                }
+                if !isOverflowing {
+                    resetScrollPositionToTop()
                 }
                 if let binding = parent.config.linesOverflowBinding,
                    binding.wrappedValue != isOverflowing {
@@ -236,7 +310,7 @@ extension TextArea {
                 let attributed = textView.attributedString()
                 guard attributed.length == 0 else { return attributed }
 
-                let font = textView.font ?? .systemFont(ofSize: NSFont.systemFontSize)
+                let font = textView.font ?? parent.config.font.appKitFont
                 return NSAttributedString(string: " ", attributes: [.font: font])
             }
 
@@ -259,6 +333,24 @@ extension TextArea {
                     return 0
                 }
                 return width
+            }
+
+            private func resetScrollPositionToTop() {
+                guard let scrollView,
+                      let documentView = scrollView.documentView
+                else { return }
+
+                let clipView = scrollView.contentView
+                let targetY: CGFloat
+                if documentView.isFlipped {
+                    targetY = 0
+                } else {
+                    targetY = max(0, documentView.bounds.height - clipView.bounds.height)
+                }
+                let targetOrigin = NSPoint(x: 0, y: targetY)
+                guard clipView.bounds.origin != targetOrigin else { return }
+                clipView.scroll(to: targetOrigin)
+                scrollView.reflectScrolledClipView(clipView)
             }
         }
     }
@@ -311,6 +403,11 @@ final class AutoGrowNSTextView: NSTextView {
         super.keyDown(with: event)
     }
 
+    override func scrollRangeToVisible(_ range: NSRange) {
+        guard coordinator?.isOverflowing == true else { return }
+        super.scrollRangeToVisible(range)
+    }
+
     override func setMarkedText(_ string: Any, selectedRange: NSRange, replacementRange: NSRange) {
         super.setMarkedText(string, selectedRange: selectedRange, replacementRange: replacementRange)
         // Coalesce rapid IME compose events into a single update per runloop.
@@ -359,11 +456,17 @@ final class AutoGrowNSTextView: NSTextView {
         // Removing the attribute alone is unreliable: some rendering paths
         // fall back to a hardcoded color instead of the textView's textColor.
         textStorage.addAttribute(.foregroundColor, value: NSColor.labelColor, range: range)
+        textStorage.addAttribute(
+            .font,
+            value: coordinator?.parent.config.font.appKitFont ?? NSFont.systemFont(ofSize: NSFont.systemFontSize),
+            range: range
+        )
         textStorage.endEditing()
         // Also keep typingAttributes dynamic so the next character the user
         // types after a formatted paste isn't locked to the source colour.
         var typing = self.typingAttributes
         typing[.foregroundColor] = NSColor.labelColor
+        typing[.font] = coordinator?.parent.config.font.appKitFont ?? NSFont.systemFont(ofSize: NSFont.systemFontSize)
         self.typingAttributes = typing
         isNormalizingAttributes = false
     }

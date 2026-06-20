@@ -132,6 +132,36 @@ public struct TextAreaReturnSubmitSources: OptionSet, Sendable {
     public static let all: TextAreaReturnSubmitSources = [.softwareKeyboard, .hardwareKeyboard]
 }
 
+public struct TextAreaFont: Equatable, Sendable {
+    public enum Design: Equatable, Sendable {
+        case `default`
+        case monospaced
+    }
+
+    public enum Weight: Equatable, Sendable {
+        case regular
+        case medium
+        case semibold
+        case bold
+    }
+
+    var size: CGFloat?
+    var weight: Weight
+    var design: Design
+
+    public static var body: TextAreaFont {
+        .system()
+    }
+
+    public static func system(
+        size: CGFloat? = nil,
+        weight: Weight = .regular,
+        design: Design = .default
+    ) -> TextAreaFont {
+        TextAreaFont(size: size, weight: weight, design: design)
+    }
+}
+
 public struct TextArea: View {
     @Binding var inputText: String
     var placeholder: Text
@@ -218,10 +248,10 @@ public struct TextArea: View {
     private var estimatedSingleLineHeight: CGFloat {
         let verticalInset = config.textInsets.top + config.textInsets.bottom
 #if canImport(AppKit)
-        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let font = config.font.appKitFont
         return ceil(font.boundingRectForFont.height) + verticalInset
 #elseif canImport(UIKit)
-        let font = UIFont.preferredFont(forTextStyle: .body)
+        let font = config.font.uiKitFont
         return ceil(font.lineHeight) + verticalInset
 #else
         return 40
@@ -240,6 +270,7 @@ public struct TextArea: View {
     class Config {
         var maxHeight: CGFloat = 200
         var textInsets = EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        var font: TextAreaFont = .body
         var overflowTolerance: CGFloat = 1
         var background: AnyView = AnyView(EmptyView())
         var clipShapeApplier: ((AnyView) -> AnyView)?
@@ -282,6 +313,14 @@ public struct TextArea: View {
     @MainActor
     public func textInsets(_ insets: EdgeInsets) -> TextArea {
         self.config.textInsets = insets
+        return self
+    }
+
+    /// Sets the editor font used for text, placeholder alignment and intrinsic
+    /// height measurement.
+    @MainActor
+    public func textFont(_ font: TextAreaFont) -> TextArea {
+        self.config.font = font
         return self
     }
 
