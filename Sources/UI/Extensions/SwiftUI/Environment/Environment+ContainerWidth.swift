@@ -32,7 +32,7 @@ struct WidthProxyModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background {
+            .overlay {
                 GeometryReader { geometry in
                     Color.clear
                         .preference(
@@ -40,6 +40,8 @@ struct WidthProxyModifier: ViewModifier {
                             value: geometry.size
                         )
                 }
+                .allowsHitTesting(false)
+                .opacity(0)
             }
             .onPreferenceChange(ContainerSizePreferenceKey.self) { newValue in
                 DispatchQueue.main.async {
