@@ -9,6 +9,57 @@
 import SwiftUI
 import AppKit
 
+private extension NSEdgeInsets {
+    func isEqual(to other: NSEdgeInsets) -> Bool {
+        top == other.top &&
+        left == other.left &&
+        bottom == other.bottom &&
+        right == other.right
+    }
+}
+
+final class TextAreaScrollContainerView: NSView {
+    let scrollView = NSScrollView()
+    var contentInsets = NSEdgeInsets() {
+        didSet {
+            needsLayout = true
+        }
+    }
+
+    override var isFlipped: Bool { true }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        addSubview(scrollView)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        addSubview(scrollView)
+    }
+
+    override func layout() {
+        super.layout()
+
+        let width = max(0, bounds.width - contentInsets.left - contentInsets.right)
+        let height = max(0, bounds.height - contentInsets.top - contentInsets.bottom)
+        scrollView.frame = NSRect(
+            x: contentInsets.left,
+            y: contentInsets.top,
+            width: width,
+            height: height
+        )
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        if let textView = scrollView.documentView as? NSTextView {
+            window?.makeFirstResponder(textView)
+            return
+        }
+        super.mouseDown(with: event)
+    }
+}
+
 extension TextAreaFont {
     var appKitFont: NSFont {
         let pointSize = size ?? NSFont.systemFontSize
@@ -43,8 +94,9 @@ extension TextArea {
         @Binding var oneLineHeight: CGFloat
         @Binding var isComposing: Bool
 
-        func makeNSView(context: Context) -> NSScrollView {
-            let scrollView = NSScrollView()
+        func makeNSView(context: Context) -> TextAreaScrollContainerView {
+            let containerView = TextAreaScrollContainerView()
+            let scrollView = containerView.scrollView
             scrollView.hasVerticalScroller = true
             scrollView.hasHorizontalScroller = false
             scrollView.borderType = .noBorder
@@ -77,7 +129,6 @@ extension TextArea {
                 .foregroundColor: NSColor.labelColor,
                 .font: font
             ]
-            applyTextInsets(to: textView)
             textView.textContainer?.widthTracksTextView = true
             textView.minSize = .zero
             textView.maxSize = NSSize(
@@ -93,6 +144,7 @@ extension TextArea {
             textView.submitOnReturnSources = config.submitOnReturnSources
 
             scrollView.documentView = textView
+            applyTextInsets(to: textView, in: containerView)
             context.coordinator.textView = textView
             context.coordinator.scrollView = scrollView
             controller.textView = textView
@@ -102,15 +154,16 @@ extension TextArea {
             DispatchQueue.main.async {
                 context.coordinator.recomputeHeight()
             }
-            return scrollView
+            return containerView
         }
 
-        func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        func updateNSView(_ containerView: TextAreaScrollContainerView, context: Context) {
             let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
             context.coordinator.parent = self
+            let scrollView = containerView.scrollView
             guard let textView = scrollView.documentView as? AutoGrowNSTextView else { return }
             let didUpdateFont = applyFont(to: textView)
-            let didUpdateInsets = applyTextInsets(to: textView)
+            let didUpdateInsets = applyTextInsets(to: textView, in: containerView)
             textView.userKeyDownHandler = config.userKeyDownHandler
             textView.submitOnReturn = config.submitOnReturn
             textView.submitOnReturnSources = config.submitOnReturnSources
@@ -176,21 +229,25 @@ extension TextArea {
         }
 
         @discardableResult
-        private func applyTextInsets(to textView: AutoGrowNSTextView) -> Bool {
-            // NSTextView only exposes symmetric horizontal inset knobs. Preserve
-            // the existing default behavior and approximate asymmetric callers
-            // with the larger horizontal/vertical values.
-            let verticalInset = max(config.textInsets.top, config.textInsets.bottom)
-            let horizontalInset = max(config.textInsets.leading, config.textInsets.trailing)
-            let textContainerInset = NSSize(width: 0, height: verticalInset)
+        private func applyTextInsets(to textView: AutoGrowNSTextView, in containerView: TextAreaScrollContainerView) -> Bool {
+            let contentInsets = NSEdgeInsets(
+                top: config.textInsets.top,
+                left: config.textInsets.leading,
+                bottom: config.textInsets.bottom,
+                right: config.textInsets.trailing
+            )
 
             var didChange = false
-            if textView.textContainerInset != textContainerInset {
-                textView.textContainerInset = textContainerInset
+            if !containerView.contentInsets.isEqual(to: contentInsets) {
+                containerView.contentInsets = contentInsets
                 didChange = true
             }
-            if textView.textContainer?.lineFragmentPadding != horizontalInset {
-                textView.textContainer?.lineFragmentPadding = horizontalInset
+            if textView.textContainerInset != .zero {
+                textView.textContainerInset = .zero
+                didChange = true
+            }
+            if textView.textContainer?.lineFragmentPadding != 0 {
+                textView.textContainer?.lineFragmentPadding = 0
                 didChange = true
             }
             return didChange
@@ -237,7 +294,8 @@ extension TextArea {
                 guard let textView else { return }
 
                 let contentHeight = measuredContentHeight(in: textView)
-                let height = ceil(contentHeight) + textView.textContainerInset.height * 2
+                let verticalInsets = parent.config.textInsets.top + parent.config.textInsets.bottom
+                let height = ceil(contentHeight) + verticalInsets
 
                 // Toggle the scroller based on whether content actually exceeds
                 // maxHeight, not on the current (animated) frame size. Otherwise

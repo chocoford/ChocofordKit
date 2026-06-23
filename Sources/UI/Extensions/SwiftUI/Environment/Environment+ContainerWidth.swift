@@ -29,20 +29,33 @@ public extension View {
 
 struct WidthProxyModifier: ViewModifier {
     @State private var size: CGSize = .zero
-    
+
     func body(content: Content) -> some View {
         content
             .background {
                 GeometryReader { geometry in
                     Color.clear
-                        .watch(value: geometry.size, initial: true) { oldValue, newValue in
-                            Task { @MainActor in
-                                size = newValue
-                            }
-                        }
+                        .preference(
+                            key: ContainerSizePreferenceKey.self,
+                            value: geometry.size
+                        )
+                }
+            }
+            .onPreferenceChange(ContainerSizePreferenceKey.self) { newValue in
+                DispatchQueue.main.async {
+                    guard size != newValue else { return }
+                    size = newValue
                 }
             }
             .environment(\.containerSize, size)
+    }
+}
+
+private struct ContainerSizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
     }
 }
 
