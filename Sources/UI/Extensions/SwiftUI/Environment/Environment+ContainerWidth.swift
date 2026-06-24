@@ -34,30 +34,20 @@ struct WidthProxyModifier: ViewModifier {
         content
             .overlay {
                 GeometryReader { geometry in
+                    let currentSize = geometry.size
+
                     Color.clear
-                        .preference(
-                            key: ContainerSizePreferenceKey.self,
-                            value: geometry.size
-                        )
+                        .task(id: currentSize) {
+                            await MainActor.run {
+                                guard size != currentSize else { return }
+                                size = currentSize
+                            }
+                        }
                 }
                 .allowsHitTesting(false)
                 .opacity(0)
             }
-            .onPreferenceChange(ContainerSizePreferenceKey.self) { newValue in
-                DispatchQueue.main.async {
-                    guard size != newValue else { return }
-                    size = newValue
-                }
-            }
             .environment(\.containerSize, size)
-    }
-}
-
-private struct ContainerSizePreferenceKey: PreferenceKey {
-    static var defaultValue: CGSize = .zero
-
-    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
-        value = nextValue()
     }
 }
 

@@ -74,17 +74,27 @@ public struct BindSizeModifier: ViewModifier {
         content
             .background {
                 GeometryReader { geometry in
+                    let size = geometry.size
+
                     Color.clear
-                        .watch(value: geometry.size, initial: true) { _, size in
-                            if let width = width {
-                                width.wrappedValue = size.width
-                            }
-                            if let height = height {
-                                height.wrappedValue = size.height
+                        .allowsHitTesting(false)
+                        .task(id: size) {
+                            await MainActor.run {
+                                updateBindings(size)
                             }
                         }
                 }
             }
+    }
+
+    @MainActor
+    private func updateBindings(_ size: CGSize) {
+        if let width, width.wrappedValue != size.width {
+            width.wrappedValue = size.width
+        }
+        if let height, height.wrappedValue != size.height {
+            height.wrappedValue = size.height
+        }
     }
 }
 
