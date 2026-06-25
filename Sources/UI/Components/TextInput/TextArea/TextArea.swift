@@ -17,9 +17,10 @@ import UIKit
 /// support for trigger menus, atomic tokens, and custom paste handling.
 ///
 /// `TextArea` wraps an `NSTextView` (macOS) or `UITextView` (iOS) under
-/// SwiftUI. It grows vertically as the user types, up to ``maxHeight(_:)``,
-/// after which it scrolls internally. The placeholder is hidden correctly
-/// during IME composition, so the first character of pinyin / kana
+/// SwiftUI. It grows vertically as the user types by default. Use
+/// ``maxHeight(_:)`` or ``textAreaSizing(_:)`` to cap that growth or make the
+/// editor fill its parent like `TextEditor`. The placeholder is hidden
+/// correctly during IME composition, so the first character of pinyin / kana
 /// composition is never obscured.
 ///
 /// ```swift
@@ -105,6 +106,7 @@ import UIKit
 /// - ``init(text:placeholder:)``
 ///
 /// ### Sizing and styling
+/// - ``textAreaSizing(_:)``
 /// - ``maxHeight(_:)``
 /// - ``background(_:)``
 /// - ``clipShape(_:)``
@@ -162,6 +164,58 @@ public struct TextAreaFont: Equatable, Sendable {
     }
 }
 
+/// Defines how `TextArea` resolves its height and when it scrolls internally.
+///
+/// Use this to choose between a growing input, a growing input with a cap, and
+/// an editor that fills the parent like SwiftUI's `TextEditor`.
+public struct TextAreaSizing: Equatable, Sendable {
+    enum Storage: Equatable, Sendable {
+        case autoGrow
+        case autoGrowMaxHeight(CGFloat)
+        case fill
+    }
+
+    let storage: Storage
+
+    private init(storage: Storage) {
+        self.storage = storage
+    }
+
+    /// Sizes the editor to its content.
+    ///
+    /// This is the default policy. The editor reports an ideal height that
+    /// follows the text content and does not enable internal scrolling.
+    public static let autoGrow = TextAreaSizing(storage: .autoGrow)
+
+    /// Fills the parent height and scrolls internally when content overflows.
+    ///
+    /// Use this for fixed-height or flexible-height editor regions, such as a
+    /// sheet column, inspector panel, or any place where the editor should
+    /// behave like `TextEditor`.
+    public static let fill = TextAreaSizing(storage: .fill)
+
+    /// Sizes the editor to its content until `maxHeight`, then scrolls internally.
+    ///
+    /// Use this for chat inputs and compact composers where the field should
+    /// grow for a few lines but stop before it takes over the surrounding UI.
+    public static func autoGrow(maxHeight: CGFloat) -> TextAreaSizing {
+        TextAreaSizing(storage: .autoGrowMaxHeight(maxHeight))
+    }
+}
+
+extension TextAreaSizing {
+    var fillsAvailableHeight: Bool {
+        storage == .fill
+    }
+
+    var maxHeight: CGFloat? {
+        guard case .autoGrowMaxHeight(let maxHeight) = storage else {
+            return nil
+        }
+        return maxHeight
+    }
+}
+
 public struct TextArea: View {
     @Binding var inputText: String
     var placeholder: Text
@@ -202,6 +256,9 @@ public struct TextArea: View {
             isComposing: $isComposing
         )
         .frame(height: resolvedHeight)
+        .if(config.sizing.fillsAvailableHeight, transform: { content in
+            content.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        })
         .if(config.clipShapeApplier != nil, transform: { content in
             config.clipShapeApplier!(AnyView(content))
         })
@@ -230,10 +287,17 @@ public struct TextArea: View {
         }
     }
 
-    private var resolvedHeight: CGFloat {
+    private var resolvedHeight: CGFloat? {
+        if config.sizing.fillsAvailableHeight {
+            return nil
+        }
+
         // After the first measurement, contentHeight is the real value.
         if contentHeight > 0 {
-            return min(contentHeight, config.maxHeight)
+            if let maxHeight = config.sizing.maxHeight {
+                return min(contentHeight, maxHeight)
+            }
+            return contentHeight
         }
         // Before the first measurement, fall back to the last known
         // one-line height. If that hasn't been recorded either (very first
@@ -268,7 +332,7 @@ public struct TextArea: View {
     }
 
     class Config {
-        var maxHeight: CGFloat = 200
+        var sizing: TextAreaSizing = .autoGrow
         var textInsets = EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
         var font: TextAreaFont = .body
         var overflowTolerance: CGFloat = 1
@@ -291,11 +355,36 @@ public struct TextArea: View {
     /// The editor grows to fit its content up to `height`. Beyond that, it
     /// scrolls internally and tracks the caret automatically.
     ///
-    /// - Parameter height: Maximum editor height in points. Default is 200.
+    /// This is a compatibility shortcut for:
+    ///
+    /// ```swift
+    /// .textAreaSizing(.autoGrow(maxHeight: height))
+    /// ```
+    ///
+    /// - Parameter height: Maximum editor height in points.
     /// - Returns: A text area whose height is capped at `height`.
     @MainActor
     public func maxHeight(_ height: CGFloat) -> TextArea {
-        self.config.maxHeight = height
+        textAreaSizing(.autoGrow(maxHeight: height))
+    }
+
+    /// Controls how the editor is sized and when it switches to internal scrolling.
+    ///
+    /// The default is ``TextAreaSizing/autoGrow``: the editor's ideal height
+    /// follows its content. Use ``TextAreaSizing/autoGrow(maxHeight:)`` to cap
+    /// that height, or ``TextAreaSizing/fill`` to fill the parent like
+    /// `TextEditor` and scroll internally when content overflows.
+    ///
+    /// Prefer ``TextAreaSizing/fill`` when the surrounding layout already owns
+    /// the vertical space. Prefer ``TextAreaSizing/autoGrow(maxHeight:)`` when
+    /// the text field is part of a larger control that should grow only up to a
+    /// known limit.
+    ///
+    /// - Parameter sizing: The height and scrolling policy to apply.
+    /// - Returns: A text area using the supplied sizing policy.
+    @MainActor
+    public func textAreaSizing(_ sizing: TextAreaSizing) -> TextArea {
+        self.config.sizing = sizing
         return self
     }
 

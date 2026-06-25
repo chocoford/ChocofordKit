@@ -60,8 +60,8 @@ extension TextArea {
             textView.textContainer.lineFragmentPadding = 0
             applyTextInsets(to: textView)
             // Start non-scrolling: lets the frame grow naturally with content.
-            // We flip to scrolling once measured height exceeds maxHeight, see
-            // recomputeHeight below.
+            // We flip to scrolling once measured height exceeds the active
+            // sizing policy, see recomputeHeight below.
             textView.isScrollEnabled = false
             textView.returnKeyType = config.submitOnReturn != nil
                 && config.submitOnReturnSources.contains(.softwareKeyboard)
@@ -81,7 +81,7 @@ extension TextArea {
         }
 
         func updateUIView(_ textView: UITextView, context: Context) {
-            let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
+            let sizingChanged = context.coordinator.parent.config.sizing != config.sizing
             context.coordinator.parent = self
             controller.pasteHandler = config.pasteHandler
             let didUpdateFont = applyFont(to: textView)
@@ -96,7 +96,7 @@ extension TextArea {
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
-            } else if didUpdateFont || didUpdateInsets || maxHeightChanged {
+            } else if didUpdateFont || didUpdateInsets || sizingChanged {
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
@@ -209,9 +209,10 @@ extension TextArea {
                 let height = ceil(size.height)
                 let isSingleLine = isSingleVisualLine(in: textView)
 
-                // Toggle internal scrolling: only enable once content exceeds
-                // maxHeight so the frame can grow naturally below that.
-                let isOverflowing = height > parent.config.maxHeight + parent.config.overflowTolerance
+                // Toggle internal scrolling according to the active sizing
+                // policy so auto-grow can expand and fill can behave like
+                // TextEditor inside the offered viewport.
+                let isOverflowing = isContentOverflowing(totalHeight: height, in: textView)
                 textView.isContentOverflowing = isOverflowing
                 if textView.isScrollEnabled != isOverflowing {
                     textView.isScrollEnabled = isOverflowing
@@ -325,6 +326,19 @@ extension TextArea {
                 let verticalInsets = textView.textContainerInset.top + textView.textContainerInset.bottom
                 return ceil(font.lineHeight + verticalInsets)
             }
+
+            private func isContentOverflowing(totalHeight: CGFloat, in textView: UITextView) -> Bool {
+                switch parent.config.sizing.storage {
+                    case .autoGrow:
+                        return false
+                    case .autoGrowMaxHeight(let maxHeight):
+                        return totalHeight > maxHeight + parent.config.overflowTolerance
+                    case .fill:
+                        let visibleHeight = textView.bounds.height
+                        guard visibleHeight > 0 else { return false }
+                        return totalHeight > visibleHeight + parent.config.overflowTolerance
+                }
+            }
         }
     }
 }
@@ -333,6 +347,7 @@ final class AutoGrowUITextView: UITextView {
     fileprivate weak var coordinator: TextArea.Representable.Coordinator?
     fileprivate var isContentOverflowing = false
     private var lastFrameWidth: CGFloat = 0
+    private var lastFrameHeight: CGFloat = 0
     private var heightRecomputeScheduled = false
 
     override func didMoveToWindow() {
@@ -343,10 +358,15 @@ final class AutoGrowUITextView: UITextView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        // Only react to width changes (rotation / parent reflow); height
-        // changes are driven by us and don't require another recompute.
-        guard bounds.width != lastFrameWidth else { return }
+        // Auto-grow only needs width changes for wrapping. Fill sizing also
+        // needs height changes because the parent viewport controls overflow.
+        let widthChanged = bounds.width != lastFrameWidth
+        let heightChanged = bounds.height != lastFrameHeight
         lastFrameWidth = bounds.width
+        lastFrameHeight = bounds.height
+        let shouldRecompute = widthChanged ||
+            (heightChanged && coordinator?.parent.config.sizing.fillsAvailableHeight == true)
+        guard shouldRecompute else { return }
         guard !heightRecomputeScheduled else { return }
         heightRecomputeScheduled = true
         DispatchQueue.main.async { [weak self] in

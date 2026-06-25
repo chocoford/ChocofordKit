@@ -20,11 +20,8 @@ private extension NSEdgeInsets {
 
 final class TextAreaScrollContainerView: NSView {
     let scrollView = NSScrollView()
-    var contentInsets = NSEdgeInsets() {
-        didSet {
-            needsLayout = true
-        }
-    }
+    var onLayoutSizeChanged: (() -> Void)?
+    private var lastLayoutSize: NSSize = .zero
 
     override var isFlipped: Bool { true }
 
@@ -41,22 +38,76 @@ final class TextAreaScrollContainerView: NSView {
     override func layout() {
         super.layout()
 
-        let width = max(0, bounds.width - contentInsets.left - contentInsets.right)
-        let height = max(0, bounds.height - contentInsets.top - contentInsets.bottom)
-        scrollView.frame = NSRect(
-            x: contentInsets.left,
-            y: contentInsets.top,
+        let sizeChanged = bounds.size != lastLayoutSize
+        lastLayoutSize = bounds.size
+
+        scrollView.frame = bounds
+        let zeroInsets = NSEdgeInsets()
+        if !scrollView.contentInsets.isEqual(to: zeroInsets) {
+            scrollView.contentInsets = zeroInsets
+        }
+
+        if sizeChanged {
+            onLayoutSizeChanged?()
+        }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        if let documentView = scrollView.documentView as? TextAreaDocumentView {
+            window?.makeFirstResponder(documentView.textView)
+            return
+        }
+        if let textView = scrollView.documentView as? NSTextView {
+            window?.makeFirstResponder(textView)
+            return
+        }
+        super.mouseDown(with: event)
+    }
+}
+
+final class TextAreaDocumentView: NSView {
+    let textView: AutoGrowNSTextView
+    var textInsets = NSEdgeInsets() {
+        didSet {
+            guard !textInsets.isEqual(to: oldValue) else { return }
+            needsLayout = true
+        }
+    }
+    var textContentHeight: CGFloat = 0 {
+        didSet {
+            guard textContentHeight != oldValue else { return }
+            needsLayout = true
+        }
+    }
+
+    override var isFlipped: Bool { true }
+
+    init(textView: AutoGrowNSTextView) {
+        self.textView = textView
+        super.init(frame: .zero)
+        addSubview(textView)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layout() {
+        super.layout()
+
+        let width = max(1, bounds.width - textInsets.left - textInsets.right)
+        let availableHeight = max(1, bounds.height - textInsets.top - textInsets.bottom)
+        let height = max(textContentHeight, availableHeight)
+        textView.frame = NSRect(
+            x: textInsets.left,
+            y: textInsets.top,
             width: width,
             height: height
         )
     }
 
     override func mouseDown(with event: NSEvent) {
-        if let textView = scrollView.documentView as? NSTextView {
-            window?.makeFirstResponder(textView)
-            return
-        }
-        super.mouseDown(with: event)
+        window?.makeFirstResponder(textView)
     }
 }
 
@@ -143,13 +194,18 @@ extension TextArea {
             textView.submitOnReturn = config.submitOnReturn
             textView.submitOnReturnSources = config.submitOnReturnSources
 
-            scrollView.documentView = textView
-            applyTextInsets(to: textView, in: containerView)
+            let documentView = TextAreaDocumentView(textView: textView)
+            scrollView.documentView = documentView
+            applyTextInsets(to: textView, in: documentView)
             context.coordinator.textView = textView
             context.coordinator.scrollView = scrollView
+            context.coordinator.documentView = documentView
             controller.textView = textView
             controller.triggers = config.triggers
             controller.pasteHandler = config.pasteHandler
+            containerView.onLayoutSizeChanged = { [weak coordinator = context.coordinator] in
+                coordinator?.scheduleRecomputeHeight()
+            }
 
             DispatchQueue.main.async {
                 context.coordinator.recomputeHeight()
@@ -158,12 +214,13 @@ extension TextArea {
         }
 
         func updateNSView(_ containerView: TextAreaScrollContainerView, context: Context) {
-            let maxHeightChanged = context.coordinator.parent.config.maxHeight != config.maxHeight
+            let sizingChanged = context.coordinator.parent.config.sizing != config.sizing
             context.coordinator.parent = self
             let scrollView = containerView.scrollView
-            guard let textView = scrollView.documentView as? AutoGrowNSTextView else { return }
+            guard let documentView = scrollView.documentView as? TextAreaDocumentView else { return }
+            let textView = documentView.textView
             let didUpdateFont = applyFont(to: textView)
-            let didUpdateInsets = applyTextInsets(to: textView, in: containerView)
+            let didUpdateInsets = applyTextInsets(to: textView, in: documentView)
             textView.userKeyDownHandler = config.userKeyDownHandler
             textView.submitOnReturn = config.submitOnReturn
             textView.submitOnReturnSources = config.submitOnReturnSources
@@ -175,15 +232,33 @@ extension TextArea {
             // clobbered when the binding hasn't actually diverged.
             let currentPlain = textView.textStorage?.textAreaPlainText ?? ""
             if !textView.hasMarkedText() && currentPlain != text {
-                textView.string = text
+                replaceTextSafely(in: textView, with: text)
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
-            } else if didUpdateFont || didUpdateInsets || maxHeightChanged {
+            } else if didUpdateFont || didUpdateInsets || sizingChanged {
                 DispatchQueue.main.async {
                     context.coordinator.recomputeHeight()
                 }
             }
+        }
+
+        private func replaceTextSafely(in textView: AutoGrowNSTextView, with text: String) {
+            let selectedRange = textView.selectedRange()
+            let currentLength = (textView.string as NSString).length
+            let replacementLength = (text as NSString).length
+            let safeUpperBound = min(currentLength, replacementLength)
+            let safeLocation = min(selectedRange.location, safeUpperBound)
+            let safeLength = min(selectedRange.length, max(0, safeUpperBound - safeLocation))
+            let safeRange = NSRange(location: safeLocation, length: safeLength)
+
+            textView.controller?.isProgrammaticEdit = true
+            defer {
+                textView.controller?.isProgrammaticEdit = false
+            }
+            textView.setSelectedRange(safeRange)
+            textView.string = text
+            textView.setSelectedRange(safeRange)
         }
 
         @discardableResult
@@ -229,8 +304,8 @@ extension TextArea {
         }
 
         @discardableResult
-        private func applyTextInsets(to textView: AutoGrowNSTextView, in containerView: TextAreaScrollContainerView) -> Bool {
-            let contentInsets = NSEdgeInsets(
+        private func applyTextInsets(to textView: AutoGrowNSTextView, in documentView: TextAreaDocumentView) -> Bool {
+            let textInsets = NSEdgeInsets(
                 top: config.textInsets.top,
                 left: config.textInsets.leading,
                 bottom: config.textInsets.bottom,
@@ -238,8 +313,8 @@ extension TextArea {
             )
 
             var didChange = false
-            if !containerView.contentInsets.isEqual(to: contentInsets) {
-                containerView.contentInsets = contentInsets
+            if !documentView.textInsets.isEqual(to: textInsets) {
+                documentView.textInsets = textInsets
                 didChange = true
             }
             if textView.textContainerInset != .zero {
@@ -262,10 +337,21 @@ extension TextArea {
             var parent: Representable
             weak var textView: AutoGrowNSTextView?
             weak var scrollView: NSScrollView?
+            weak var documentView: TextAreaDocumentView?
             fileprivate var isOverflowing = false
+            private var heightRecomputeScheduled = false
 
             init(_ parent: Representable) {
                 self.parent = parent
+            }
+
+            func scheduleRecomputeHeight() {
+                guard !heightRecomputeScheduled else { return }
+                heightRecomputeScheduled = true
+                DispatchQueue.main.async { [weak self] in
+                    self?.heightRecomputeScheduled = false
+                    self?.recomputeHeight()
+                }
             }
 
             func textDidChange(_ notification: Notification) {
@@ -297,17 +383,24 @@ extension TextArea {
                 let verticalInsets = parent.config.textInsets.top + parent.config.textInsets.bottom
                 let height = ceil(contentHeight) + verticalInsets
 
-                // Toggle the scroller based on whether content actually exceeds
-                // maxHeight, not on the current (animated) frame size. Otherwise
-                // the scroll bar flashes during the grow animation while the
-                // SwiftUI frame is still catching up to the new content height.
-                let isOverflowing = height > parent.config.maxHeight + parent.config.overflowTolerance
+                // Toggle the scroller based on the sizing policy, not on the
+                // current animated SwiftUI frame. Otherwise the scroll bar can
+                // flash while the frame catches up to content growth.
+                let isOverflowing = isContentOverflowing(
+                    measuredTextHeight: contentHeight,
+                    totalHeight: height
+                )
                 self.isOverflowing = isOverflowing
                 if let scrollView {
+                    let scrollerVisibilityChanged = scrollView.hasVerticalScroller != isOverflowing
                     if scrollView.hasVerticalScroller != isOverflowing {
                         scrollView.hasVerticalScroller = isOverflowing
                     }
+                    if scrollerVisibilityChanged {
+                        scheduleRecomputeHeight()
+                    }
                 }
+                syncDocumentSize(totalHeight: height)
                 if !isOverflowing {
                     resetScrollPositionToTop()
                 }
@@ -352,6 +445,10 @@ extension TextArea {
             }
 
             private func measuredContentHeight(in textView: AutoGrowNSTextView) -> CGFloat {
+                if let layoutHeight = measuredLayoutHeight(in: textView) {
+                    return layoutHeight
+                }
+
                 let width = measuredTextWidth(in: textView)
                 let attributed = measuredAttributedString(in: textView)
                 let rect = attributed.boundingRect(
@@ -364,6 +461,52 @@ extension TextArea {
                 return ceil(rect.height)
             }
 
+            private func measuredLayoutHeight(in textView: AutoGrowNSTextView) -> CGFloat? {
+                guard let layoutManager = textView.layoutManager,
+                      let textContainer = textView.textContainer else {
+                    return nil
+                }
+
+                layoutManager.ensureLayout(for: textContainer)
+                let usedRect = layoutManager.usedRect(for: textContainer)
+                guard usedRect.height.isFinite, usedRect.height > 0 else {
+                    return nil
+                }
+                return ceil(usedRect.maxY)
+            }
+
+            private func isContentOverflowing(measuredTextHeight: CGFloat, totalHeight: CGFloat) -> Bool {
+                switch parent.config.sizing.storage {
+                    case .autoGrow:
+                        return false
+                    case .autoGrowMaxHeight(let maxHeight):
+                        return totalHeight > maxHeight + parent.config.overflowTolerance
+                    case .fill:
+                        guard let scrollView else { return false }
+                        let visibleHeight = scrollView.contentSize.height
+                        guard visibleHeight > 0 else { return false }
+                        return totalHeight > visibleHeight + parent.config.overflowTolerance
+                }
+            }
+
+            private func syncDocumentSize(totalHeight: CGFloat) {
+                guard let documentView, let scrollView else { return }
+
+                let visibleSize = scrollView.contentSize
+                let width = max(1, visibleSize.width)
+                let height = max(totalHeight, visibleSize.height)
+                documentView.textContentHeight = max(
+                    0,
+                    totalHeight - documentView.textInsets.top - documentView.textInsets.bottom
+                )
+                let targetSize = NSSize(width: width, height: height)
+                guard documentView.frame.size != targetSize else {
+                    documentView.needsLayout = true
+                    return
+                }
+                documentView.setFrameSize(targetSize)
+            }
+
             private func measuredAttributedString(in textView: AutoGrowNSTextView) -> NSAttributedString {
                 let attributed = textView.attributedString()
                 guard attributed.length == 0 else { return attributed }
@@ -373,15 +516,20 @@ extension TextArea {
             }
 
             private func measuredTextWidth(in textView: AutoGrowNSTextView) -> CGFloat {
+                let lineFragmentPadding = (textView.textContainer?.lineFragmentPadding ?? 0) * 2
+                let textContainerWidth = measuredTextContainerWidth(in: textView)
+                if textContainerWidth > 0 {
+                    return max(1, textContainerWidth - lineFragmentPadding)
+                }
+
                 let containerWidth = [
-                    textView.bounds.width,
                     textView.enclosingScrollView?.contentSize.width ?? 0,
-                    measuredTextContainerWidth(in: textView)
+                    textView.bounds.width
                 ]
                 .first { $0 > 0 } ?? 1
                 let horizontalInset = textView.textContainerInset.width * 2
-                let lineFragmentPadding = (textView.textContainer?.lineFragmentPadding ?? 0) * 2
-                return max(1, containerWidth - horizontalInset - lineFragmentPadding)
+                let edgeInset = (documentView?.textInsets.left ?? 0) + (documentView?.textInsets.right ?? 0)
+                return max(1, containerWidth - edgeInset - horizontalInset - lineFragmentPadding)
             }
 
             private func measuredTextContainerWidth(in textView: AutoGrowNSTextView) -> CGFloat {
@@ -463,7 +611,15 @@ final class AutoGrowNSTextView: NSTextView {
 
     override func scrollRangeToVisible(_ range: NSRange) {
         guard coordinator?.isOverflowing == true else { return }
-        super.scrollRangeToVisible(range)
+
+        let textLength = (string as NSString).length
+        guard range.location <= textLength else { return }
+
+        let safeRange = NSRange(
+            location: range.location,
+            length: min(range.length, max(0, textLength - range.location))
+        )
+        super.scrollRangeToVisible(safeRange)
     }
 
     override func setMarkedText(_ string: Any, selectedRange: NSRange, replacementRange: NSRange) {
