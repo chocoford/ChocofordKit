@@ -58,6 +58,9 @@ extension TextArea {
             textView.textColor = .label
             textView.tintColor = .label
             textView.textContainer.lineFragmentPadding = 0
+            textView.textContainer.widthTracksTextView = true
+            textView.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             applyTextInsets(to: textView)
             // Start non-scrolling: lets the frame grow naturally with content.
             // We flip to scrolling once measured height exceeds the active
@@ -78,6 +81,28 @@ extension TextArea {
             }
             context.coordinator.scheduleAutofocusIfNeeded()
             return textView
+        }
+
+        func sizeThatFits(
+            _ proposal: ProposedViewSize,
+            uiView textView: UITextView,
+            context: Context
+        ) -> CGSize? {
+            guard let proposedWidth = proposal.width,
+                  proposedWidth.isFinite,
+                  proposedWidth > 0
+            else {
+                return nil
+            }
+
+            let measuredSize = textView.sizeThatFits(CGSize(
+                width: proposedWidth,
+                height: .greatestFiniteMagnitude
+            ))
+            return CGSize(
+                width: proposedWidth,
+                height: proposal.height ?? ceil(measuredSize.height)
+            )
         }
 
         func updateUIView(_ textView: UITextView, context: Context) {
@@ -207,7 +232,10 @@ extension TextArea {
                     height: .greatestFiniteMagnitude
                 ))
                 let height = ceil(size.height)
-                let isSingleLine = isSingleVisualLine(in: textView)
+                let isSingleLine = isSingleVisualLine(
+                    totalHeight: height,
+                    in: textView
+                )
 
                 // Toggle internal scrolling according to the active sizing
                 // policy so auto-grow can expand and fill can behave like
@@ -300,25 +328,16 @@ extension TextArea {
                 }
             }
 
-            private func isSingleVisualLine(in textView: UITextView) -> Bool {
+            private func isSingleVisualLine(
+                totalHeight: CGFloat,
+                in textView: UITextView
+            ) -> Bool {
                 if textView.text.hasSuffix("\n") {
                     return false
                 }
 
-                let layoutManager = textView.layoutManager
-                let textContainer = textView.textContainer
-                layoutManager.ensureLayout(for: textContainer)
-
-                let glyphRange = layoutManager.glyphRange(for: textContainer)
-                var lineCount = 0
-                layoutManager.enumerateLineFragments(forGlyphRange: glyphRange) { _, _, _, _, stop in
-                    lineCount += 1
-                    if lineCount > 1 {
-                        stop.pointee = true
-                    }
-                }
-
-                return lineCount <= 1
+                let oneLineHeight = estimatedSingleLineHeight(in: textView)
+                return totalHeight <= oneLineHeight + parent.config.overflowTolerance
             }
 
             private func estimatedSingleLineHeight(in textView: UITextView) -> CGFloat {
@@ -349,6 +368,11 @@ final class AutoGrowUITextView: UITextView {
     private var lastFrameWidth: CGFloat = 0
     private var lastFrameHeight: CGFloat = 0
     private var heightRecomputeScheduled = false
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(width: UIView.noIntrinsicMetric, height: size.height)
+    }
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
